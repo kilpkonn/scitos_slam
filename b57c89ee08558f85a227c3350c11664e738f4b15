@@ -1,3 +1,9 @@
 [ver:1,total:60,branch:]
 .git/rebase-merge/git-rebase-todo:40,1644674400:40,r
 .git/COMMIT_EDITMSG:20,1644674400:20,r
+
+[ver:1,total:120,branch:master]
+.git/COMMIT_EDITMSG:40,1644609600:40,r
+.gitignore:30,1644609600:30,m
+scitos_annus_loomets_kitsing/src/scitos_annus_loomets_kitsing_node.cpp:30,1644609600:30,m
+scitos_annus_loomets_kitsing/package.xml:20,1644609600:20,r
