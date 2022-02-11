@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>scitos_common</name>
+  <version>0.0.1</version>
+  <description>Library package for common code parts fro scipts project,</description>
+
+  <maintainer email="taannu@taltech.ee">Tavo Annus</maintainer>
+  <maintainer email="tiloom@taltech.ee">Timo Loomets</maintainer>
+  <maintainer email="makits@taltech.ee">Mattias Kitsing</maintainer>
+
+  <license>MIT</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+
+  <export>
+  </export>
+</package>
