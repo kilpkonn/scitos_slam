@@ -29,8 +29,7 @@ MotionController::MotionController(ros::NodeHandle nh) : nh_{nh}, rate_{100} {
   }
   pointMargin_ = nh_.param("mission.distance_margin", 0.1f);
   // TODO: Move these params to yaml
-  trayectoryPid_ = PID(0.1, 0.f, 0.f, Vec2(200.f, 200.f), {-100.f, -100.f},
-                       {100.f, 100.f}, 0.5f);
+  trayectoryPid_ = PID<Vec2<float>>(0.1, 0.f, 0.f, 100.f, 0.5f);
 
   waypointsPub_ = nh_.advertise<visualization_msgs::MarkerArray>(
       "/mission_control/waypoints", 10);

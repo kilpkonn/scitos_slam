@@ -1,6 +1,8 @@
 #pragma once
 
 #include <cmath>
+#include <compare>
+#include <vector>
 template <typename T> struct Vec2 {
   T x, y;
 
@@ -21,6 +23,16 @@ template <typename T> struct Vec2 {
     y -= o.y;
     return *this;
   }
+  auto operator<=>(float n) const {
+    auto m = length();
+    if (m < n)
+      return std::weak_ordering::less;
+    if (m > n)
+      return std::weak_ordering::greater;
+    return std::weak_ordering::equivalent;
+  }
+
+  operator float() const { return length(); }
 
   float dot() const { return x * x + y * y; }
   float length() const { return std::sqrt(dot()); }
