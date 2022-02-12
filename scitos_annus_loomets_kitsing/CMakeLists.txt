@@ -12,6 +12,7 @@ endif()
 find_package(catkin REQUIRED COMPONENTS
   geometry_msgs
   nav_msgs
+  visualization_msgs
   roscpp
   rospy
   scitos_common
@@ -25,11 +26,16 @@ include_directories(
   ${catkin_INCLUDE_DIRS}
 )
 
+file(GLOB_RECURSE SOURCE_FILES *.cpp)
+
+add_library(scitos_annus_loomets_kitsing ${SOURCE_FILES})
+
 add_executable(${PROJECT_NAME}_node
   src/scitos_annus_loomets_kitsing_node.cpp
 )
 
 target_link_libraries(${PROJECT_NAME}_node
   ${catkin_LIBRARIES}
+  scitos_annus_loomets_kitsing
 )
 

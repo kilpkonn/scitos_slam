@@ -4,6 +4,10 @@
 
 template <typename T> class PID {
 public:
+  PID()
+      : kp_{1.f}, ki_{0.f}, kd_{0.f}, diffErrAlpha_{0.f}, minVal_{T()},
+        maxVal_{T()}, maxErr_{T()}, last_{T()}, integratedError_{T()} {}
+
   PID(float kp, float ki, float kd, T maxErr, T minVal, T maxVal,
       float diffErrAlpha)
       : kp_{kp}, ki_{ki}, kd_{kd}, diffErrAlpha_{diffErrAlpha}, minVal_{minVal},

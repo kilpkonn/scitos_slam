@@ -1,13 +1,21 @@
+#include <chrono>
 #include <ros/ros.h>
 
-#include "scitos_common/pid.hpp"
-#include "scitos_common/vec2.hpp"
+#include "scitos_annus_loomets_kitsing/motion_controller.hpp"
 
 int main(int argc, char *argv[]) {
-  ros::init(argc, argv, "pid_controller");
-  // TODO: Actual node
-  PID<float> p(0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f);
-  Vec2<int> v{1, 2};
+  ros::init(argc, argv, "motion_controller");
+  ros::NodeHandle n;
+
+  MotionController controller(n);
+
+  // ros::Rate r(100);
+
+  // while (n.ok()) {
+  //   ros::spinOnce();
+  //   r.sleep();
+  // }
   ros::spin();
+
   return 0;
 }

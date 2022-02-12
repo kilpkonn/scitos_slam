@@ -4,6 +4,7 @@
 template <typename T> struct Vec2 {
   T x, y;
 
+  Vec2() : x{T()}, y{T()} {}
   Vec2(T x, T y) : x{x}, y{y} {}
 
   Vec2<T> operator+(const Vec2<T> &o) const { return {x + o.x, y + o.y}; }
