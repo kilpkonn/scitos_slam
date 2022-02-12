@@ -28,12 +28,13 @@ public:
     integratedError_ += error * time;
     if (std::abs(integratedError_) > maxErr_) {
       // Clamp does not work wll with vectors
-      integratedError_ = integratedError_ * maxErr_ / static_cast<float>(integratedError_);
+      integratedError_ =
+          integratedError_ * maxErr_ / static_cast<float>(integratedError_);
     }
     T diffErr = time > 0.f ? (error - last_) / time : T();
-    T output = kp_ * error + ki_ * integratedError_ + kd_ * diffErr;
+    T output = error * kp_ + integratedError_ * ki_ + diffErr * kd_;
     last_ =
-        diffErrAlpha_ * last_ + (1 - diffErrAlpha_) * error; // Exp moving avg
+        last_ * diffErrAlpha_ + error * (1 - diffErrAlpha_); // Exp moving avg
     return output;
   }
 

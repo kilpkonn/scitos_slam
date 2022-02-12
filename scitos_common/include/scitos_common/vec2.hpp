@@ -13,24 +13,20 @@ template <typename T> struct Vec2 {
   Vec2<T> operator-(const Vec2<T> &o) const { return {x - o.x, y - o.y}; }
   Vec2<T> operator*(float r) const { return {r * x, r * y}; }
   Vec2<T> operator/(float r) const { return {x / r, y / r}; }
-  Vec2<T> operator+=(const Vec2<T> &o) const {
+  Vec2<T> operator+=(const Vec2<T> &o) {
     x += o.x;
     y += o.y;
     return *this;
   }
-  Vec2<T> operator-=(const Vec2<T> &o) const {
+  Vec2<T> operator-=(const Vec2<T> &o) {
     x -= o.x;
     y -= o.y;
     return *this;
   }
-  auto operator<=>(float n) const {
-    auto m = length();
-    if (m < n)
-      return std::weak_ordering::less;
-    if (m > n)
-      return std::weak_ordering::greater;
-    return std::weak_ordering::equivalent;
-  }
+  auto operator<(float n) const { return length() < n; }
+  auto operator<=(float n) const { return length() <= n; }
+  auto operator>(float n) const { return length() > n; }
+  auto operator>=(float n) const { return length() >= n; }
 
   operator float() const { return length(); }
 
