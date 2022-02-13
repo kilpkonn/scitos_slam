@@ -7,9 +7,12 @@
 
 #include "scitos_common/pid.hpp"
 #include "scitos_common/vec2.hpp"
+#include "scitos_common/polar2.hpp"
+
 class MotionController {
 public:
   explicit MotionController(ros::NodeHandle nh);
+  void step(const ros::TimerEvent& event);
 
 
 private:
@@ -19,6 +22,7 @@ private:
   ros::Subscriber odometrySub_;
 
   ros::Publisher waypointsPub_;
+  ros::Publisher controlPub_;
 
   ros::Timer mainTimer_;
 
@@ -28,9 +32,7 @@ private:
   float pointMargin_ = 0.1;
   uint32_t waypointIndex_ = 0;
 
-  PID<Vec2<float>> trajectoryPid_;
-
-  void step(const ros::TimerEvent &event);
+  PID<Polar2<float>> trajectoryPid_;
 
   void odometryCallback(nav_msgs::OdometryPtr msg);
 

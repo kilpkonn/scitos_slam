@@ -9,12 +9,8 @@ int main(int argc, char *argv[]) {
 
   MotionController controller(n);
 
-  // ros::Rate r(100);
+  ros::Timer controllerTimer = n.createTimer(ros::Duration(0.01), &MotionController::step, &controller);
 
-  // while (n.ok()) {
-  //   ros::spinOnce();
-  //   r.sleep();
-  // }
   ros::spin();
 
   return 0;

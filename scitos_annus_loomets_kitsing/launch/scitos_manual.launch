@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<launch>
+    <include file="$(find scitos_annus_loomets_kitsing)/launch/scitos.launch">
+        <arg name="gui" value="false" />
+    </include>
+
+    <node name="rviz" pkg="rviz" type="rviz"  args="-d $(find scitos_annus_loomets_kitsing)/config/rviz/manual.rviz" />
+    <node name="teleop_key" pkg="scitos_annus_loomets_kitsing" type="teleop_key.py" />
+</launch>
