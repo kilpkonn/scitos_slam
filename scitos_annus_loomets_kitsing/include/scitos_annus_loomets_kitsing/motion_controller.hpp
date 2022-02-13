@@ -17,7 +17,6 @@ public:
 
 private:
   ros::NodeHandle nh_;
-  ros::Rate rate_;
 
   ros::Subscriber odometrySub_;
 

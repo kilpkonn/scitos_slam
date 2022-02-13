@@ -15,10 +15,9 @@
 
 #include "scitos_annus_loomets_kitsing/motion_controller.hpp"
 
-MotionController::MotionController(ros::NodeHandle nh) : nh_{nh}, rate_{100} {
-
+MotionController::MotionController(ros::NodeHandle nh) : nh_{nh} {
   XmlRpc::XmlRpcValue waypoints;
-  if (nh_.getParam("mission/waypoints", waypoints)) {
+  if (nh_.getParam("/mission/waypoints", waypoints)) {
     if (waypoints.getType() == XmlRpc::XmlRpcValue::TypeArray) {
       waypoints_.reserve(waypoints_.size());
       for (int i = 0; i < waypoints.size(); i++) {
@@ -28,7 +27,6 @@ MotionController::MotionController(ros::NodeHandle nh) : nh_{nh}, rate_{100} {
             trajectoryObject.size() == 2 &&
             trajectoryObject[0].getType() == XmlRpc::XmlRpcValue::TypeDouble &&
             trajectoryObject[1].getType() == XmlRpc::XmlRpcValue::TypeDouble) {
-
           double x = trajectoryObject[0];
           double y = trajectoryObject[1];
           waypoints_.push_back({static_cast<float>(x), static_cast<float>(y)});
@@ -36,9 +34,11 @@ MotionController::MotionController(ros::NodeHandle nh) : nh_{nh}, rate_{100} {
       }
     }
   }
-  pointMargin_ = nh_.param("mission/distance_margin", 0.1f);
+  pointMargin_ = nh_.param("/mission/distance_margin", 0.1f);
+
   // TODO: Move these params to yaml
-  trajectoryPid_ = PID<Polar2<float>>(1.0, 0.f, 0.f, 100.f, 0.5f);
+  // TODO: Find better parameters
+  trajectoryPid_ = PID<Polar2<float>>(1.0, 0.5f, 1.4f, 5.f, 0.8f);
 
   odometrySub_ = nh_.subscribe("/controller_diffdrive/odom", 1,
                                &MotionController::odometryCallback, this);
@@ -56,7 +56,10 @@ void MotionController::step(const ros::TimerEvent &event) {
     return;
   }
 
-  // TODO: send out waypoints
+  if (odometry_ == nullptr) {
+    return;
+  }
+
   double roll, pitch, yaw;
   tf::Quaternion quat;
   tf::quaternionMsgToTF(odometry_->pose.pose.orientation, quat);
@@ -65,7 +68,7 @@ void MotionController::step(const ros::TimerEvent &event) {
   Vec2<float> current(odometry_->pose.pose.position.x,
                       odometry_->pose.pose.position.y);
   Vec2<float> target = waypoints_.at(waypointIndex_);
-  Polar2<float> error = target - current;
+  Vec2<float> error = target - current;
 
   if (error < pointMargin_) {
     ++waypointIndex_;
@@ -78,7 +81,7 @@ void MotionController::step(const ros::TimerEvent &event) {
 
   geometry_msgs::Twist control;
   control.linear.x = pidOut.r;
-  control.angular.z = pidOut.theta;
+  control.angular.z = pidOut.theta - yaw;
   controlPub_.publish(control);
   publishWaypoints();
 }
