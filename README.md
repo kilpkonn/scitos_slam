@@ -11,3 +11,12 @@ catkin build -DCMAKE_EXPORT_COMPILE_COMMANDS=1
 ```
 _Make sure to copy `compile_commands.json` from under build to project root!_
 
+## Running
+```bash
+roslaunch scitos_annus_loomets_kitsing scitos_autonomous.launch
+```
+
+## Serve slides
+```bash
+marp -s docs
+```
