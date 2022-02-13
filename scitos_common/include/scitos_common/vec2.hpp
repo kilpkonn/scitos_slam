@@ -1,7 +1,6 @@
 #pragma once
 
 #include <cmath>
-#include <compare>
 #include <vector>
 template <typename T> struct Vec2 {
   T x, y;

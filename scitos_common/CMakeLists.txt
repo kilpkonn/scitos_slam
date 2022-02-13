@@ -10,6 +10,8 @@ if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
 endif()
 find_package(catkin REQUIRED)
 
+find_package(rostest REQUIRED)
+
 catkin_package(
   INCLUDE_DIRS include
 #  LIBRARIES scitos_common
@@ -37,3 +39,13 @@ install(DIRECTORY include/${PROJECT_NAME}/
   FILES_MATCHING PATTERN "*.hpp"
   PATTERN ".svn" EXCLUDE
 )
+
+
+enable_testing()
+file(GLOB_RECURSE SCITOS_COMMON_TESTS_SRC test/*.cpp)
+add_executable(sciots_common_tests ${SCITOS_COMMON_TESTS_SRC})
+
+target_link_libraries(sciots_common_tests gtest_main)
+
+include(GoogleTest)
+gtest_discover_tests(sciots_common_tests)
