@@ -35,5 +35,6 @@ private:
   PID<Polar2<float>> trajectoryPid_;
 
   void odometryCallback(nav_msgs::OdometryPtr msg);
+  void publishWaypoints() const;
 
 };
