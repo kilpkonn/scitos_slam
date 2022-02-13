@@ -1,0 +1,7 @@
+[ver:1,total:2160,branch:master]
+scitos_annus_loomets_kitsing/src/motion_controller.cpp:1535,1644750000:180,1644771600:30,1644775200:1325,m
+scitos_annus_loomets_kitsing/src/scitos_annus_loomets_kitsing_node.cpp:200,1644771600:90,1644775200:110,r
+scitos_annus_loomets_kitsing/launch/scitos.launch:180,1644775200:180,r
+scitos_annus_loomets_kitsing/include/scitos_annus_loomets_kitsing/motion_controller.hpp:155,1644775200:155,m
+.git/COMMIT_EDITMSG:60,1644775200:60,r
+scitos_common/include/scitos_common/polar2.hpp:30,1644775200:30,r
