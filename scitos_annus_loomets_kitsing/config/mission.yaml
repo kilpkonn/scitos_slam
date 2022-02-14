@@ -4,3 +4,9 @@ mission:
   waypoints: [[2.0, 0.0], [3.0, 4.0], [3.0, 7.0],
               [7.0, 7.0], [7.0, 11.0]]
   distance_margin: 0.15  # [m]
+  pid_values: # K_P, K_I, K_D, diffErrAlpha, maxErr
+    kp: 1.0
+    ki: 0.5
+    kd: 1.4
+    diffErr: 5.0
+    maxErr: 0.8

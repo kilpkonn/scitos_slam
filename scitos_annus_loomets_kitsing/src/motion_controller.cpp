@@ -37,8 +37,15 @@ MotionController::MotionController(ros::NodeHandle nh) : nh_{nh} {
   pointMargin_ = nh_.param("/mission/distance_margin", 0.1f);
 
   // TODO: Move these params to yaml
+  float kp = nh_.param("/mission/pid_values/kp", 1.0f);
+ 
+  float ki = nh_.param("/mission/pid_values/ki", 0.0f);
+  float kd = nh_.param("/mission/pid_values/kd", 0.0f);
+  float diffErrAlpha = nh_.param("/mission/pid_values/diffErr", 5.0f);
+  float maxErr = nh_.param("/mission/pid_values/maxErr", 0.8f);
+  trajectoryPid_ = PID<Polar2<float>>(kp, ki, kd, maxErr, diffErrAlpha);
   // TODO: Find better parameters
-  trajectoryPid_ = PID<Polar2<float>>(1.0, 0.5f, 1.4f, 5.f, 0.8f);
+  
 
   odometrySub_ = nh_.subscribe("/controller_diffdrive/odom", 1,
                                &MotionController::odometryCallback, this);
