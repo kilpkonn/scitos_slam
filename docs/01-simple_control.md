@@ -22,9 +22,29 @@ Mattias Kitsing
 
 ---
 
-# PID tuning
+# PID
+## PID tuning
 - Started with simple P
-- TODO...
+- Added D parameter to "jump" start the movement between points
+- to eliminate to offset I parameter was added
+- Tuned with trial-error
+
+
+## PID values
+- PID values from parameter server
+  - `Kp = 1.13`
+  - `Ki = 1.2`
+  - `Kd = 4`
+
+```cpp
+  float kp = nh_.param("/mission/pid_values/kp", 1.0f);
+  float ki = nh_.param("/mission/pid_values/ki", 0.0f);
+  float kd = nh_.param("/mission/pid_values/kd", 0.0f);
+```
+
+```cpp
+  trajectoryPid_ = PID<Polar2<float>>(kp, ki, kd, maxErr,     diffErrAlpha);
+```
 
 ---
 
