@@ -26,8 +26,8 @@ Mattias Kitsing
 ## PID tuning
 - Started with simple P
 - Added D parameter to "jump" start the movement between points
-- to eliminate to offset I parameter was added
-- Tuned with trial-error
+- To eliminate the offset I parameter was added
+- Tuned with trial-error (tried not to overshoot last point too much)
 
 
 ## PID values
@@ -35,6 +35,8 @@ Mattias Kitsing
   - `Kp = 1.13`
   - `Ki = 1.2`
   - `Kd = 4`
+
+---
 
 ```cpp
   float kp = nh_.param("/mission/pid_values/kp", 1.0f);
