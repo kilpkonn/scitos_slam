@@ -1,0 +1,10 @@
+[ver:1,total:1560,branch:master]
+docs/01-simple_control.md:420,1644847200:420,m
+scitos_annus_loomets_kitsing/launch/scitos_autonomous.launch:330,1644854400:330,r
+scitos_common/include/scitos_common/pid.hpp:246,1644847200:246,r
+scitos_annus_loomets_kitsing/src/motion_controller.cpp:222,1644847200:222,r
+docs/mapping_overview.tex:160,1644854400:160,m
+.gitignore:100,1644854400:100,m
+.git/COMMIT_EDITMSG:40,1644854400:40,r
+scitos_annus_loomets_kitsing/data/config/plotjuggler/autonomous.xml:30,1644854400:30,r
+scitos_common/include/scitos_common/vec2.hpp:12,1644847200:12,r
