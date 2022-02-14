@@ -13,6 +13,8 @@
 #include "scitos_common/polar2.hpp"
 #include "scitos_common/vec2.hpp"
 
+#include <scitos_common/Polar2.h>
+
 #include "scitos_annus_loomets_kitsing/motion_controller.hpp"
 
 MotionController::MotionController(ros::NodeHandle nh) : nh_{nh} {
@@ -48,6 +50,8 @@ MotionController::MotionController(ros::NodeHandle nh) : nh_{nh} {
 
   waypointsPub_ = nh_.advertise<visualization_msgs::MarkerArray>(
       "/mission_control/waypoints", 10);
+  errorPub_ = nh_.advertise<scitos_common::Polar2>(
+      "/debug/PID_error", 10);
   controlPub_ =
       nh_.advertise<geometry_msgs::Twist>("/controller_diffdrive/cmd_vel", 3);
 
@@ -71,7 +75,12 @@ void MotionController::step(const ros::TimerEvent &event) {
   Vec2<float> current(odometry_->pose.pose.position.x,
                       odometry_->pose.pose.position.y);
   Vec2<float> target = waypoints_.at(waypointIndex_);
-  Vec2<float> error = target - current;
+  Polar2<float> error = target - current;
+  error.theta -= yaw;
+
+  scitos_common::Polar2 errorMsg = error.toMsg();
+  errorMsg.header.stamp = event.current_real;
+  errorPub_.publish(error.toMsg());
 
   if (error < pointMargin_) {
     ++waypointIndex_;
@@ -84,7 +93,7 @@ void MotionController::step(const ros::TimerEvent &event) {
 
   geometry_msgs::Twist control;
   control.linear.x = pidOut.r;
-  control.angular.z = pidOut.theta - yaw;
+  control.angular.z = pidOut.theta;
   controlPub_.publish(control);
   publishWaypoints();
 }

@@ -22,6 +22,7 @@ private:
 
   ros::Publisher waypointsPub_;
   ros::Publisher controlPub_;
+  ros::Publisher errorPub_;
 
   ros::Timer mainTimer_;
 

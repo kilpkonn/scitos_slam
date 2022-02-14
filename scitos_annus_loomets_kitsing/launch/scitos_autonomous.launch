@@ -7,4 +7,9 @@
     <rosparam command="load" file="$(find scitos_annus_loomets_kitsing)/config/mission.yaml" />
     <node name="rviz" pkg="rviz" type="rviz"  args="-d $(find scitos_annus_loomets_kitsing)/config/rviz/manual.rviz" />
     <node name="scitos_annus_loomets_kitsing" pkg="scitos_annus_loomets_kitsing" type="scitos_annus_loomets_kitsing_node" output="screen" />
+    <node name="plotjuggler_with_layout"
+          pkg="plotjuggler"
+          type="plotjuggler"
+          args="-n --layout $(find scitos_annus_loomets_kitsing)/data/config/plotjuggler/autonomous.xml"
+    />
 </launch>

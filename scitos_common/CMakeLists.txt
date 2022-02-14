@@ -8,12 +8,26 @@ endif()
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic)
 endif()
-find_package(catkin REQUIRED)
+find_package(catkin REQUIRED
+  std_msgs
+  message_generation
+)
 
 find_package(rostest REQUIRED)
 
+add_message_files(
+  FILES
+  Polar2.msg
+)
+
+generate_messages(
+  DEPENDENCIES
+  std_msgs
+)
+
 catkin_package(
   INCLUDE_DIRS include
+  CATKIN_DEPENDS message_runtime std_msgs
 #  LIBRARIES scitos_common
 #  CATKIN_DEPENDS other_catkin_pkg
 #  DEPENDS system_lib
