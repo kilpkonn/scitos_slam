@@ -43,7 +43,7 @@ Mattias Kitsing
 ```
 
 ```cpp
-  trajectoryPid_ = PID<Polar2<float>>(kp, ki, kd, maxErr,     diffErrAlpha);
+  trajectoryPid_ = PID<Polar2<float>>(kp, ki, kd, maxErr, diffErrAlpha);
 ```
 
 ---
