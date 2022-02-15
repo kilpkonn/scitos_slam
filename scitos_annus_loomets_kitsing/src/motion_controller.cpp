@@ -38,12 +38,21 @@ MotionController::MotionController(ros::NodeHandle nh) : nh_{nh} {
   }
   pointMargin_ = nh_.param("/mission/distance_margin", 0.1f);
 
-  float kp = nh_.param("/mission/pid_values/kp", 1.0f);
-  float ki = nh_.param("/mission/pid_values/ki", 0.0f);
-  float kd = nh_.param("/mission/pid_values/kd", 0.0f);
-  float diffErrAlpha = nh_.param("/mission/pid_values/diffErr", 5.0f);
-  float maxErr = nh_.param("/mission/pid_values/maxErr", 0.8f);
-  trajectoryPid_ = PID<Polar2<float>>(kp, ki, kd, maxErr, diffErrAlpha);
+  // PID for distance
+  float kpDist = nh_.param("/mission/dist_pid_values/kp", 1.0f);
+  float kiDist = nh_.param("/mission/dist_pid_values/ki", 0.0f);
+  float kdDist = nh_.param("/mission/dist_pid_values/kd", 0.0f);
+  float diffErrAlphaDist = nh_.param("/mission/dist_pid_values/diffErr", 5.0f);
+  float maxErrDist = nh_.param("/mission/dist_pid_values/maxErr", 0.8f);
+  trajectoryPidDist_ = PID<Polar2<float>>(kpDist, kiDist, kdDist, maxErrDist, diffErrAlphaDist);
+
+  // PID for angular
+  float kpAng = nh_.param("/mission/pid_values/kp", 1.0f);
+  float kiAng = nh_.param("/mission/pid_values/ki", 0.0f);
+  float kdAng = nh_.param("/mission/pid_values/kd", 0.0f);
+  float diffErrAlphaAng = nh_.param("/mission/pid_values/diffErr", 5.0f);
+  float maxErrAng = nh_.param("/mission/pid_values/maxErr", 0.8f);
+  trajectoryPidAng_ = PID<Polar2<float>>(kpAng , kiAng , kdAng , maxErrAng , diffErrAlphaAng );
 
   odometrySub_ = nh_.subscribe("/controller_diffdrive/odom", 1,
                                &MotionController::odometryCallback, this);
@@ -88,12 +97,13 @@ void MotionController::step(const ros::TimerEvent &event) {
   }
 
   std::chrono::nanoseconds dt(event.profile.last_duration.toNSec());
-  auto pidOut = trajectoryPid_.accumulate(
+  auto pidOutAng = trajectoryPidAng_.accumulate(
       error, std::chrono::duration_cast<std::chrono::milliseconds>(dt));
-
+  auto pidOutDist = trajectoryPidDist_.accumulate(
+      error, std::chrono::duration_cast<std::chrono::milliseconds>(dt));
   geometry_msgs::Twist control;
-  control.linear.x = pidOut.r;
-  control.angular.z = pidOut.theta;
+  control.linear.x = pidOutDist.r;
+  control.angular.z = pidOutAng.theta;
   controlPub_.publish(control);
   publishWaypoints();
 }
