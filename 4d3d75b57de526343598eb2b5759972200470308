@@ -1,0 +1,7 @@
+[ver:1,total:1560,branch:master]
+scitos_annus_loomets_kitsing/src/motion_controller.cpp:727,1644991200:727,m
+scitos_annus_loomets_kitsing/config/mission.yaml:601,1644991200:601,m
+scitos_annus_loomets_kitsing/data/config/plotjuggler/autonomous.xml:140,1644991200:140,m
+.git/COMMIT_EDITMSG:60,1644991200:60,r
+scitos_annus_loomets_kitsing/include/scitos_annus_loomets_kitsing/motion_controller.hpp:20,1644991200:20,m
+scitos_annus_loomets_kitsing/launch/scitos_autonomous.launch:12,1644991200:12,r
