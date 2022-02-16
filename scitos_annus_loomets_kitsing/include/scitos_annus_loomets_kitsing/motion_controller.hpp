@@ -32,8 +32,8 @@ private:
   float pointMargin_ = 0.1;
   uint32_t waypointIndex_ = 0;
 
-  PID<Polar2<float>> trajectoryPidDist_;
-  PID<Polar2<float>> trajectoryPidAng_;
+  PID<float> trajectoryPidDist_;
+  PID<float> trajectoryPidAng_;
 
   void odometryCallback(nav_msgs::OdometryPtr msg);
   void publishWaypoints() const;

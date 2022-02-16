@@ -42,25 +42,26 @@ MotionController::MotionController(ros::NodeHandle nh) : nh_{nh} {
   float kpDist = nh_.param("/mission/dist_pid_values/kp", 1.0f);
   float kiDist = nh_.param("/mission/dist_pid_values/ki", 0.0f);
   float kdDist = nh_.param("/mission/dist_pid_values/kd", 0.0f);
-  float diffErrAlphaDist = nh_.param("/mission/dist_pid_values/diffErr", 5.0f);
-  float maxErrDist = nh_.param("/mission/dist_pid_values/maxErr", 0.8f);
-  trajectoryPidDist_ = PID<Polar2<float>>(kpDist, kiDist, kdDist, maxErrDist, diffErrAlphaDist);
+  float diffErrAlphaDist = nh_.param("/mission/dist_pid_values/diff_err_alpha", 5.0f);
+  float maxErrDist = nh_.param("/mission/dist_pid_values/max_err", 0.8f);
+  trajectoryPidDist_ =
+      PID<float>(kpDist, kiDist, kdDist, maxErrDist, diffErrAlphaDist);
 
   // PID for angular
-  float kpAng = nh_.param("/mission/pid_values/kp", 1.0f);
-  float kiAng = nh_.param("/mission/pid_values/ki", 0.0f);
-  float kdAng = nh_.param("/mission/pid_values/kd", 0.0f);
-  float diffErrAlphaAng = nh_.param("/mission/pid_values/diffErr", 5.0f);
-  float maxErrAng = nh_.param("/mission/pid_values/maxErr", 0.8f);
-  trajectoryPidAng_ = PID<Polar2<float>>(kpAng , kiAng , kdAng , maxErrAng , diffErrAlphaAng );
+  float kpAng = nh_.param("/mission/ang_pid_values/kp", 1.0f);
+  float kiAng = nh_.param("/mission/ang_pid_values/ki", 0.0f);
+  float kdAng = nh_.param("/mission/ang_pid_values/kd", 0.0f);
+  float diffErrAlphaAng = nh_.param("/mission/ang_pid_values/diff_err_alpha", 5.0f);
+  float maxErrAng = nh_.param("/mission/ang_pid_values/max_err", 0.8f);
+  trajectoryPidAng_ =
+      PID<float>(kpAng, kiAng, kdAng, maxErrAng, diffErrAlphaAng);
 
   odometrySub_ = nh_.subscribe("/controller_diffdrive/odom", 1,
                                &MotionController::odometryCallback, this);
 
   waypointsPub_ = nh_.advertise<visualization_msgs::MarkerArray>(
       "/mission_control/waypoints", 10);
-  errorPub_ = nh_.advertise<scitos_common::Polar2>(
-      "/debug/PID_error", 10);
+  errorPub_ = nh_.advertise<scitos_common::Polar2>("/debug/PID_error", 10);
   controlPub_ =
       nh_.advertise<geometry_msgs::Twist>("/controller_diffdrive/cmd_vel", 3);
 
@@ -97,13 +98,14 @@ void MotionController::step(const ros::TimerEvent &event) {
   }
 
   std::chrono::nanoseconds dt(event.profile.last_duration.toNSec());
-  auto pidOutAng = trajectoryPidAng_.accumulate(
-      error, std::chrono::duration_cast<std::chrono::milliseconds>(dt));
-  auto pidOutDist = trajectoryPidDist_.accumulate(
-      error, std::chrono::duration_cast<std::chrono::milliseconds>(dt));
+  auto pidOutAngular = trajectoryPidAng_.accumulate(
+      error.theta, std::chrono::duration_cast<std::chrono::milliseconds>(dt));
+  auto pidOutLinear = trajectoryPidDist_.accumulate(
+      error.r, std::chrono::duration_cast<std::chrono::milliseconds>(dt));
+
   geometry_msgs::Twist control;
-  control.linear.x = pidOutDist.r;
-  control.angular.z = pidOutAng.theta;
+  control.linear.x = pidOutLinear;
+  control.angular.z = pidOutAngular;
   controlPub_.publish(control);
   publishWaypoints();
 }

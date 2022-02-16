@@ -9,6 +9,7 @@
        <range right="5.000000" left="0.000000" bottom="0.037597" top="4.115529"/>
        <limitY/>
        <curve name="/debug/PID_error/r" color="#d62728"/>
+       <curve name="/controller_diffdrive/cmd_vel/linear/x" color="#d69928"/>
       </plot>
      </DockArea>
      <DockArea name="...">
@@ -16,6 +17,7 @@
        <range right="5.000000" left="0.000000" bottom="-0.446234" top="2.158419"/>
        <limitY/>
        <curve name="/debug/PID_error/theta" color="#1f77b4"/>
+       <curve name="/controller_diffdrive/cmd_vel/angular/z" color="#108010"/>
       </plot>
      </DockArea>
     </DockSplitter>
