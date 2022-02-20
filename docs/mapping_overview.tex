@@ -90,6 +90,11 @@ The locations for the robot and objects that maximize the system are then used a
 For this algorithm to make sense we need to have multiple estimates (essentially constraints) for every point of interest so using raw datapoints is not acceptable.
 Both occupancy grid and gemoetrical representation of the environment can work well, however it may be possible to decrease the CPU usage with using geometrical lines (if there are fewer than grid tiles).
 
+\section{EKF SLAM}
+It is also possible to use Extended Kalman Filter for SLAM as current pose and also points of interest locations can be built from previous estimates and state transitions.
+The EKF SLAM algorithm scales better than Graph SLAM in the states dimension \cite{EKFSLAM}. 
+However the model is a lot more sensitive to incorrect associations (points of interest get mixed).
+The algorithm is also seems to be harder to implement than graph SLAM (?). 
 
 % 1st algorithm %
 \section{Cartographer Algorithm}
@@ -151,9 +156,6 @@ GMapping was developed in 2007, and it is still the one of the most common syste
 
 Improvement of GMapping and its parameters can be found here: \cite{SLAMQuality20}
 
-% 3rd algorithm %
-\section{3rd algorithm?}
-
 % Conclusion %
 \section{Conclusion}
 
@@ -178,8 +180,9 @@ A Validation for the TETRA project Ad Usum Navigantium", ACRO, http://www.acro.b
 Z. Meng, C. Wang, Z. Han and Z. Ma, "Research on SLAM navigation of wheeled mobile robot based on ROS," 2020 5th International Conference on Automation, Control and Robotics Engineering (CACRE), 2020, pp. 110-116, doi: 10.1109/CACRE50138.2020.9230186.
 
 \bibitem{AlgorithmsForIndoorMapping}
-
   Ankit A. Ravankar, Yohei Hoshino, Abhijeet Ravankar, Lv Jixin, Takanori Emaru, Yukinori Kobayashi, (2015) "Algorithms and a Framework for Indoor Robot Mapping in a Noisy Environment Using Clustering in Spatial and Hough Domains", https://journals.sagepub.com/doi/full/10.5772/59992
+\bibitem{EKFSLAM}
+  McGill (2017) "EKF and SLAM" https://www.cim.mcgill.ca/~dmeger/comp765/slides/COMP765-Fall2017-Lecture5-Mapping.pdf
 \end{thebibliography}
 
 \end{document}
