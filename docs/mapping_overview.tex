@@ -5,12 +5,13 @@
 % Configuration %
 %%%%%%%%%%%%%%%%%
 
-\documentclass[12pt, a4paper, twocolumn]{article}
+\documentclass[12pt, a4paper, onecolumn]{article}
 \usepackage{xurl}
 \usepackage[super,comma,sort&compress]{natbib}
 \usepackage{graphicx}
 \usepackage{abstract}
 \usepackage{enumitem}
+\usepackage{lipsum,booktabs}
 \renewcommand{\abstractnamefont}{\normalfont\bfseries}
 \renewcommand{\abstracttextfont}{\normalfont\small\itshape}
 \usepackage{lipsum}
@@ -27,18 +28,45 @@
 \addtolength{\textheight}{120pt}
 \linespread{1.25}
 \begin{document}
-
 %%%%%%%%%%%
 % Article %
 %%%%%%%%%%%
 \textbf{Team: SCITOS-02}
 
 \section{Introduction}
-A map is a commonly used model of the environment and very essential in mobile robotics. Maps allow robots to localize themselves and carry out their tasks. A variety of maps can be employed and we can distinguish them by the metrics they use ( continuous, discrete, topological).\par
+A map is a commonly used model of the environment and very essential in mobile robotics. Maps allow robots to localize themselves and carry out their tasks. A variety of maps can be employed and we can distinguish them by the metrics they use (continuous, discrete, topological).\par
 The scope of this paper is to analyze different mapping for mobile robots with special focus on 2D motion. The task was to write about different maps and mapping algorithms including advantages and disadvantages for each. With that overview the team shall choose which map representation makes most sense for to implement during the mapping assignments. \par
 Note: \emph{ the focus should be on mobile robots moving in a 2D space using information from a range-finder.}
 
 \section{1st algorithm}
-\par 
+\begin{table}[h!]
+\centering
+\begin{tabular}{ |p{7cm}||p{7cm}|  }
+ \hline
+ Advantages&Disadvantages\\
+ \hline
+\begin{itemize}
+  \item Sample Text
+  \item Sample Text
+  \end{itemize} 
+  & 
+  \begin{itemize}
+  \item Sample Text
+  \item Sample Text
+  \end{itemize} \\
+
+ \hline
+\end{tabular}
+\caption{1st algorithm pro's and cons }
+\label{table:1}
+\end{table}
+\section{2nd algorithm}
+
+\section{3rd algorithm?}
+
+\section{Conclusion}
+
+\section{Summary}
+
 \end{document}
 
