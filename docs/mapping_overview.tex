@@ -51,16 +51,21 @@ The scope of this paper is to analyze different mapping for mobile robots with s
 Note: \emph{the focus should be on mobile robots moving in a 2D space using information from a range-finder.}
 
 % 1st algorithm %
-\section{GMapping Algorithm}
-\lipsum[1]
+\section{Cartographer Algorithm}
+Cartographer is Google's real-time indoor mapping project.
+The sensor is mounted on a backpack and can generate a 2D
+grid map with a resolution of 5 cm. Scan match is used to insert
+each frame of scan data obtained by the laser radar into a
+submap at the best estimated position, and scan matching is
+only related to the current submap.
 \begin{table}[h!]
 \centering
-\begin{tabular}{ |p{7cm}||p{7cm}|  }
+\begin{tabular}{ |p{6cm}||p{6cm}|  }
  \hline
  Advantages&Disadvantages\\
  \hline
 \begin{itemize}
-  \item Sample Text
+  \item Robust
   \item Sample Text
   \end{itemize} 
   & 
@@ -76,7 +81,7 @@ Note: \emph{the focus should be on mobile robots moving in a 2D space using info
 \end{table}
 
 % 2nd algorithm %
-\section{Cartographer Algorithm}
+\section{GMapping Algorithm}
 
 % 3rd algorithm %
 \section{3rd algorithm?}
@@ -86,6 +91,15 @@ Note: \emph{the focus should be on mobile robots moving in a 2D space using info
 
 % Summary %
 \section{Summary}
+\newpage
+\begin{thebibliography}{9}
+\bibitem{texbook}
+Donald E. Knuth (1986) \emph{The \TeX{} Book}, Addison-Wesley Professional.
+
+\bibitem{lamport94}
+Leslie Lamport (1994) \emph{\LaTeX: a document preparation system}, Addison
+Wesley, Massachusetts, 2nd ed.
+\end{thebibliography}
 
 \end{document}
 
