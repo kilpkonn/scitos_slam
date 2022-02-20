@@ -32,7 +32,6 @@
 \addtolength{\textheight}{120pt}
 \linespread{1.25}
 
-
 \begin{document}
 \maketitle
 %%%%%%%%%%%
@@ -54,7 +53,7 @@ Note: \emph{the focus should be on mobile robots moving in a 2D space using info
 % 1st algorithm %
 \section{Cartographer Algorithm}
 When the amount of data to process becomes too large, particle-based algorithms are not applicable due to their higher computing requirements on the processor. In this case, graph optimisation algorithms are more suitable.\cite{2DSLAM20}\par
-Cartographer is Google's real-time indoor mapping project. The Google open source code consists of two parts: Cartographer and Cartographer{\_}ROS. The function of Cartographer is to process the data from Lidar, IMU, and odometers to build a map. Cartographer{\_}ROS then acquires the sensor data through the ROS communication mechanism and converts them into the Cartographer format for processing by Cartographer, while the Cartographer processing result is released for display or storage. \cite{2DSLAM20} \par
+Cartographer is Google's real-time indoor mapping project. The Google open source code consists of two parts: Cartographer and Cartographer{\_}ROS. The function of Cartographer is to process the data from Lidar, IMU, and odometers to build a map. Cartographer{\_}ROS then acquires the sensor data through the ROS communication mechanism and converts them into the Cartographer format for processing by Cartographer, while the Cartographer processing result is released for display or storage. \cite{2DSLAM20} \par Cartographer uses global map optimization cycle and local probabilistic map updates, it makes this system more robust to environmental changes. 
 Impressive real-time results for solving SLAM in 2D have been described in \cite{CARTO16} by the authors of the software.
 \begin{table}[h!]
 \centering
@@ -63,15 +62,15 @@ Impressive real-time results for solving SLAM in 2D have been described in \cite
  Advantages&Disadvantages\\
  \hline
 \begin{itemize}
-  \item Robust
+  \item Robust (low dispersion) \cite{SLAMQuality}
   \item Good documentation
   \item Feasible for large amount of data
   \item Accurate \cite{SLAMQuality}
   \end{itemize} 
   & 
   \begin{itemize}
-  \item May fail on some sequences \cite{SLAMQuality}
-  \item Has blurry effect \cite{SLAMQuality}
+  \item May fail on some sequences (create inconsistent map)\cite{SLAMQuality}
+  \item Possibility of blurry effect \cite{SLAMQuality}
   \item Complex
   \end{itemize} \\
 
@@ -84,6 +83,7 @@ Impressive real-time results for solving SLAM in 2D have been described in \cite
 Possible optimization for Cartographer and its parameters can be found here: \cite{CARTO19}
 % 2nd algorithm %
 \section{GMapping Algorithm}
+GMapping was developed in 2007, and it is still the one of the most common systems for robot application.The system uses Particle ﬁlter and creates the grid-based map. Gmapping is one of the most robust algorithms. This algorithm is good in handling noisy data and short laser measurements in difficult environments \cite{SLAMbench17}
 \begin{table}[h!]
 \centering
 \begin{tabular}{ |p{6cm}||p{6cm}|  }
@@ -91,20 +91,24 @@ Possible optimization for Cartographer and its parameters can be found here: \ci
  Advantages&Disadvantages\\
  \hline
 \begin{itemize}
-  \item Robust
-  \item Sample Text
+  \item Robust (low dispersion) \cite{SLAMQuality}
+  \item No blurry effect \cite{SLAMQuality}
+  \item Accurate and fast for small maps \cite{SLAMQuality20}
   \end{itemize} 
   & 
   \begin{itemize}
-  \item Sample Text
-  \item Sample Text
+  \item Depends heavily on odometry data
+  \item No loop detection \cite{SLAMQuality20}
+  \item Not suitable for building a large scene map \cite{SLAMQuality20}
   \end{itemize} \\
 
  \hline
 \end{tabular}
-\caption{2nd algorithm pro's and cons}
+\caption{GMapping algorithm pro's and cons}
 \label{table:2}
 \end{table}
+
+Improvement of GMapping and its parameters can be found here: \cite{SLAMQuality20}
 
 % 3rd algorithm %
 \section{3rd algorithm?}
@@ -120,12 +124,17 @@ Possible optimization for Cartographer and its parameters can be found here: \ci
 Xuexi Zhang, Jiajun Lai, Dongliang Xu, Huaijun Li, Minyue Fu, (2020) "2D Lidar-Based SLAM and Path Planning for Indoor Rescue Using Mobile Robots", Journal of Advanced Transportation, vol. 2020, Article ID 8867937, 14 pages, 2020. https://doi.org/10.1155/2020/8867937
 
 \bibitem{SLAMQuality}
-Filatov, Anton and Filatov, Artyom and Krinkin, Kirill and Chen, Baian and Molodan, Diana. (2017). 2D SLAM Quality Evaluation Methods. 
+Filatov, Anton and Filatov, Artyom and Krinkin, Kirill and Chen, Baian and Molodan, Diana. (2017). "2D SLAM Quality Evaluation Methods". 
 
 \bibitem{CARTO19}
-Zhi, Cui. (2019). Research on Cartographer Algorithm based on Low Cost Lidar. International Journal of Engineering Research and. V8. 10.17577/IJERTV8IS100060. 
+Zhi, Cui, (2019), "Research on Cartographer Algorithm based on Low Cost Lidar". International Journal of Engineering Research and. V8. 10.17577/IJERTV8IS100060. 
 \bibitem{CARTO16}
 W. Hess, D. Kohler, H. Rapp and D. Andor, "Real-time loop closure in 2D LIDAR SLAM," 2016 IEEE International Conference on Robotics and Automation (ICRA), 2016, pp. 1271-1278, doi: 10.1109/ICRA.2016.7487258.
+\bibitem{SLAMbench17}
+Peter Aerts, Eric Demeester (2017) "Benchmarking of 2D-Slam Algorithms
+A Validation for the TETRA project Ad Usum Navigantium", ACRO, http://www.acro.be/downloadvrij/Benchmark{\_}2D{\_}SLAM.pdf
+\bibitem{SLAMQuality20}
+Z. Meng, C. Wang, Z. Han and Z. Ma, "Research on SLAM navigation of wheeled mobile robot based on ROS," 2020 5th International Conference on Automation, Control and Robotics Engineering (CACRE), 2020, pp. 110-116, doi: 10.1109/CACRE50138.2020.9230186.
 \end{thebibliography}
 
 \end{document}
