@@ -73,7 +73,7 @@ The comparison of the algorithms described above can be found in the Table~\ref{
       \hline
       Robustness & Good & Good & Environment specific \\
       \hline
-      Continuosu & Yes & No & Yes \\
+      Continuous & Yes & No & Yes \\
       \hline
     \end{tabular}
   \end{center}
@@ -96,6 +96,21 @@ It is also possible to use Extended Kalman Filter for SLAM as current pose and a
 The EKF SLAM algorithm scales better than Graph SLAM in the states dimension \cite{EKFSLAM}. 
 However the model is a lot more sensitive to incorrect associations (points of interest get mixed).
 The algorithm is also seems to be harder to implement than graph SLAM (?). 
+
+\section{Enhanced adaptive fuzzy clustering (EAFC) with noise clustering SLAM \cite{AlgorithmsForIndoorMapping}}
+This approach focuses on reducing noise before creating a map because noise can lead to an incorrect map.
+Many of the methods used are inspired by image processing such as mathemathical erosion and dilation.
+Since this approach uses fuzzy c-means clustering which is an extension of k-means clustering then this would also be harder to implement.
+This approach also relies on tuning the filtering and mapping parameters to the noise that is present which makes it less robust.
+
+\section{Particle filter SLAM \cite{ParticleFilterSLAM}}
+The particle filter SLAM-s main benefit is the low bar of entry for implementation.
+Another great benefit is it's robustness given enough compute.
+Difficulties may rise from defining accurate movement model of the platform.
+The increase in noise and estimation errors increases the requirements for more particles where each particle requires significant memory and computational time.
+The precision of this method is easy to evaluate on the go by the grouping of particles, but in difficult situations precision will start to diminish and localisation can start to jump.
+A benefit of this method is also it's easy integration with different types of maps.
+
 
 % % 1st algorithm %
 % \section{Cartographer Algorithm}
@@ -182,6 +197,8 @@ Z. Meng, C. Wang, Z. Han and Z. Ma, "Research on SLAM navigation of wheeled mobi
   Ankit A. Ravankar, Yohei Hoshino, Abhijeet Ravankar, Lv Jixin, Takanori Emaru, Yukinori Kobayashi, (2015) "Algorithms and a Framework for Indoor Robot Mapping in a Noisy Environment Using Clustering in Spatial and Hough Domains", https://journals.sagepub.com/doi/full/10.5772/59992
 \bibitem{EKFSLAM}
   McGill (2017) "EKF and SLAM" https://www.cim.mcgill.ca/~dmeger/comp765/slides/COMP765-Fall2017-Lecture5-Mapping.pdf
+\bibitem{ParticleFilterSLAM}
+  Norhidayah Mohamad Yatima, Norlida Buniyamin, (2015) "Particle Filter in Sinultaneous Lolaization and Mapping (SLAM) Using Differential Drive Mobile Robot", https://www.researchgate.net/publication/286763834{\_}Particle{\_}filter{\_}in{\_}simultaneous{\_}localization{\_}and{\_}mapping{\_}Slam{\_}using{\_}differential{\_}drive{\_}mobile{\_}robot
 \end{thebibliography}
 
 \end{document}
