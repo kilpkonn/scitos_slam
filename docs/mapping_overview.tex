@@ -54,6 +54,7 @@ With big tiles we lose precision whilst with small tiles we might not have enoug
 To keep the precision where we have enough datapoints but not suffer from underfitting instead of tile grid trees can be used.
 The motivation is that we can start with very robust map and once any cell gets enough datapoints we split it into smaller points.
 The thirs option is to try to detect geometrical objects (for example lines) and store these.
+These lines can be obtained by either linear regression or iterative point fitting algorithms.
 This results in a much smaller memory consumption and can give also more insight into the actual terrain in urban areas, wheras can yield poor results in more natural environment.
 \cite{AlgorithmsForIndoorMapping}
 The comparison of the algorithms described above can be found in the Table~\ref{tab:memory_models}.
@@ -96,71 +97,69 @@ The EKF SLAM algorithm scales better than Graph SLAM in the states dimension \ci
 However the model is a lot more sensitive to incorrect associations (points of interest get mixed).
 The algorithm is also seems to be harder to implement than graph SLAM (?). 
 
-% 1st algorithm %
-\section{Cartographer Algorithm}
-When the amount of data to process becomes too large, particle-based algorithms are not applicable due to their higher computing requirements on the processor. In this case, graph optimisation algorithms are more suitable.\cite{2DSLAM20}\par
-Cartographer is Google's real-time indoor mapping project. The Google open source code consists of two parts: Cartographer and Cartographer{\_}ROS. The function of Cartographer is to process the data from Lidar, IMU, and odometers to build a map. Cartographer{\_}ROS then acquires the sensor data through the ROS communication mechanism and converts them into the Cartographer format for processing by Cartographer, while the Cartographer processing result is released for display or storage. \cite{2DSLAM20} \par Cartographer uses global map optimization cycle and local probabilistic map updates, it makes this system more robust to environmental changes. 
-Impressive real-time results for solving SLAM in 2D have been described in \cite{CARTO16} by the authors of the software.
-\begin{table}[h!]
-\centering
-\begin{tabular}{ |p{6,5cm}||p{6,5cm}|  }
- \hline
- Advantages&Disadvantages\\
- \hline
-\begin{itemize}
-  \item Robust (low dispersion) \cite{SLAMQuality}
-  \item Good documentation
-  \item Feasible for large amount of data
-  \item Accurate \cite{SLAMQuality}
-  \end{itemize} 
-  & 
-  \begin{itemize}
-  \item May fail on some sequences (create inconsistent map)\cite{SLAMQuality}
-  \item Possibility of blurry effect \cite{SLAMQuality}
-  \item Complex
-  \end{itemize} \\
-
- \hline
-\end{tabular}
-\caption{Cartographer algorithm pro's and cons }
-\label{table:1}
-\end{table}
-
-Possible optimization for Cartographer and its parameters can be found here: \cite{CARTO19}
-% 2nd algorithm %
-\section{GMapping Algorithm}
-GMapping was developed in 2007, and it is still the one of the most common systems for robot application.The system uses Particle ﬁlter and creates the grid-based map. Gmapping is one of the most robust algorithms. This algorithm is good in handling noisy data and short laser measurements in difficult environments \cite{SLAMbench17}
-\begin{table}[h!]
-\centering
-\begin{tabular}{ |p{6cm}||p{6cm}|  }
- \hline
- Advantages&Disadvantages\\
- \hline
-\begin{itemize}
-  \item Robust (low dispersion) \cite{SLAMQuality}
-  \item No blurry effect \cite{SLAMQuality}
-  \item Accurate and fast for small maps \cite{SLAMQuality20}
-  \end{itemize} 
-  & 
-  \begin{itemize}
-  \item Depends heavily on odometry data
-  \item No loop detection \cite{SLAMQuality20}
-  \item Not suitable for building a large scene map \cite{SLAMQuality20}
-  \end{itemize} \\
-
- \hline
-\end{tabular}
-\caption{GMapping algorithm pro's and cons}
-\label{table:2}
-\end{table}
-
-Improvement of GMapping and its parameters can be found here: \cite{SLAMQuality20}
+% % 1st algorithm %
+% \section{Cartographer Algorithm}
+% When the amount of data to process becomes too large, particle-based algorithms are not applicable due to their higher computing requirements on the processor. In this case, graph optimisation algorithms are more suitable.\cite{2DSLAM20}\par
+% Cartographer is Google's real-time indoor mapping project. The Google open source code consists of two parts: Cartographer and Cartographer{\_}ROS. The function of Cartographer is to process the data from Lidar, IMU, and odometers to build a map. Cartographer{\_}ROS then acquires the sensor data through the ROS communication mechanism and converts them into the Cartographer format for processing by Cartographer, while the Cartographer processing result is released for display or storage. \cite{2DSLAM20} \par Cartographer uses global map optimization cycle and local probabilistic map updates, it makes this system more robust to environmental changes. 
+% Impressive real-time results for solving SLAM in 2D have been described in \cite{CARTO16} by the authors of the software.
+% \begin{table}[h!]
+% \centering
+% \begin{tabular}{ |p{6,5cm}||p{6,5cm}|  }
+%  \hline
+%  Advantages&Disadvantages\\
+%  \hline
+% \begin{itemize}
+%   \item Robust (low dispersion) \cite{SLAMQuality}
+%   \item Good documentation
+%   \item Feasible for large amount of data
+%   \item Accurate \cite{SLAMQuality}
+%   \end{itemize} 
+%   & 
+%   \begin{itemize}
+%   \item May fail on some sequences (create inconsistent map)\cite{SLAMQuality}
+%   \item Possibility of blurry effect \cite{SLAMQuality}
+%   \item Complex
+%   \end{itemize} \\
+%
+%  \hline
+% \end{tabular}
+% \caption{Cartographer algorithm pro's and cons }
+% \label{table:1}
+% \end{table}
+%
+% Possible optimization for Cartographer and its parameters can be found here: \cite{CARTO19}
+% % 2nd algorithm %
+% \section{GMapping Algorithm}
+% GMapping was developed in 2007, and it is still the one of the most common systems for robot application.The system uses Particle ﬁlter and creates the grid-based map. Gmapping is one of the most robust algorithms. This algorithm is good in handling noisy data and short laser measurements in difficult environments \cite{SLAMbench17}
+% \begin{table}[h!]
+% \centering
+% \begin{tabular}{ |p{6cm}||p{6cm}|  }
+%  \hline
+%  Advantages&Disadvantages\\
+%  \hline
+% \begin{itemize}
+%   \item Robust (low dispersion) \cite{SLAMQuality}
+%   \item No blurry effect \cite{SLAMQuality}
+%   \item Accurate and fast for small maps \cite{SLAMQuality20}
+%   \end{itemize} 
+%   & 
+%   \begin{itemize}
+%   \item Depends heavily on odometry data
+%   \item No loop detection \cite{SLAMQuality20}
+%   \item Not suitable for building a large scene map \cite{SLAMQuality20}
+%   \end{itemize} \\
+%
+%  \hline
+% \end{tabular}
+% \caption{GMapping algorithm pro's and cons}
+% \label{table:2}
+% \end{table}
+%
+% Improvement of GMapping and its parameters can be found here: \cite{SLAMQuality20}
 
 % Conclusion %
 \section{Conclusion}
 
-% Summary %
-\section{Summary}
 \newpage
 \begin{thebibliography}{9}
 \bibitem{2DSLAM20}
