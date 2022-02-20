@@ -1,5 +1,8 @@
 \author{Tavo Annus, Timo Loomets, Mattias Kitsing}
-
+\title{%
+   Overview of mapping algorithms \\
+  \large Team SCITOS-02}
+\date{\today}
 
 %%%%%%%%%%%%%%%%%
 % Configuration %
@@ -27,18 +30,29 @@
 \addtolength{\topmargin}{-60pt}
 \addtolength{\textheight}{120pt}
 \linespread{1.25}
+\pagenumbering{arabic}
+
 \begin{document}
+\maketitle
 %%%%%%%%%%%
 % Article %
 %%%%%%%%%%%
-\textbf{Team: SCITOS-02}
 
+% Intro %
 \section{Introduction}
+World models are representations of reality which help robots to localize within and interact with their environment. For successful utilization of the models they have to be:
+\begin{itemize}
+  \item Compact to be used efficiently
+  \item Adapted to the task and the environment
+  \item Usable in case of sensor and position uncertainty
+  \end{itemize}
 A map is a commonly used model of the environment and very essential in mobile robotics. Maps allow robots to localize themselves and carry out their tasks. A variety of maps can be employed and we can distinguish them by the metrics they use (continuous, discrete, topological).\par
 The scope of this paper is to analyze different mapping for mobile robots with special focus on 2D motion. The task was to write about different maps and mapping algorithms including advantages and disadvantages for each. With that overview the team shall choose which map representation makes most sense for to implement during the mapping assignments. \par
-Note: \emph{ the focus should be on mobile robots moving in a 2D space using information from a range-finder.}
+Note: \emph{the focus should be on mobile robots moving in a 2D space using information from a range-finder.}
 
-\section{1st algorithm}
+% 1st algorithm %
+\section{GMapping Algorithm}
+\lipsum[1]
 \begin{table}[h!]
 \centering
 \begin{tabular}{ |p{7cm}||p{7cm}|  }
@@ -60,12 +74,17 @@ Note: \emph{ the focus should be on mobile robots moving in a 2D space using inf
 \caption{1st algorithm pro's and cons }
 \label{table:1}
 \end{table}
-\section{2nd algorithm}
 
+% 2nd algorithm %
+\section{Cartographer Algorithm}
+
+% 3rd algorithm %
 \section{3rd algorithm?}
 
+% Conclusion %
 \section{Conclusion}
 
+% Summary %
 \section{Summary}
 
 \end{document}
