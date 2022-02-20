@@ -4,7 +4,8 @@
 
 namespace Util
 {
-  inline double normalize_angle(double angle)
+  template<typename T>
+  inline T normalize_angle(T angle)
   {
     while(angle > 2 * M_PI){
         angle -= M_PI;

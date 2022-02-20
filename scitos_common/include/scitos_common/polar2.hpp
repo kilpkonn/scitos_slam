@@ -3,10 +3,10 @@
 #include <cmath>
 #include <vector>
 
-#include <scitos_common/vec2.hpp>
-#include <scitos_common/util.hpp>
+#include "scitos_common/vec2.hpp"
+#include "scitos_common/util.hpp"
 
-#include <scitos_common/Polar2.h>
+#include "scitos_common/Polar2.h"
 
 template <typename T> struct Polar2 {
   T r, theta;
@@ -38,7 +38,7 @@ template <typename T> struct Polar2 {
   auto operator>(float n) const { return length() > n; }
   auto operator>=(float n) const { return length() >= n; }
 
-  Polar2<T> opposite() const { return {r, theta + M_PI}; }
+  Polar2<T> opposite() const { return {r, theta + M_PIf}; }
   scitos_common::Polar2 toMsg() {
     scitos_common::Polar2 msg;
     msg.r = r;

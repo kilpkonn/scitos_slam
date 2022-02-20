@@ -28,6 +28,8 @@ template <typename T> struct Vec2 {
   auto operator>=(float n) const { return length() >= n; }
 
   operator float() const { return length(); }
+  template<typename U>
+  operator Vec2<U>() const { return { static_cast<U>(x), static_cast<U>(y) }; }
 
   float dot() const { return x * x + y * y; }
   float length() const { return std::sqrt(dot()); }
