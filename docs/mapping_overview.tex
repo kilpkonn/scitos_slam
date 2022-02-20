@@ -50,6 +50,42 @@ A map is a commonly used model of the environment and very essential in mobile r
 The scope of this paper is to analyze different mapping for mobile robots with special focus on 2D motion. The task was to write about different maps and mapping algorithms including advantages and disadvantages for each. With that overview the team shall choose which map representation makes most sense for to implement during the mapping assignments. \par
 Note: \emph{the focus should be on mobile robots moving in a 2D space using information from a range-finder.}
 
+\section{Data models for maps}
+The most basic way to store the map is memory is to store all the measurement datapoints (after removing noise etc.).
+However this causes heavy usage of memory that makes it not efficient.
+The easieiest way to decrease the number of datapoints is to use an occupancy grid for map where each tile is for example a square or hexagon for 2D use case.
+One problem with this kind of aproach is that the grid size affects the quality of the map a lot.
+With big tiles we lose precision whilst with small tiles we might not have enough datapoints for each time which can cause errors in map.
+To keep the precision where we have enough datapoints but not suffer from underfitting instead of tile grid trees can be used.
+The motivation is that we can start with very robust map and once any cell gets enough datapoints we split it into smaller points.
+The thirs option is to try to detect geometrical objects (for example lines) and store these.
+This results in a much smaller memory consumption and can give also more insight into the actual terrain in urban areas, wheras can yield poor results in more natural environment.
+\cite{AlgorithmsForIndoorMapping}
+The comparison of the algorithms described above can be found in the Table~\ref{tab:memory_models}.
+
+\begin{table}[h!]
+  \begin{center}
+    \begin{tabular}[c]{|c | c c c|}
+      \hline
+       & Raw points & Occupancy grid & Geometric features \\
+      \hline
+      Implementation difficulty & Easy & Easy - Medium & Hard \\
+      \hline
+      Memory consumption & Huge & Medium & Small \\
+      \hline
+      CPU consumption* & Small & Medium & Big \\
+      \hline
+      Robustness & Good & Good & Environment specific \\
+      
+      \hline
+    \end{tabular}
+  \end{center}
+  \caption{Comparison of different memory models}
+  \label{tab:memory_models}
+\end{table}
+\textit{*This accounts for CPU consumption when collecting data, not when later using it.}
+
+
 % 1st algorithm %
 \section{Cartographer Algorithm}
 When the amount of data to process becomes too large, particle-based algorithms are not applicable due to their higher computing requirements on the processor. In this case, graph optimisation algorithms are more suitable.\cite{2DSLAM20}\par
@@ -135,6 +171,10 @@ Peter Aerts, Eric Demeester (2017) "Benchmarking of 2D-Slam Algorithms
 A Validation for the TETRA project Ad Usum Navigantium", ACRO, http://www.acro.be/downloadvrij/Benchmark{\_}2D{\_}SLAM.pdf
 \bibitem{SLAMQuality20}
 Z. Meng, C. Wang, Z. Han and Z. Ma, "Research on SLAM navigation of wheeled mobile robot based on ROS," 2020 5th International Conference on Automation, Control and Robotics Engineering (CACRE), 2020, pp. 110-116, doi: 10.1109/CACRE50138.2020.9230186.
+
+\bibitem{AlgorithmsForIndoorMapping}
+
+  Ankit A. Ravankar, Yohei Hoshino, Abhijeet Ravankar, Lv Jixin, Takanori Emaru, Yukinori Kobayashi, (2015) "Algorithms and a Framework for Indoor Robot Mapping in a Noisy Environment Using Clustering in Spatial and Hough Domains", https://journals.sagepub.com/doi/full/10.5772/59992
 \end{thebibliography}
 
 \end{document}
