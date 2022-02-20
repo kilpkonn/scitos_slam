@@ -24,13 +24,14 @@
 \hypersetup{colorlinks=true, urlcolor=blue, linkcolor=black, citecolor=blue}
 \setlength{\belowcaptionskip}{-10pt}
 \pagenumbering{gobble}
+%\pagenumbering{arabic}
 \renewcommand\thesection{}
 \setlength{\parindent}{0em}
-\setlength{\parskip}{0,5em}
+\setlength{\parskip}{0,8em}
 \addtolength{\topmargin}{-60pt}
 \addtolength{\textheight}{120pt}
 \linespread{1.25}
-\pagenumbering{arabic}
+
 
 \begin{document}
 \maketitle
@@ -52,12 +53,37 @@ Note: \emph{the focus should be on mobile robots moving in a 2D space using info
 
 % 1st algorithm %
 \section{Cartographer Algorithm}
-Cartographer is Google's real-time indoor mapping project.
-The sensor is mounted on a backpack and can generate a 2D
-grid map with a resolution of 5 cm. Scan match is used to insert
-each frame of scan data obtained by the laser radar into a
-submap at the best estimated position, and scan matching is
-only related to the current submap.
+When the amount of data to process becomes too large, particle-based algorithms are not applicable due to their higher computing requirements on the processor. In this case, graph optimisation algorithms are more suitable.\cite{2DSLAM20}\par
+Cartographer is Google's real-time indoor mapping project. The Google open source code consists of two parts: Cartographer and Cartographer{\_}ROS. The function of Cartographer is to process the data from Lidar, IMU, and odometers to build a map. Cartographer{\_}ROS then acquires the sensor data through the ROS communication mechanism and converts them into the Cartographer format for processing by Cartographer, while the Cartographer processing result is released for display or storage. \cite{2DSLAM20} \par
+Impressive real-time results for solving SLAM in 2D have been described in \cite{CARTO16} by the authors of the software.
+\begin{table}[h!]
+\centering
+\begin{tabular}{ |p{6,5cm}||p{6,5cm}|  }
+ \hline
+ Advantages&Disadvantages\\
+ \hline
+\begin{itemize}
+  \item Robust
+  \item Good documentation
+  \item Feasible for large amount of data
+  \item Accurate \cite{SLAMQuality}
+  \end{itemize} 
+  & 
+  \begin{itemize}
+  \item May fail on some sequences \cite{SLAMQuality}
+  \item Has blurry effect \cite{SLAMQuality}
+  \item Complex
+  \end{itemize} \\
+
+ \hline
+\end{tabular}
+\caption{Cartographer algorithm pro's and cons }
+\label{table:1}
+\end{table}
+
+Possible optimization for Cartographer and its parameters can be found here: \cite{CARTO19}
+% 2nd algorithm %
+\section{GMapping Algorithm}
 \begin{table}[h!]
 \centering
 \begin{tabular}{ |p{6cm}||p{6cm}|  }
@@ -76,12 +102,9 @@ only related to the current submap.
 
  \hline
 \end{tabular}
-\caption{1st algorithm pro's and cons }
-\label{table:1}
+\caption{2nd algorithm pro's and cons}
+\label{table:2}
 \end{table}
-
-% 2nd algorithm %
-\section{GMapping Algorithm}
 
 % 3rd algorithm %
 \section{3rd algorithm?}
@@ -93,12 +116,16 @@ only related to the current submap.
 \section{Summary}
 \newpage
 \begin{thebibliography}{9}
-\bibitem{texbook}
-Donald E. Knuth (1986) \emph{The \TeX{} Book}, Addison-Wesley Professional.
+\bibitem{2DSLAM20}
+Xuexi Zhang, Jiajun Lai, Dongliang Xu, Huaijun Li, Minyue Fu, (2020) "2D Lidar-Based SLAM and Path Planning for Indoor Rescue Using Mobile Robots", Journal of Advanced Transportation, vol. 2020, Article ID 8867937, 14 pages, 2020. https://doi.org/10.1155/2020/8867937
 
-\bibitem{lamport94}
-Leslie Lamport (1994) \emph{\LaTeX: a document preparation system}, Addison
-Wesley, Massachusetts, 2nd ed.
+\bibitem{SLAMQuality}
+Filatov, Anton and Filatov, Artyom and Krinkin, Kirill and Chen, Baian and Molodan, Diana. (2017). 2D SLAM Quality Evaluation Methods. 
+
+\bibitem{CARTO19}
+Zhi, Cui. (2019). Research on Cartographer Algorithm based on Low Cost Lidar. International Journal of Engineering Research and. V8. 10.17577/IJERTV8IS100060. 
+\bibitem{CARTO16}
+W. Hess, D. Kohler, H. Rapp and D. Andor, "Real-time loop closure in 2D LIDAR SLAM," 2016 IEEE International Conference on Robotics and Automation (ICRA), 2016, pp. 1271-1278, doi: 10.1109/ICRA.2016.7487258.
 \end{thebibliography}
 
 \end{document}
