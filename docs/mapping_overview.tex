@@ -53,7 +53,7 @@ One problem with this kind of approach is that the grid size affects the quality
 With big tiles we lose precision whilst with small tiles we might not have enough datapoints for each time which can cause errors in map.
 To keep the precision where we have enough datapoints but not suffer from underfitting instead of tile grid trees can be used.
 The motivation is that we can start with very robust map and once any cell gets enough datapoints we split it into smaller points.
-The thirs option is to try to detect geometrical objects (for example lines) and store these.
+The third option is to try to detect geometrical objects (for example lines) and store these.
 These lines can be obtained by either linear regression or iterative point fitting algorithms.
 This results in a much smaller memory consumption and can give also more insight into the actual terrain in urban areas, wheras can yield poor results in more natural environment.
 \cite{AlgorithmsForIndoorMapping}
@@ -173,7 +173,53 @@ A benefit of this method is also it's easy integration with different types of m
 % Improvement of GMapping and its parameters can be found here: \cite{SLAMQuality20}
 
 % Conclusion %
+\section{SLAM Comparison}
+
+\begin{table}[h!]
+  \begin{center}
+    \begin{tabular}[c]{|c | c c c c |}
+      \hline
+                       & Graph          & EKF           & EAFC         & Paritcle filter \\
+      \hline
+      Impl. difficulty & Medium         & Medium - High & High         & Low \\
+      \hline
+      Memory usage     & Medium         & Low           & Medium       & High \\
+      \hline
+      CPU time         & Medium         & Small         & Medium       & Big \\
+      \hline
+      Robustness       & Medium         & Low - Medium  & Low - Medium & Medium \\
+      \hline
+    \end{tabular}
+  \end{center}
+  \caption{Comparison of different SLAM algorithms}
+  \label{tab:slam_algorithms}
+\end{table}
+
 \section{Conclusion}
+
+The selection of algorithm should be made in combination with the map memory type.
+This would allow for one to compansate with the weaknesses of the other and give overall the best result.
+Using algorithm and memory type where both have high memory or CPU usage could lead to performance issues that would be problematic for the use on live platform.
+At the same time the combination of implementation difficulties should not be too great or it would not be feasible to implement both well in the given time.
+Therefore the proposed combinations are:
+
+\begin{table}[h!]
+  \begin{center}
+    \begin{tabular}[c]{|c | c c c c |}
+      \hline
+                         & Graph & EKF & EAFC & Paritcle filter \\
+      \hline
+      Raw points         & X     & X   & X    &  \\
+      \hline
+      Occupancy grid     & X     & X   &      & ? \\
+      \hline
+      Geometric features & ?     &     &      & X \\
+      \hline
+    \end{tabular}
+  \end{center}
+  \caption{Combinations of SLAM algorithms and Memory types}
+  \label{tab:slam_memory_combinations}
+\end{table}
 
 \newpage
 \begin{thebibliography}{9}
