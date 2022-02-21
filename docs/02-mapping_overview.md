@@ -61,11 +61,13 @@ Mattias Kitsing
 # SLAM algorithms
 - Graph SLAM
 - EKF SLAM
+- EAFC SLAM
+- Particle filter SLAM
 
 ---
 
 # Graph SLAM
-- Easiest to implement
+- Easy to implement
 - Can become computationally heavy
 - Quite robust for incorrect associations
 
@@ -78,20 +80,42 @@ Mattias Kitsing
 
 ---
 
+# Enhanced adaptive fuzzy clustering with noise clustering SLAM
+- Hardest to implement
+- Has quite many hyperparameters
+- Potentially quite useful for indorrs use case
+
+---
+
+# Particle filter SLAM
+- Easy to implement
+- CPU heavy
+
+---
+
+# Ready made solutions
+- GMapping
+- Cartographer
+
+---
+
 # EKF SLAM vs ICP + DBSCAN + K-means
 
 ![img](https://journals.sagepub.com/na101/home/literatum/publisher/sage/journals/content/arxa/2015/arxa_12_3/59992/20161205/images/medium/10.5772_59992-fig24.gif)
 [https://journals.sagepub.com/doi/full/10.5772/59992](https://journals.sagepub.com/doi/full/10.5772/59992)
-
---- 
-
-# Iterative end point fitting
-![img](https://journals.sagepub.com/na101/home/literatum/publisher/sage/journals/content/arxa/2015/arxa_12_3/59992/20161205/images/medium/10.5772_59992-fig6.gif)
 
 ---
 
 # Compression by clustering
 
 ![img](https://journals.sagepub.com/na101/home/literatum/publisher/sage/journals/content/arxa/2015/arxa_12_3/59992/20161205/images/medium/10.5772_59992-fig12.gif)
+[https://journals.sagepub.com/doi/full/10.5772/59992](https://journals.sagepub.com/doi/full/10.5772/59992)
+
+--- 
+
+# Iterative end point fitting
+![img](https://journals.sagepub.com/na101/home/literatum/publisher/sage/journals/content/arxa/2015/arxa_12_3/59992/20161205/images/medium/10.5772_59992-fig6.gif)
+[https://journals.sagepub.com/doi/full/10.5772/59992](https://journals.sagepub.com/doi/full/10.5772/59992)
 
 ---
+
