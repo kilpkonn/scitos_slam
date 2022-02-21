@@ -42,7 +42,7 @@
 \section{Introduction}
 A map is a commonly used model of the environment and very essential in mobile robotics. Maps allow robots to localize themselves and carry out their tasks.
 The scope of this paper is to analyze different mapping for mobile robots with special focus on 2D motion.
-The main focus points are on the compactness (memory usage) of the map, robustness and adoption to indoors space.
+The main focus points are on the compactness (memory usage) of the map, time complexity, robustness and adoption to indoors space.
 
 
 \section{Data models for maps}
@@ -67,20 +67,23 @@ The comparison of the algorithms described above can be found in the Table~\ref{
       \hline
       Impl. difficulty & Easy & Easy - Medium & Hard \\
       \hline
-      Memory usage & Huge & Medium & Small \\
+      Memory complexity & Huge & Medium & Small \\
       \hline
-      CPU usage* & Small & Medium & Big \\
+      Time complexity* & Small & Medium & Big \\
       \hline
       Robustness & Good & Good & Environment specific \\
       \hline
       Continuous & Yes & No & Yes \\
+      \hline
+      Topological & No & No** & Yes \\
       \hline
     \end{tabular}
   \end{center}
   \caption{Comparison of different memory models}
   \label{tab:memory_models}
 \end{table}
-\textit{*This accounts for CPU consumption when collecting data, not when later using it.}
+\textit{*This accounts for time complexity when collecting data, not when using it.} \\
+\textit{**Topological features can be extracted, but no effort is made to keep them}
 
 \section{Graph SLAM}
 Graph SLAM is an algorithm that uses probabilistic approach to simultaneously locate iteself and map new environment.
@@ -100,7 +103,8 @@ The algorithm is also seems to be harder to implement than graph SLAM (?).
 \section{Enhanced adaptive fuzzy clustering (EAFC) with noise clustering SLAM \cite{AlgorithmsForIndoorMapping}}
 This approach focuses on reducing noise before creating a map because noise can lead to an incorrect map.
 Many of the methods used are inspired by image processing such as mathemathical erosion and dilation.
-Since this approach uses fuzzy c-means clustering which is an extension of k-means clustering then this would also be harder to implement.
+The general algorithm for is: remove the noise, cluster datapoints (to group them), run match resulting groups with the ones gained from previous step.
+Since this approach uses fuzzy c-means or k-means clustering, DBSCAN, SVD, and iterative closest point algorithms together with feature extraction algorithms for later use it is quite complex to implement.
 This approach also relies on tuning the filtering and mapping parameters to the noise that is present which makes it less robust.
 
 \section{Particle filter SLAM \cite{ParticleFilterSLAM}}
@@ -174,7 +178,7 @@ A benefit of this method is also it's easy integration with different types of m
 
 % Conclusion %
 \section{SLAM Comparison}
-
+The comparison of different SLAM algorithms can be found in Table~\ref{tab:slam_algorithms}.
 \begin{table}[h!]
   \begin{center}
     \begin{tabular}[c]{|c | c c c c |}
@@ -183,9 +187,9 @@ A benefit of this method is also it's easy integration with different types of m
       \hline
       Impl. difficulty & Medium         & Medium - High & High         & Low \\
       \hline
-      Memory usage     & Medium         & Low           & Medium       & High \\
+      Memory complexity& Medium         & Low           & Medium       & High \\
       \hline
-      CPU time         & Medium         & Small         & Medium       & Big \\
+      Time complexity  & Medium         & Small         & Medium       & Big \\
       \hline
       Robustness       & Medium         & Low - Medium  & Low - Medium & Medium \\
       \hline
@@ -209,17 +213,19 @@ Therefore the proposed combinations are:
       \hline
                          & Graph & EKF & EAFC & Paritcle filter \\
       \hline
-      Raw points         & X     & X   & X    &  \\
+      Raw points         & X*    &     & X**  &  \\
       \hline
       Occupancy grid     & X     & X   &      & ? \\
       \hline
-      Geometric features & ?     &     &      & X \\
+      Geometric features & X     & X   & X**  & X \\
       \hline
     \end{tabular}
   \end{center}
   \caption{Combinations of SLAM algorithms and Memory types}
   \label{tab:slam_memory_combinations}
 \end{table}
+\textit{*May be very inefficient} \\
+\textit{**Internally uses points, but yields geometric features}
 
 \newpage
 \begin{thebibliography}{9}
