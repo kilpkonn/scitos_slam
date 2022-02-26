@@ -38,7 +38,7 @@ template <typename T> struct Polar2 {
   auto operator>(float n) const { return length() > n; }
   auto operator>=(float n) const { return length() >= n; }
 
-  Polar2<T> opposite() const { return {r, theta + M_PIf}; }
+  Polar2<T> opposite() const { return {r, theta + M_PI}; }
   scitos_common::Polar2 toMsg() {
     scitos_common::Polar2 msg;
     msg.r = r;
