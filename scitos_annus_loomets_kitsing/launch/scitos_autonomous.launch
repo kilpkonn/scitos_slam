@@ -4,8 +4,8 @@
         <arg name="gui" value="false" />
     </include>
 
-    <rosparam command="load" file="$(find scitos_annus_loomets_kitsing)/config/mission.yaml" />
-    <node name="rviz" pkg="rviz" type="rviz"  args="-d $(find scitos_annus_loomets_kitsing)/config/rviz/manual.rviz" />
+    <rosparam command="load" file="$(find scitos_annus_loomets_kitsing)/data/config/mission.yaml" />
+    <node name="rviz" pkg="rviz" type="rviz"  args="-d $(find scitos_annus_loomets_kitsing)/data/config/rviz/manual.rviz" />
     <node name="scitos_annus_loomets_kitsing" pkg="scitos_annus_loomets_kitsing" type="scitos_annus_loomets_kitsing_node" output="screen" />
     <node name="plotjuggler_with_layout"
           pkg="plotjuggler"
