@@ -1,0 +1,8 @@
+[ver:1,total:4800,branch:master]
+scitos_common/include/scitos_common/dbscan.hpp:2875,1645977600:1380,1645981200:1420,1645984800:75,m
+scitos_common/include/scitos_common/kmeans.hpp:820,1645974000:240,1645977600:410,1645981200:140,1645984800:30,m
+scitos_annus_loomets_kitsing/src/scitos_annus_loomets_kitsing_node.cpp:755,1645974000:555,1645977600:20,1645981200:180,m
+scitos_annus_loomets_kitsing/src/mapper.cpp:245,1645974000:15,1645977600:230,m
+scitos_annus_loomets_kitsing/data/config/mapper.yaml:75,1645974000:75,m
+.git/COMMIT_EDITMSG:15,1645984800:15,r
+scitos_annus_loomets_kitsing/src/motion_controller.cpp:15,1645974000:15,r
