@@ -9,6 +9,9 @@ if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic)
 endif()
 
+find_package( OpenCV REQUIRED )
+include_directories( ${OpenCV_INCLUDE_DIRS} )
+
 find_package(catkin REQUIRED COMPONENTS
   geometry_msgs
   nav_msgs
@@ -37,5 +40,6 @@ add_executable(${PROJECT_NAME}_node
 target_link_libraries(${PROJECT_NAME}_node
   ${catkin_LIBRARIES}
   scitos_annus_loomets_kitsing
+  ${OpenCV_LIBS}
 )
 

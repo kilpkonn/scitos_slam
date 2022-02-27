@@ -3,6 +3,9 @@
 #include <cmath>
 #include <vector>
 #include <iostream>
+
+#include <opencv2/core/types.hpp>
+
 template <typename T> struct Vec2 {
   T x, y;
 
@@ -37,6 +40,7 @@ template <typename T> struct Vec2 {
   template <typename U> operator Vec2<U>() const {
     return {static_cast<U>(x), static_cast<U>(y)};
   }
+  operator cv::Point_<T>() const { return {x, y}; }
 
   float dot() const { return x * x + y * y; }
   float length() const { return std::sqrt(dot()); }
