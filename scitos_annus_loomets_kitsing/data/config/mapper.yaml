@@ -1,0 +1,6 @@
+dbscan:
+  r: 0.25
+  n: 6
+kmeans:
+  k: 30
+  iterations: 15 

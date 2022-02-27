@@ -5,8 +5,8 @@
 #include <set>
 #include <vector>
 
-
-/* 
+namespace scitos_common {
+/*
  * DBSCAN algorithm
  *
  * @param: data - vector with datapoints
@@ -20,7 +20,7 @@ template <typename T>
 std::vector<int> dbscan(const std::vector<T> &data,
                         std::function<float(T, T)> s, uint32_t n, float r) {
   int lbl = 1;
-  std::vector<int> lables(0, data.size());
+  std::vector<int> lables(data.size(), 0);
   for (int i = 0; i < data.size(); i++) {
     if (lables[i] != 0)
       continue; // Already classified
@@ -40,8 +40,9 @@ std::vector<int> dbscan(const std::vector<T> &data,
     // Check if cluster can be made
     bool merged = cluster.size() > n;
     while (merged) {
+      merged = false;
       for (int j = 0; j < data.size(); j++) {
-        if (lables[j] != 0 || cluster.find(j) == cluster.end()) {
+        if (lables[j] != 0 || cluster.find(j) != cluster.end()) {
           continue;
         }
 
@@ -67,3 +68,4 @@ std::vector<int> dbscan(const std::vector<T> &data,
   }
   return lables;
 }
+} // namespace scitos_common

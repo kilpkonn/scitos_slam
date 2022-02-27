@@ -7,7 +7,7 @@
         <arg name="world_name" value="$(arg world_name)" />
     </include>
 
-    <rosparam command="load" file="$(find scitos_annus_loomets_kitsing)/data/config/mission.yaml" />
+    <rosparam command="load" file="$(find scitos_annus_loomets_kitsing)/data/config/mapper.yaml" />
     <node name="rviz" pkg="rviz" type="rviz"  args="-d $(find scitos_annus_loomets_kitsing)/data/config/rviz/mapping.rviz" />
-    <!--<node name="scitos_annus_loomets_kitsing" pkg="scitos_annus_loomets_kitsing" type="scitos_annus_loomets_kitsing_node" output="screen" />-->
+    <node name="scitos_annus_loomets_kitsing" pkg="scitos_annus_loomets_kitsing" type="scitos_annus_loomets_kitsing_node" output="screen" />
 </launch>
