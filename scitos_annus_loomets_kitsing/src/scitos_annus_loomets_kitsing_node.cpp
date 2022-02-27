@@ -14,7 +14,7 @@ int main(int argc, char *argv[]) {
 
   Mapper mapper(n);
   ros::Timer mapperTimer =
-      n.createTimer(ros::Duration(0.2), &Mapper::step, &mapper);
+      n.createTimer(ros::Duration(0.1), &Mapper::step, &mapper);
 
   ros::spin();
 

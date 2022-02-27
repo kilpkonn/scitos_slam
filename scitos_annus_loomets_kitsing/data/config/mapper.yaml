@@ -3,4 +3,4 @@ dbscan:
   n: 6
 kmeans:
   k: 30
-  iterations: 15 
+  iterations: 10

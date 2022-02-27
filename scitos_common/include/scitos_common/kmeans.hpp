@@ -40,7 +40,7 @@ std::vector<T> kmeans(const std::vector<T> &data, uint32_t k,
     for (int j = 0; j < nrow; j++) {
       for (uint32_t w = 0; w < k; w++) {
         auto centroid = centroids[w];
-        auto p = data[j];
+        auto p = data.at(j);
         distances[j][w] = s(p, centroid);
       }
     }

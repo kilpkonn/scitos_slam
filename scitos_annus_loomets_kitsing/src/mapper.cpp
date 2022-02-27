@@ -45,6 +45,7 @@ void Mapper::step(const ros::TimerEvent &event) {
       erodedPoints, [](auto a, auto b) { return (a - b).length(); }, dbscan_.n,
       dbscan_.r);
 
+
   std::vector<Vec2<float>> filteredPoints;
   filteredPoints.reserve(filteredPoints.size() / 2); // Estimate 50% dropout
   for (size_t i = 0; i < labels.size(); i++) {

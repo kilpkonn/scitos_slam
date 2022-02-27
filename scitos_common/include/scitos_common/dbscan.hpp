@@ -3,6 +3,7 @@
 #include <cstdint>
 #include <functional>
 #include <set>
+#include <stdexcept>
 #include <vector>
 
 namespace scitos_common {
@@ -19,20 +20,24 @@ namespace scitos_common {
 template <typename T>
 std::vector<int> dbscan(const std::vector<T> &data,
                         std::function<float(T, T)> s, uint32_t n, float r) {
+  if (data.size() <= 0)
+    return std::vector<int>();
+
   int lbl = 1;
   std::vector<int> lables(data.size(), 0);
-  for (int i = 0; i < data.size(); i++) {
-    if (lables[i] != 0)
+  std::set<size_t> cluster;
+  for (size_t i = 0; i < data.size(); i++) {
+    if (lables.at(i) != 0)
       continue; // Already classified
 
     // Create core
-    std::set<int> cluster;
+    cluster.clear();
 
-    for (int j = 0; j < data.size(); j++) {
+    for (size_t j = 0; j < data.size(); j++) {
       if (i == j)
         continue;
-      auto a = data[i];
-      auto b = data[j];
+      auto a = data.at(i);
+      auto b = data.at(j);
       if (s(a, b) < r)
         cluster.insert(j);
     }
@@ -42,14 +47,14 @@ std::vector<int> dbscan(const std::vector<T> &data,
     while (merged) {
       merged = false;
       for (int j = 0; j < data.size(); j++) {
-        if (lables[j] != 0 || cluster.find(j) != cluster.end()) {
+        if (lables.at(j) != 0 || cluster.find(j) != cluster.end()) {
           continue;
         }
 
         // Check if point can be merged
-        auto p = data[j];
-        for (int cidx : cluster) {
-          auto c = data[cidx];
+        auto p = data.at(j);
+        for (size_t cidx : cluster) {
+          auto c = data.at(cidx); // BUG: Segfault here, not sure any more
           if (s(p, c) < r) {
             cluster.insert(j);
             merged = true;
@@ -61,7 +66,7 @@ std::vector<int> dbscan(const std::vector<T> &data,
 
     if (cluster.size() > n) {
       for (int idx : cluster) {
-        lables[idx] = lbl;
+        lables.at(idx) = lbl;
       }
       ++lbl;
     }
