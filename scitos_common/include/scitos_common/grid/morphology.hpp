@@ -27,7 +27,7 @@ namespace grid {
     }
 
     Vec2<float> grid_size = point_max - point_min;
-    Vec2<int> grid_squares = (grid_size / resolution).round();
+    Vec2<int> grid_squares = (grid_size / resolution).ceil();
     cv::Mat point_grid(static_cast<cv::Size>(grid_squares), CV_8U);
 
     std::vector<std::pair<Vec2<float>, Vec2<int>>> point_locs;

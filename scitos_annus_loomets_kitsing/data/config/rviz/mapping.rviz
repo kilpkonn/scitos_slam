@@ -11,6 +11,7 @@ Panels:
         - /odom1/Shape1
         - /DBSCAN1
         - /KMeans1
+        - /GrowingPointCloud1
       Splitter Ratio: 0.5
     Tree Height: 1683
   - Class: rviz/Selection
@@ -423,17 +424,25 @@ Visualization Manager:
       Use rainbow: true
       Value: false
     - Class: rviz/MarkerArray
-      Enabled: true
+      Enabled: false
       Marker Topic: /debug/dbscan
       Name: DBSCAN
       Namespaces:
         {}
       Queue Size: 100
-      Value: true
+      Value: false
     - Class: rviz/MarkerArray
-      Enabled: true
+      Enabled: false
       Marker Topic: /debug/kmeans
       Name: KMeans
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: false
+    - Class: rviz/MarkerArray
+      Enabled: true
+      Marker Topic: /debug/pc
+      Name: GrowingPointCloud
       Namespaces:
         {}
       Queue Size: 100
@@ -475,7 +484,7 @@ Visualization Manager:
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Scale: 98.74790954589844
+      Scale: 79.65532684326172
       Target Frame: base_link
       X: -0.24336765706539154
       Y: 0.60402911901474

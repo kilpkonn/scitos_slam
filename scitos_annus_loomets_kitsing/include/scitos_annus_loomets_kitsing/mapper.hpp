@@ -7,6 +7,7 @@
 #include <visualization_msgs/MarkerArray.h>
 
 #include "scitos_common/vec2.hpp"
+#include "scitos_common/growing_pc.hpp"
 
 class Mapper {
 public:
@@ -25,6 +26,7 @@ private:
   ros::Publisher filteredLaserScanPub_;
   ros::Publisher dbscanPub_;
   ros::Publisher kmeansPub_;
+  ros::Publisher pcPub_;
 
   struct {
     float r;
@@ -36,6 +38,12 @@ private:
     uint32_t iterations;
   } kmeans_;
 
+  struct {
+    float epsilon;
+    std::vector<Vec2<float>> data;
+  } pc_;
+
+
   void odometryCallback(nav_msgs::OdometryPtr msg);
   void laserScanCallback(sensor_msgs::LaserScan msg);
   std::vector<Vec2<float>> getLaserScanPoints();
@@ -43,4 +51,5 @@ private:
   void publishDbscan(const std::vector<Vec2<float>> &points,
                      const std::vector<int> &labels) const;
   void publishKMeans(const std::vector<Vec2<float>> &centroids) const;
+  void publishPC() const;
 };

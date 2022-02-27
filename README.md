@@ -14,6 +14,8 @@ _Make sure to copy `compile_commands.json` from under build to project root!_
 ## Running
 ```bash
 roslaunch scitos_annus_loomets_kitsing scitos_autonomous.launch
+
+rosrun scitos_annus_loomets_kitsing teleop_key.p  # To drive with keyboard
 ```
 
 ## Serve slides

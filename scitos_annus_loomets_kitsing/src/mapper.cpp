@@ -1,10 +1,13 @@
 #include <cstddef>
 #include <ros/console.h>
+#include <tf/LinearMath/Matrix3x3.h>
+#include <tf/transform_datatypes.h>
 #include <vector>
 #include <visualization_msgs/MarkerArray.h>
 
 #include "scitos_common/dbscan.hpp"
 #include "scitos_common/grid/morphology.hpp"
+#include "scitos_common/growing_pc.hpp"
 #include "scitos_common/kmeans.hpp"
 #include "scitos_common/polar2.hpp"
 
@@ -22,11 +25,13 @@ Mapper::Mapper(ros::NodeHandle nh) : nh_{nh} {
       nh_.advertise<visualization_msgs::MarkerArray>("/debug/dbscan", 3);
   kmeansPub_ =
       nh_.advertise<visualization_msgs::MarkerArray>("/debug/kmeans", 3);
+  pcPub_ = nh_.advertise<visualization_msgs::MarkerArray>("/debug/pc", 3);
 
   dbscan_.r = nh_.param("/dbscan/r", 0.1f);
   dbscan_.n = nh_.param("/dbscan/n", 10);
   kmeans_.k = nh_.param("/kmeans/k", 10);
   kmeans_.iterations = nh_.param("/kmeans/iterations", 5);
+  pc_.epsilon = nh_.param("/growing_point_cloud/epsilon", 0.5f);
 }
 
 void Mapper::step(const ros::TimerEvent &event) {
@@ -45,22 +50,27 @@ void Mapper::step(const ros::TimerEvent &event) {
       erodedPoints, [](auto a, auto b) { return (a - b).length(); }, dbscan_.n,
       dbscan_.r);
 
-
   std::vector<Vec2<float>> filteredPoints;
   filteredPoints.reserve(filteredPoints.size() / 2); // Estimate 50% dropout
   for (size_t i = 0; i < labels.size(); i++) {
     if (labels[i] != 0)
-      filteredPoints.push_back(erodedPoints.at(i));
+      filteredPoints.push_back(scanPoints.at(i));
   }
 
   auto centroids = scitos_common::kmeans<Vec2<float>>(
       filteredPoints, kmeans_.k,
       [](auto a, auto b) { return (a - b).length(); }, kmeans_.iterations);
 
+  ROS_INFO("pc");
+  pc_.data = scitos_common::grow_point_cloud<Vec2<float>>(
+      pc_.data, centroids, [](auto a, auto b) { return (a - b).length(); },
+      pc_.epsilon);
+
   ROS_INFO("done");
 
   publishDbscan(erodedPoints, labels);
   publishKMeans(centroids);
+  publishPC();
 }
 
 void Mapper::odometryCallback(nav_msgs::OdometryPtr msg) { odometry_ = msg; }
@@ -68,15 +78,22 @@ void Mapper::odometryCallback(nav_msgs::OdometryPtr msg) { odometry_ = msg; }
 void Mapper::laserScanCallback(sensor_msgs::LaserScan msg) { laserScan_ = msg; }
 
 std::vector<Vec2<float>> Mapper::getLaserScanPoints() {
-  if (!laserScan_.header.stamp.isValid()) {
+  if (!laserScan_.header.stamp.isValid() || odometry_ == nullptr) {
     return {};
   }
+
+  const Vec2<float> loc(odometry_->pose.pose.position.x,
+                        odometry_->pose.pose.position.y);
+  double roll, pitch, yaw;
+  tf::Quaternion quat;
+  tf::quaternionMsgToTF(odometry_->pose.pose.orientation, quat);
+  tf::Matrix3x3(quat).getRPY(roll, pitch, yaw);
 
   std::vector<Vec2<float>> output;
   output.reserve(laserScan_.ranges.size());
   for (uint i = 0; i < laserScan_.ranges.size(); i++) {
-    float angle = laserScan_.angle_min + laserScan_.angle_increment * i;
-    output.push_back(Polar2(laserScan_.ranges[i], angle));
+    float angle = yaw + laserScan_.angle_min + laserScan_.angle_increment * i;
+    output.push_back(Polar2(laserScan_.ranges[i], angle) + loc);
   }
   return output;
 }
@@ -143,4 +160,30 @@ void Mapper::publishKMeans(const std::vector<Vec2<float>> &centroids) const {
   }
 
   kmeansPub_.publish(markers);
+}
+
+void Mapper::publishPC() const {
+  visualization_msgs::MarkerArray markers;
+  for (size_t i = 0; i < pc_.data.size(); i++) {
+    auto p = pc_.data.at(i);
+    visualization_msgs::Marker marker;
+    marker.header.frame_id = "odom";
+    marker.type = visualization_msgs::Marker::SPHERE;
+    marker.action = visualization_msgs::Marker::ADD;
+    marker.scale.x = 0.1;
+    marker.scale.y = 0.1;
+    marker.scale.z = 0.1;
+    marker.color.a = 1.0;
+    marker.color.r = 0.0;
+    marker.color.g = 0.0;
+    marker.color.b = 1.0;
+    marker.pose.orientation.w = 1.0;
+    marker.pose.position.x = p.x;
+    marker.pose.position.y = p.y;
+    marker.pose.position.z = 0.05;
+    marker.id = i++;
+    markers.markers.push_back(marker);
+  }
+
+  pcPub_.publish(markers);
 }

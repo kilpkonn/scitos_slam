@@ -4,3 +4,5 @@ dbscan:
 kmeans:
   k: 30
   iterations: 10
+growing_point_cloud:
+  epsilon: 0.5
