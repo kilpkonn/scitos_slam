@@ -1,0 +1,13 @@
+[ver:1,total:6120,branch:master]
+scitos_common/include/scitos_common/growing_pc.hpp:2445,1645984800:1391,1645988400:1054,m
+scitos_annus_loomets_kitsing/src/mapper.cpp:2073,1645984800:930,1645988400:1143,m
+scitos_common/include/scitos_common/grid/morphology.hpp:550,1645988400:550,m
+scitos_annus_loomets_kitsing/data/config/mapper.yaml:332,1645984800:80,1645988400:252,m
+scitos_annus_loomets_kitsing/include/scitos_annus_loomets_kitsing/mapper.hpp:255,1645984800:215,1645988400:40,m
+scitos_common/include/scitos_common/growing_ipc.hpp:144,1645984800:144,d
+.git/COMMIT_EDITMSG:90,1645988400:90,r
+scitos_common/test/morphology_test.cpp:70,1645988400:70,m
+scitos_common/include/scitos_common/vec2.hpp:65,1645988400:65,m
+scitos_annus_loomets_kitsing/src/scitos_annus_loomets_kitsing_node.cpp:42,1645988400:42,r
+README.md:30,1645988400:30,m
+scitos_annus_loomets_kitsing/src/motion_controller.cpp:24,1645988400:24,r
