@@ -15,8 +15,8 @@
 #include "scitos_common/vec2.hpp"
 
 Mapper::Mapper(ros::NodeHandle nh) : nh_{nh} {
-  odometrySub_ = nh_.subscribe("/controller_diffdrive/odom", 1,
-                               &Mapper::odometryCallback, this);
+  odometrySub_ =
+      nh_.subscribe("/ground_truth", 1, &Mapper::odometryCallback, this);
   laserScanSub_ =
       nh_.subscribe("/laser_scan", 1, &Mapper::laserScanCallback, this);
   filteredLaserScanPub_ = nh_.advertise<visualization_msgs::MarkerArray>(
@@ -57,6 +57,7 @@ void Mapper::step(const ros::TimerEvent &event) {
       filteredPoints.push_back(scanPoints.at(i));
   }
 
+  // NOTE: Kmeans can likely be removed
   auto centroids = scitos_common::kmeans<Vec2<float>>(
       filteredPoints, kmeans_.k,
       [](auto a, auto b) { return (a - b).length(); }, kmeans_.iterations);
@@ -69,6 +70,8 @@ void Mapper::step(const ros::TimerEvent &event) {
     iepf_.lines.push_back(
         scitos_common::douglas_peuker::simplify(cluster, iepf_.epsilon));
   }
+  // TODO: merge lines ....
+  // TODO: connect lines that are close enough
   ROS_INFO("done");
 
   publishDbscan(erodedPoints, labels);
@@ -107,7 +110,7 @@ sensor_msgs::LaserScan Mapper::getLaserScan(std::vector<Vec2<float>> points) {
     scan.header = laserScan_.header;
   }
 
-  // TODO: Finish this.
+  // TODO: Finish this. or is this even required?
   return scan;
 }
 
