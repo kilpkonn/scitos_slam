@@ -26,7 +26,7 @@ private:
   ros::Publisher filteredLaserScanPub_;
   ros::Publisher dbscanPub_;
   ros::Publisher kmeansPub_;
-  ros::Publisher pcPub_;
+  ros::Publisher linesPub_;
 
   struct {
     float r;
@@ -40,8 +40,8 @@ private:
 
   struct {
     float epsilon;
-    std::vector<Vec2<float>> data;
-  } pc_;
+    std::vector<std::vector<Vec2<float>>> lines;
+  } iepf_;
 
 
   void odometryCallback(nav_msgs::OdometryPtr msg);
@@ -51,5 +51,5 @@ private:
   void publishDbscan(const std::vector<Vec2<float>> &points,
                      const std::vector<int> &labels) const;
   void publishKMeans(const std::vector<Vec2<float>> &centroids) const;
-  void publishPC() const;
+  void publishLines() const;
 };

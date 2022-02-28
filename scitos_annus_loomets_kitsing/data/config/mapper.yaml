@@ -1,8 +1,8 @@
 dbscan:
-  r: 0.25
-  n: 6
+  r: 0.35
+  n: 4
 kmeans:
   k: 30
   iterations: 10
-growing_point_cloud:
-  epsilon: 0.5
+iepf:
+  epsilon: 0.1

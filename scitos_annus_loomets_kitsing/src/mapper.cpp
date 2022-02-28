@@ -7,7 +7,7 @@
 
 #include "scitos_common/dbscan.hpp"
 #include "scitos_common/grid/morphology.hpp"
-#include "scitos_common/growing_pc.hpp"
+#include "scitos_common/iepf.hpp"
 #include "scitos_common/kmeans.hpp"
 #include "scitos_common/polar2.hpp"
 
@@ -25,13 +25,13 @@ Mapper::Mapper(ros::NodeHandle nh) : nh_{nh} {
       nh_.advertise<visualization_msgs::MarkerArray>("/debug/dbscan", 3);
   kmeansPub_ =
       nh_.advertise<visualization_msgs::MarkerArray>("/debug/kmeans", 3);
-  pcPub_ = nh_.advertise<visualization_msgs::MarkerArray>("/debug/pc", 3);
+  linesPub_ = nh_.advertise<visualization_msgs::MarkerArray>("/debug/lines", 3);
 
   dbscan_.r = nh_.param("/dbscan/r", 0.1f);
   dbscan_.n = nh_.param("/dbscan/n", 10);
   kmeans_.k = nh_.param("/kmeans/k", 10);
   kmeans_.iterations = nh_.param("/kmeans/iterations", 5);
-  pc_.epsilon = nh_.param("/growing_point_cloud/epsilon", 0.5f);
+  iepf_.epsilon = nh_.param("/iepf/epsilon", 0.5f);
 }
 
 void Mapper::step(const ros::TimerEvent &event) {
@@ -44,7 +44,7 @@ void Mapper::step(const ros::TimerEvent &event) {
 
   ROS_INFO("start");
   std::vector<Vec2<float>> scanPoints = getLaserScanPoints();
-  std::vector<Vec2<float>> erodedPoints = grid::open(scanPoints, 0.05f);
+  std::vector<Vec2<float>> erodedPoints = grid::open(scanPoints, 0.1f);
 
   auto labels = scitos_common::dbscan<Vec2<float>>(
       erodedPoints, [](auto a, auto b) { return (a - b).length(); }, dbscan_.n,
@@ -60,17 +60,20 @@ void Mapper::step(const ros::TimerEvent &event) {
   auto centroids = scitos_common::kmeans<Vec2<float>>(
       filteredPoints, kmeans_.k,
       [](auto a, auto b) { return (a - b).length(); }, kmeans_.iterations);
+  auto clusters = scitos_common::dbscan2<Vec2<float>>(
+      erodedPoints, [](auto a, auto b) { return (a - b).length(); }, dbscan_.n,
+      dbscan_.r);
 
-  ROS_INFO("pc");
-  pc_.data = scitos_common::grow_point_cloud<Vec2<float>>(
-      pc_.data, centroids, [](auto a, auto b) { return (a - b).length(); },
-      pc_.epsilon);
-
+  iepf_.lines.clear();
+  for (const auto &cluster : clusters) {
+    iepf_.lines.push_back(
+        scitos_common::douglas_peuker::simplify(cluster, iepf_.epsilon));
+  }
   ROS_INFO("done");
 
   publishDbscan(erodedPoints, labels);
   publishKMeans(centroids);
-  publishPC();
+  publishLines();
 }
 
 void Mapper::odometryCallback(nav_msgs::OdometryPtr msg) { odometry_ = msg; }
@@ -162,28 +165,33 @@ void Mapper::publishKMeans(const std::vector<Vec2<float>> &centroids) const {
   kmeansPub_.publish(markers);
 }
 
-void Mapper::publishPC() const {
+void Mapper::publishLines() const {
   visualization_msgs::MarkerArray markers;
-  for (size_t i = 0; i < pc_.data.size(); i++) {
-    auto p = pc_.data.at(i);
+  for (size_t i = 0; i < iepf_.lines.size(); i++) {
+    auto line = iepf_.lines.at(i);
     visualization_msgs::Marker marker;
     marker.header.frame_id = "odom";
-    marker.type = visualization_msgs::Marker::SPHERE;
+    marker.type = visualization_msgs::Marker::LINE_STRIP;
     marker.action = visualization_msgs::Marker::ADD;
     marker.scale.x = 0.1;
     marker.scale.y = 0.1;
     marker.scale.z = 0.1;
     marker.color.a = 1.0;
-    marker.color.r = 0.0;
-    marker.color.g = 0.0;
+    marker.color.r = std::clamp(i * 0.2, 0.0, 1.0);
+    marker.color.g = std::clamp(-1.0 + i * 0.2, 0.0, 1.0);
     marker.color.b = 1.0;
     marker.pose.orientation.w = 1.0;
-    marker.pose.position.x = p.x;
-    marker.pose.position.y = p.y;
-    marker.pose.position.z = 0.05;
+
+    for (auto point : line) {
+      geometry_msgs::Point p;
+      p.x = point.x;
+      p.y = point.y;
+      p.z = 0.05;
+      marker.points.push_back(p);
+    }
     marker.id = i++;
     markers.markers.push_back(marker);
   }
 
-  pcPub_.publish(markers);
+  linesPub_.publish(markers);
 }
