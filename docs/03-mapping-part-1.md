@@ -30,7 +30,10 @@ Mattias Kitsing
 
 # Erosion
 
-- TODO
+- Previously implemented point to grid transformation for grid populating
+- OpenCV for _open_ operation on grid
+- 3x3 cross kernel
+- No subsampling, only removal of points
 
 ---
 
