@@ -1,0 +1,12 @@
+[ver:1,total:4320,branch:master]
+scitos_common/include/scitos_common/iepf.hpp:1450,1646028000:1180,1646031600:270,m
+scitos_annus_loomets_kitsing/src/mapper.cpp:1437,1646028000:518,1646031600:919,m
+scitos_common/include/scitos_common/dbscan.hpp:555,1646028000:70,1646031600:485,m
+scitos_annus_loomets_kitsing/data/config/mapper.yaml:404,1646028000:20,1646031600:384,m
+scitos_annus_loomets_kitsing/include/scitos_annus_loomets_kitsing/mapper.hpp:224,1646028000:62,1646031600:162,m
+.git/COMMIT_EDITMSG:90,1646031600:90,r
+.git/hooks/pre-push:60,1646031600:60,r
+.git/hooks/post-commit:30,1646031600:30,r
+.git/hooks/post-checkout:30,1646031600:30,r
+.git/hooks/post-merge:30,1646031600:30,r
+scitos_annus_loomets_kitsing/data/config/mission.yaml:10,1646028000:10,r
