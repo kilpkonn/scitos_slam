@@ -11,8 +11,8 @@ inline std::optional<Vec2<int>> world_to_grid(const Vec2<float> pos,
                                               const Vec2<float> grid_size, 
                                               const float resolution) {
   auto transformed = pos - origin;
-  if (transformed.x < 0 || transformed.x > grid_size.x
-      || transformed.y < 0 || transformed.y > grid_size.y) {
+  if (transformed.x < 0 || transformed.x >= grid_size.x
+      || transformed.y < 0 || transformed.y >= grid_size.y) {
     return std::nullopt;
   }
   return std::optional(transformed / resolution);
