@@ -5,34 +5,58 @@
 class Line {
 
     public:
-        void setStart( const Vec2<T> &s) {start_ = s; findFunction ();}
-        void setEnd( const Vec2<T> &e) {end_ = e; findFunction();}
-        float getConfidance(){return confidance_;}
-        void setConfidance(float conf){confidance_ = conf;}
-        Line(const Vec2<T>, const Vec2<T> ));
-        float slope () {return slope_;}
-        float yIntersept () {return yIntersept_}
-        std::vector<Vec2<float>> start () {return start_;};
-        std::vector<Vec2<float>> end() {return end_;};
+        void setStart( const std::vector<Vec2<float>>);
+        void setEnd( const std::vector<Vec2<float>>);
+        float getConfidance();
+        void setConfidance(float conf);
+        Line(const std::vector<Vec2<float>>, const std::vector<Vec2<float>>));
+        float slope() ;
+        float yIntersept();
+        std::vector<Vec2<float>> start();
+        std::vector<Vec2<float>> end();
         bool isParallel (Line);
         bool connect (Line);
         bool closeToLine();
+        bool merge (Line);
+        float twoPointDistance (const std::vector<Vec2<float>> &s, const std::vector<Vec2<float>> &e);
+        Vec2<T> newPoint (const std::vector<Vec2<float>> );
     private:
         std::vector<Vec2<float>> start_;
         std::vector<Vec2<float>> end_;
         float confidance_ = 0;
         float slope_, yIntersept_;
-        void findFunction () {
-            slope_ = ( end_.y - start_.y ) / ( end_.x - start_.x );
-            yIntersept_ = start_.y - slope_ * start_.x;
-        }
+        void findFunction ();
         
 }
-Line::Line (const Vec2<T> &s, const Vec2<T> &e ) {
+
+Line::Line (const std::vector<Vec2<float>> &s, const std::vector<Vec2<float>> &e ) {
     start_ = s;  end_ = e; Line::findFunction();
 }
 
+void Line::setStart( const std::vector<Vec2<float>>&s) {start_ = s; findFunction ();}
+
+void Line::setEnd( const std::vector<Vec2<float>> &e) {end_ = e; findFunction();}
+
+float Line::getConfidance(){return confidance_;}
+
+void Line::setConfidance(float conf){confidance_ = conf;}
+
+float Line::slope () {return slope_;}
+
+float Line::yIntersept () {return yIntersept_}
+
+std::vector<Vec2<float>> Line::start () {return start_;}
+
+std::vector<Vec2<float>> Line::end() {return end_;}
+
+void Line::findFunction () {
+
+    slope_ = ( end_.y - start_.y ) / ( end_.x - start_.x );
+    yIntersept_ = start_.y - slope_ * start_.x;
+}
+
 bool Line::isParallel (Line line){
+
     if (slope_ == 0 && line.slope == 0)
     {
         return true;
@@ -56,13 +80,14 @@ bool Line::isParallel (Line line){
 }
 
 bool Line::connect (Line line){
+
     if (closeToLine(line.start)){
+
         // TODO find new start
         line.setStart()
         return true;
     }
     if else (closeToLine(line.end)){
-        // TODO find new end
 
         line.setEnd()
         return true;
@@ -70,19 +95,49 @@ bool Line::connect (Line line){
     return false;
 }
 
-bool Line::closeToLine (const Vec2<T> &s) {
-    float parameter = 5;
-    float d1 = abs(slope_ * s.x + s.y + yIntersept_) / sqrt( slope_^2 + 1 );
-    float d2 = sqrt((s.x + start_.x)^2+(s.y + start_.y)^2);
-    float d3 = sqrt((s.x + end_.x)^2+(s.y + end_.y)^2);
-    float d4 = sqrt((start_.x + end_.x)^2+(start_.y + end_.y)^2);
+std::vector<Vec2<float>> Line::newPoint (const std::vector<Vec2<float>> &s){
 
-    // TODO if point is in radius of line function and 
-    // not too far from start or end
-    if (d1 <= parameter && ())
+}
+
+bool Line::merge (Line line){ // first to merge all lines and then use connect to modify the points
+
+    // TODO merge two lines
+    if (closeToLine(line) && isParallel(line))
+    {
+        /* should merge
+
+                this should take confidance into consideration?
+                maybe confidance1 * confidance2 = newConfidance?
+                
+                then take two most far points to make new line
+                what to do with old lines? should there be a destructor in the class?
+            
+        */
+       return true;
+    }
+    
+    return false;
+}
+
+bool Line::closeToLine (const std::vector<Vec2<float>> &s) {
+
+    float parameter = 5; // parameter to regulate how close is close :D
+    float d1 = abs(slope_ * s.x + s.y + yIntersept_) / sqrt( slope_^2 + 1 ); // point distance to line
+    float d2 = twoPointDistance(start_, s); // start distance to point
+    float d3 = twoPointDistance(s, end_); // end distance to point
+    float d4 = twoPointDistance(start_, end_); // line lenght
+    float maxDist = d4 + parameter;
+
+    if (d1 <= parameter && ( d3 <= maxDist || d2 <= maxDist ))
     { 
         return true;
     }
 
     return false;
+}
+
+float Line::twoPointDistance (const std::vector<Vec2<float>> &s, const std::vector<Vec2<float>> &e){
+
+    return float d = sqrt((s.x + e.x)^2 + (s.y + e.y)^2);
+
 }
