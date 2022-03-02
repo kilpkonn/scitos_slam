@@ -23,7 +23,8 @@ private:
   ros::Subscriber odometrySub_;
   ros::Subscriber laserScanSub_;
 
-  ros::Publisher filteredLaserScanPub_;
+  ros::Publisher erosionGridPub_;
+  ros::Publisher erosionPub_;
   ros::Publisher dbscanPub_;
   ros::Publisher kmeansPub_;
   ros::Publisher linesPub_;
@@ -51,5 +52,6 @@ private:
   void publishDbscan(const std::vector<Vec2<float>> &points,
                      const std::vector<int> &labels) const;
   void publishKMeans(const std::vector<Vec2<float>> &centroids) const;
+  void publishErosion(const std::vector<Vec2<float>> &centroids) const;
   void publishLines() const;
 };

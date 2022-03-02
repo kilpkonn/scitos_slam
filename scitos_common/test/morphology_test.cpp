@@ -4,5 +4,6 @@
 
 TEST(Open, Basic)
 {
-  grid::open({}, 1.0f);
+  nav_msgs::OccupancyGrid tmp;
+  grid::open({}, 1.0f, tmp);
 }

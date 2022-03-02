@@ -4,6 +4,7 @@
 #include <tf/transform_datatypes.h>
 #include <vector>
 #include <visualization_msgs/MarkerArray.h>
+#include <nav_msgs/OccupancyGrid.h>
 
 #include "scitos_common/dbscan.hpp"
 #include "scitos_common/grid/morphology.hpp"
@@ -19,8 +20,10 @@ Mapper::Mapper(ros::NodeHandle nh) : nh_{nh} {
       nh_.subscribe("/ground_truth", 1, &Mapper::odometryCallback, this);
   laserScanSub_ =
       nh_.subscribe("/laser_scan", 1, &Mapper::laserScanCallback, this);
-  filteredLaserScanPub_ = nh_.advertise<visualization_msgs::MarkerArray>(
-      "/debug/filtered_laser_scan", 3);
+  erosionPub_ = nh_.advertise<visualization_msgs::MarkerArray>(
+      "/debug/erosion", 3);
+  erosionGridPub_ = nh_.advertise<nav_msgs::OccupancyGrid>(
+      "/debug/erosion_grid", 3);
   dbscanPub_ =
       nh_.advertise<visualization_msgs::MarkerArray>("/debug/dbscan", 3);
   kmeansPub_ =
@@ -42,9 +45,12 @@ void Mapper::step(const ros::TimerEvent &event) {
     return;
   }
 
-  ROS_INFO("start");
+  //ROS_INFO("start");
+  nav_msgs::OccupancyGrid erodedGrid;
   std::vector<Vec2<float>> scanPoints = getLaserScanPoints();
-  std::vector<Vec2<float>> erodedPoints = grid::open(scanPoints, 0.1f);
+  std::vector<Vec2<float>> erodedPoints = grid::open(scanPoints, 0.1f, erodedGrid);
+  erodedGrid.info.origin.orientation = odometry_->pose.pose.orientation;
+  erodedGrid.header = laserScan_.header;
 
   auto labels = scitos_common::dbscan<Vec2<float>>(
       erodedPoints, [](auto a, auto b) { return (a - b).length(); }, dbscan_.n,
@@ -72,8 +78,10 @@ void Mapper::step(const ros::TimerEvent &event) {
   }
   // TODO: merge lines ....
   // TODO: connect lines that are close enough
-  ROS_INFO("done");
+  //ROS_INFO("done");
 
+  erosionGridPub_.publish(erodedGrid);
+  publishErosion(erodedPoints);
   publishDbscan(erodedPoints, labels);
   publishKMeans(centroids);
   publishLines();
@@ -166,6 +174,32 @@ void Mapper::publishKMeans(const std::vector<Vec2<float>> &centroids) const {
   }
 
   kmeansPub_.publish(markers);
+}
+
+void Mapper::publishErosion(const std::vector<Vec2<float>> &points) const {
+  visualization_msgs::MarkerArray markers;
+  for (size_t i = 0; i < points.size(); i++) {
+    auto p = points.at(i);
+    visualization_msgs::Marker marker;
+    marker.header.frame_id = "odom";
+    marker.type = visualization_msgs::Marker::SPHERE;
+    marker.action = visualization_msgs::Marker::ADD;
+    marker.scale.x = 0.05;
+    marker.scale.y = 0.05;
+    marker.scale.z = 0.05;
+    marker.color.a = 1.0;
+    marker.color.r = 0.0;
+    marker.color.g = 1.0;
+    marker.color.b = 1.0;
+    marker.pose.orientation.w = 1.0;
+    marker.pose.position.x = p.x;
+    marker.pose.position.y = p.y;
+    marker.pose.position.z = 0.05;
+    marker.id = i++;
+    markers.markers.push_back(marker);
+  }
+
+  erosionPub_.publish(markers);
 }
 
 void Mapper::publishLines() const {
