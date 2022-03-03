@@ -1,148 +1,58 @@
 #pragma once
-#pragma once
-#include "scitos_common/vec2.hpp"
-#include <vector>
-#include <cstdlib>
 
-class Line {
+#include <algorithm>
+#include <vector>
+
+#include "scitos_common/vec2.hpp"
+
+template <typename T> class Line {
 
 public:
-    Line(const std::vector<Vec2<float>>& s, const std::vector<Vec2<float>>& e);
-    void setStart(const std::vector<Vec2<float>>& s);
-    void setEnd(const std::vector<Vec2<float>>& e);
-    float getConfidance();
-    void setConfidance(float conf);
-    std::vector<Vec2<float>> start();
-    std::vector<Vec2<float>> end();
-    bool isParallel(Line);
-    bool connect(Line);
-    bool closeToLine(const std::vector<Vec2<float>>& s);
-    bool merge(Line);
-    float twoPointDistance(const std::vector<Vec2<float>>& s, const std::vector<Vec2<float>>& e);
-    Vec2<T> newPoint(const std::vector<Vec2<float>>& s);
-    float slope();
-    float yIntersept();
-private:
-    std::vector<Vec2<float>> start_;
-    std::vector<Vec2<float>> end_;
-    float confidance_ = 0;
-};
-
-
-Line::Line(const std::vector<Vec2<float>>& s, const std::vector<Vec2<float>>& e)
-{
-    start_ = s;  end_ = e;
-}
-
-void Line::setStart(const std::vector<Vec2<float>>& s) { start_ = s; }
-
-void Line::setEnd(const std::vector<Vec2<float>>& e) { end_ = e; }
-
-float Line::getConfidance() { return confidance_; }
-
-void Line::setConfidance(float conf) { confidance_ = conf; }
-
-float Line::slope() { 
-    return (end_.y - start_.y) / (end_.x - start_.x);
-}
-
-float Line::yIntersept() { 
-    return start_.y - slope() * start_.x;
-}
-
-std::vector<Vec2<float>> Line::start() { return start_; }
-
-std::vector<Vec2<float>> Line::end() { return end_; }
-
-
-bool Line::isParallel(Line line) { // if lines are parallel and close
-    float parameter = 5;
-    if (yIntersept() - line.yIntersept() <= parameter) // are line interseptor values close 
-    {
-        if (slope() == 0 && (line.slope() == 0))
-        {
-            return true;
-        }
-        else if (slope() == 0) {
-            if (abs(line.slope()) == 0.05) {
-                return true;
-            }
-            return false;
-        }
-        else if (line.slope() == 0) {
-            if (abs(slope()) == 0.05) {
-                return true;
-            }
-            return false;
-        }
-        else if ((line.slope() / slope()) > 0.95 && (line.slope() / slope()) < 1.05) {
-            return true;
-        }
-    }
+  Line(const Vec2<T> &s, const Vec2<T> &e) : start_{s}, end_{e} {}
+  float getConfidance() { return confidance_; }
+  // Chack if lines are parallel
+  // @param line - line to compare to
+  // @param r - maximum offset between lines
+  // @param e - maximum direction difference
+  bool isParallel(const Line<T> &line, float r, float e) {
+    // TODO: Compare slopes, compare distances
     return false;
-}
+  }
 
-bool Line::connect(Line line) {
-
-    if (closeToLine(line.start())) {
-
-        line.setStart(newPoint(line.start()));
-            return true;
-    }
-    else if (closeToLine(line.end())) {
-
-        line.setEnd(newPoint(line.end()));
-            return true;
-    }
-    return false;
-}
-
-std::vector<Vec2<float>> Line::newPoint(const std::vector<Vec2<float>>& s) {
-    // TODO find new point
-
-    std::vector<Vec2<float>> point;
-    return point;
-}
-
-bool Line::merge(Line line) { // first to merge all lines and then use connect to modify the points
-
+  Line<T> merge(const Line<T> line) {
     // TODO merge two lines
-    if (closeToLine(line) && isParallel(line))
-    {
-        /* should merge
+    if (closeToLine(line) && isParallel(line)) {
+      /* should merge
 
-                this should take confidance into consideration?
-                maybe confidance1 * confidance2 = newConfidance?
+              this should take confidance into consideration?
+              maybe confidance1 * confidance2 = newConfidance?
 
-                then take two most far points to make new line
-                what to do with old lines? should there be a destructor in the class?
+              then take two most far points to make new line
+              what to do with old lines? should there be a destructor in the
+         class?
 
-        */
-        return true;
+      */
+      return true;
     }
+  }
 
-    return false;
-}
+  float slope() { return (end_.y - start_.y) / (end_.x - start_.x); }
+  float yIntersept() { return start_.y - slope() * start_.x; }
 
-bool Line::closeToLine(const std::vector<Vec2<float>>& s) {
+  bool overlaps(const Line<T> &line) {
+    Vec2<T> minSelf = Vec2(std::min(start_.x, end_.x), std::min(start_.y, end_.y));
+    Vec2<T> maxSelf = Vec2(std::max(start_.x, end_.x), std::max(start_.y, end_.y));
+    Vec2<T> minOther = Vec2(std::min(line.start_.x, line.end_.x), std::min(line.start_.y, line.end_.y));
+    Vec2<T> maxOther = Vec2(std::max(line.start_.x, line.end_.x), std::max(line.start_.y, line.end_.y));
 
-    float parameter = 5; // parameter to regulate how close is close :D
-    float d1 = abs(slope() * s.x + s.y + yIntersept()) / sqrt(pow(slope(), 2) + 1); // point distance to line
-    float d2 = twoPointDistance(start_, s); // start distance to point
-    float d3 = twoPointDistance(s, end_); // end distance to point
-    float d4 = twoPointDistance(start_, end_); // line lenght
-    float maxDist = d4 + parameter;
+    bool xOverlap = !(minSelf.x > maxOther.x || maxSelf.x < minOther.x);
+    bool yOverlap = !(minSelf.y > maxOther.y || maxSelf.y < minOther.y);
 
-    if (d1 <= parameter && (d3 <= maxDist || d2 <= maxDist))
-    {
-        return true;
-    }
+    return xOverlap && yOverlap;
+  }
 
-    return false;
-}
-
-float Line::twoPointDistance(const std::vector<Vec2<float>>& s, const std::vector<Vec2<float>>& e) {
-
-    return sqrt((s.x + e.x) ^ 2 + (s.y + e.y) ^ 2);
-
-}
+private:
+  Vec2<T> start_;
+  Vec2<T> end_;
+  float confidance_ = 0;
+};
