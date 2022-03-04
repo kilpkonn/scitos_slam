@@ -7,4 +7,4 @@ kmeans:
 iepf:
   epsilon: 0.1
 map:
-  merge_lines_threshold: 0.6
+  merge_lines_threshold: 0.2

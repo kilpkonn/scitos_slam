@@ -94,7 +94,7 @@ void Mapper::step(const ros::TimerEvent &event) {
     }
   }
 
-  map_.accumulate(mapLines);
+  map_.accumulate2(mapLines);
 
   // ROS_INFO("done");
 
