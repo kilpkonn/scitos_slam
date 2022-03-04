@@ -6,3 +6,5 @@ kmeans:
   iterations: 10
 iepf:
   epsilon: 0.1
+map:
+  merge_lines_threshold: 0.6

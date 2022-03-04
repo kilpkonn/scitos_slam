@@ -1,15 +1,16 @@
 #include <cstddef>
+#include <nav_msgs/OccupancyGrid.h>
 #include <ros/console.h>
 #include <tf/LinearMath/Matrix3x3.h>
 #include <tf/transform_datatypes.h>
 #include <vector>
 #include <visualization_msgs/MarkerArray.h>
-#include <nav_msgs/OccupancyGrid.h>
 
 #include "scitos_common/dbscan.hpp"
 #include "scitos_common/grid/morphology.hpp"
 #include "scitos_common/iepf.hpp"
 #include "scitos_common/kmeans.hpp"
+#include "scitos_common/map/line.hpp"
 #include "scitos_common/polar2.hpp"
 
 #include "scitos_annus_loomets_kitsing/mapper.hpp"
@@ -20,21 +21,25 @@ Mapper::Mapper(ros::NodeHandle nh) : nh_{nh} {
       nh_.subscribe("/ground_truth", 1, &Mapper::odometryCallback, this);
   laserScanSub_ =
       nh_.subscribe("/laser_scan", 1, &Mapper::laserScanCallback, this);
-  erosionPub_ = nh_.advertise<visualization_msgs::MarkerArray>(
-      "/debug/erosion", 3);
-  erosionGridPub_ = nh_.advertise<nav_msgs::OccupancyGrid>(
-      "/debug/erosion_grid", 3);
+  erosionPub_ =
+      nh_.advertise<visualization_msgs::MarkerArray>("/debug/erosion", 3);
+  erosionGridPub_ =
+      nh_.advertise<nav_msgs::OccupancyGrid>("/debug/erosion_grid", 3);
   dbscanPub_ =
       nh_.advertise<visualization_msgs::MarkerArray>("/debug/dbscan", 3);
   kmeansPub_ =
       nh_.advertise<visualization_msgs::MarkerArray>("/debug/kmeans", 3);
   linesPub_ = nh_.advertise<visualization_msgs::MarkerArray>("/debug/lines", 3);
+  mapPub_ = nh_.advertise<visualization_msgs::MarkerArray>("/debug/map", 3);
 
   dbscan_.r = nh_.param("/dbscan/r", 0.1f);
   dbscan_.n = nh_.param("/dbscan/n", 10);
   kmeans_.k = nh_.param("/kmeans/k", 10);
   kmeans_.iterations = nh_.param("/kmeans/iterations", 5);
   iepf_.epsilon = nh_.param("/iepf/epsilon", 0.5f);
+  float mergeLinesThreshold = nh_.param("/map/merge_lines_threshold", 0.5f);
+
+  map_ = scitos_common::map::Map<float>(mergeLinesThreshold);
 }
 
 void Mapper::step(const ros::TimerEvent &event) {
@@ -45,10 +50,11 @@ void Mapper::step(const ros::TimerEvent &event) {
     return;
   }
 
-  //ROS_INFO("start");
+  // ROS_INFO("start");
   nav_msgs::OccupancyGrid erodedGrid;
   std::vector<Vec2<float>> scanPoints = getLaserScanPoints();
-  std::vector<Vec2<float>> erodedPoints = grid::open(scanPoints, 0.1f, erodedGrid);
+  std::vector<Vec2<float>> erodedPoints =
+      grid::open(scanPoints, 0.1f, erodedGrid);
   erodedGrid.info.origin.orientation = odometry_->pose.pose.orientation;
   erodedGrid.header = laserScan_.header;
 
@@ -76,15 +82,28 @@ void Mapper::step(const ros::TimerEvent &event) {
     iepf_.lines.push_back(
         scitos_common::douglas_peuker::simplify(cluster, iepf_.epsilon));
   }
-  // TODO: merge lines ....
-  // TODO: connect lines that are close enough
-  //ROS_INFO("done");
+
+  // Split to segments
+  std::vector<scitos_common::map::Line<float>> mapLines;
+  mapLines.reserve(iepf_.lines.size());
+  for (const auto &line : iepf_.lines) {
+    if (line.size() >= 2) {
+      for (size_t i = 0; i < line.size() - 1; i++) {
+        mapLines.push_back({line.at(i), line.at(i + 1), 0.1f});  // TODO: Some estimate for confidence
+      }
+    }
+  }
+
+  map_.accumulate(mapLines);
+
+  // ROS_INFO("done");
 
   erosionGridPub_.publish(erodedGrid);
   publishErosion(erodedPoints);
   publishDbscan(erodedPoints, labels);
   publishKMeans(centroids);
   publishLines();
+  publishMap();
 }
 
 void Mapper::odometryCallback(nav_msgs::OdometryPtr msg) { odometry_ = msg; }
@@ -226,9 +245,42 @@ void Mapper::publishLines() const {
       p.z = 0.05;
       marker.points.push_back(p);
     }
-    marker.id = i++;
+    marker.id = i;
     markers.markers.push_back(marker);
   }
 
   linesPub_.publish(markers);
+}
+
+void Mapper::publishMap() const {
+  visualization_msgs::MarkerArray markers;
+  int i = 0;
+  for (auto line : map_.getLines()) {
+    visualization_msgs::Marker marker;
+    marker.header.frame_id = "odom";
+    marker.type = visualization_msgs::Marker::LINE_STRIP;
+    marker.action = visualization_msgs::Marker::ADD;
+    marker.scale.x = 0.1;
+    marker.scale.y = 0.1;
+    marker.scale.z = 0.1;
+    marker.color.a = 1.0;
+    marker.color.r = std::clamp(i * 0.2, 0.0, 1.0);
+    marker.color.g = std::clamp(-1.0 + i * 0.2, 0.0, 1.0);
+    marker.color.b = 1.0;
+    marker.pose.orientation.w = 1.0;
+
+    geometry_msgs::Point p;
+    p.z = 0.05;
+    p.x = line.p1.x;
+    p.y = line.p1.y;
+    marker.points.push_back(p);
+    p.x = line.p2.x;
+    p.y = line.p2.y;
+    marker.points.push_back(p);
+
+    marker.id = i++;
+    markers.markers.push_back(marker);
+  }
+
+  mapPub_.publish(markers);
 }

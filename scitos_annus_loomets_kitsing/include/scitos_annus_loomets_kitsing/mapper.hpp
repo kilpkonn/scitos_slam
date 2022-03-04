@@ -6,6 +6,7 @@
 #include <sensor_msgs/LaserScan.h>
 #include <visualization_msgs/MarkerArray.h>
 
+#include "scitos_common/map/map.hpp"
 #include "scitos_common/vec2.hpp"
 #include "scitos_common/growing_pc.hpp"
 
@@ -28,6 +29,7 @@ private:
   ros::Publisher dbscanPub_;
   ros::Publisher kmeansPub_;
   ros::Publisher linesPub_;
+  ros::Publisher mapPub_;
 
   struct {
     float r;
@@ -44,6 +46,8 @@ private:
     std::vector<std::vector<Vec2<float>>> lines;
   } iepf_;
 
+  scitos_common::map::Map<float> map_;
+
 
   void odometryCallback(nav_msgs::OdometryPtr msg);
   void laserScanCallback(sensor_msgs::LaserScan msg);
@@ -54,4 +58,5 @@ private:
   void publishKMeans(const std::vector<Vec2<float>> &centroids) const;
   void publishErosion(const std::vector<Vec2<float>> &centroids) const;
   void publishLines() const;
+  void publishMap() const;
 };

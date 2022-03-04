@@ -7,31 +7,29 @@
 
 namespace scitos_common::map {
 
-template <typename T> class Line {
-public:
-  Line(const Vec2<T> &s, const Vec2<T> &e) : p1_{s}, p2_{e} {}
-  float getConfidance() { return confidence_; }
-  float slope() { return (p2_.y - p1_.y) / (p2_.x - p1_.x); }
-  float yIntersept() { return p1_.y - slope() * p1_.x; }
-  bool overlaps(const Line<T> &line) {
-    Vec2<T> minSelf = Vec2(std::min(p1_.x, p2_.x), std::min(p1_.y, p2_.y));
-    Vec2<T> maxSelf = Vec2(std::max(p1_.x, p2_.x), std::max(p1_.y, p2_.y));
-    Vec2<T> minOther = Vec2(std::min(line.p1_.x, line.p2_.x),
-                            std::min(line.p1_.y, line.p2_.y));
-    Vec2<T> maxOther = Vec2(std::max(line.p1_.x, line.p2_.x),
-                            std::max(line.p1_.y, line.p2_.y));
+template <typename T> struct Line {
+  Line(const Vec2<T> &s, const Vec2<T> &e) : p1{s}, p2{e} {}
+  Line(const Vec2<T> &s, const Vec2<T> &e, float conf) : p1{s}, p2{e}, confidence{conf} {}
+  float slope() { return (p2.y - p1.y) / (p2.x - p1.x); }
+  float yIntersept() { return p1.y - slope() * p1.x; }
+  bool overlaps(const Line<T> &line, float padding) {
+    Vec2<T> minSelf = Vec2(std::min(p1.x, p2.x), std::min(p1.y, p2.y));
+    Vec2<T> maxSelf = Vec2(std::max(p1.x, p2.x), std::max(p1.y, p2.y));
+    Vec2<T> minOther = Vec2(std::min(line.p1.x, line.p2.x),
+                            std::min(line.p1.y, line.p2.y));
+    Vec2<T> maxOther = Vec2(std::max(line.p1.x, line.p2.x),
+                            std::max(line.p1.y, line.p2.y));
 
-    bool xOverlap = !(minSelf.x > maxOther.x || maxSelf.x < minOther.x);
-    bool yOverlap = !(minSelf.y > maxOther.y || maxSelf.y < minOther.y);
+    bool xOverlap = !(minSelf.x - padding > maxOther.x || maxSelf.x + padding < minOther.x);
+    bool yOverlap = !(minSelf.y - padding > maxOther.y || maxSelf.y + padding < minOther.y);
 
     return xOverlap && yOverlap;
   }
 
   Vec2<T> toHoughSpace() { return {slope(), yIntersept()}; }
 
-private:
-  Vec2<T> p1_;
-  Vec2<T> p2_;
-  float confidence_ = 0;
+  Vec2<T> p1;
+  Vec2<T> p2;
+  float confidence = 0;
 };
-} // namespace scitos_common
+} // namespace scitos_common::map
