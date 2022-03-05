@@ -63,6 +63,7 @@ public:
     std::vector<Line<T>> merged = lines_;
     merged.reserve(merged.size() + newLines.size());
     merged.insert(merged.end(), newLines.begin(), newLines.end());
+    std::vector<bool> toAdd(merged.size(), true);
 
     // Merge exsisting
     std::vector<Line<T>> tmpLines;
@@ -73,7 +74,10 @@ public:
       Vec2<T> p1 = line.p1;
       Vec2<T> p2 = line.p2;
       Line<T> regLine = line;
-      for (size_t j = 0; j < merged.size(); j++) {
+      for (size_t j = i + 1; j < merged.size(); j++) {
+        // if (i == j) continue;
+
+        // TODO: Merge also lines from farther away that have low conf
         auto newLine = merged.at(j);
         if (line.perpendicularDistance(newLine.p1) < padding_ &&
             line.perpendicularDistance(newLine.p2) < padding_ &&
@@ -93,12 +97,13 @@ public:
           auto [a, b] = maxDist({p1, p2, newLine.p1, newLine.p2});
           p1 = a;
           p2 = b;
+          toAdd[j] = false;
           // confidence =
           //     confidence + newLine.confidence - confidence *
           //     newLine.confidence;
         }
       }
-      if (regLine.confidence > 0.1) {
+      if (regLine.confidence > 0.05 && toAdd.at(i)) {
         // ROS_INFO("conf: %f", regLine.confidence);
         // tmpLines.push_back({p1, p2, confidence * confFade});
         tmpLines.push_back({regLine.projectInf(p1), regLine.projectInf(p2),
@@ -112,8 +117,8 @@ public:
 
 private:
   float mergeThreshold_;
-  float confFade = 0.95f;
-  float padding_ = 0.1f; // TODO: Move to params and reasonable value
+  float confFade = 0.998f;
+  float padding_ = 0.16f; // TODO: Move to params and reasonable value
   std::vector<Line<T>> lines_;
 
   // Needs at least 2 points not to segfault

@@ -89,12 +89,13 @@ void Mapper::step(const ros::TimerEvent &event) {
   for (const auto &line : iepf_.lines) {
     if (line.size() >= 2) {
       for (size_t i = 0; i < line.size() - 1; i++) {
-        mapLines.push_back({line.at(i), line.at(i + 1), 0.1f});  // TODO: Some estimate for confidence
+        mapLines.push_back({line.at(i), line.at(i + 1), 0.05f});  // TODO: Some estimate for confidence
       }
     }
   }
 
   map_.accumulate2(mapLines);
+  ROS_INFO("map size: %zu", map_.getLines().size());
 
   // ROS_INFO("done");
 
