@@ -52,6 +52,20 @@ template <typename T> struct Line {
   }
   float length() const { return (p1 - p2).length(); }
 
+  Line<T> merge(const Line<T> &o) const {
+    // See which way to match
+    auto np1Closer = (o.p1 - p1).length() < (o.p2 - p1).length();
+    auto np1 = np1Closer ? o.p1 : o.p2;
+    auto np2 = !np1Closer ? o.p1 : o.p2;
+    // Give less influence to lower confidence and low length
+    float rpow2 = confidence * confidence * length();
+    float npow2 = o.confidence * o.confidence * o.length();
+    return {(p1 * rpow2 + np1 * npow2) / (rpow2 + npow2),
+            (p2 * rpow2 + np2 * npow2) / (rpow2 + npow2),
+            confidence + o.confidence - confidence * o.confidence};
+  }
+  Vec2<T> dir() const { return (p2 - p1).normalize(); }
+
   Vec2<T> p1;
   Vec2<T> p2;
   float confidence = 0;

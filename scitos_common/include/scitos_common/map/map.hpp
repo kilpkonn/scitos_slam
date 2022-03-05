@@ -60,6 +60,11 @@ public:
     }
   }
 
+  /*!
+   * Accumulate new lines onto map
+   *
+   * @param newLines - new lines to add
+   */
   void accumulate2(const std::vector<Line<T>> &newLines) {
     std::vector<Line<T>> merged = lines_;
     merged.reserve(merged.size() + newLines.size());
@@ -81,17 +86,7 @@ public:
         if (line.perpendicularDistance(newLine.p1) < padding_ &&
             line.perpendicularDistance(newLine.p2) < padding_ &&
             line.overlaps(newLine, padding_)) {
-          auto np1Closer = (newLine.p1 - regLine.p1).length() <
-                           (newLine.p2 - regLine.p1).length();
-          auto np1 = np1Closer ? newLine.p1 : newLine.p2;
-          auto np2 = !np1Closer ? newLine.p1 : newLine.p2;
-          float rpow2 = regLine.confidence * regLine.confidence;
-          float npow2 = newLine.confidence * newLine.confidence;
-          regLine = {(regLine.p1 * rpow2 + np1 * npow2) / (rpow2 + npow2),
-                     (regLine.p2 * rpow2 + np2 * npow2) / (rpow2 + npow2),
-                     regLine.confidence + newLine.confidence -
-                         regLine.confidence * newLine.confidence};
-
+          regLine = regLine.merge(newLine);
           auto [a, b] = maxDist({p1, p2, newLine.p1, newLine.p2});
           p1 = a;
           p2 = b;
@@ -104,6 +99,41 @@ public:
       }
     }
     lines_ = tmpLines;
+  }
+
+  /*!
+   * Prune lines that do not exsist and line endings that extend too far
+   *
+   * @param lines - lines from latest measurement
+   * @param l - left bound vector
+   * @param r - right bound vector
+   */
+  void prune(const std::vector<T> &lines, const Vec2<T> &l, const Vec2<T> &r) {
+    if (lines_.size() < 1) {
+      return;
+    }
+    for (size_t i = 0; i < lines_.size(); i++) {
+      auto line = lines_.at(i);
+      // Recheck these just in case
+      bool p1InFov =
+          (l.y * line.p1.x - l.x * line.p1.y) * (l.y * r.x - l.x * r.y) < 0;
+      bool p2InFov =
+          (l.y * line.p2.x - l.x * line.p2.y) * (l.y * r.x - l.x * r.y) < 0;
+
+      // Some ideas for checking if end should be trimmed
+      // 1. Check if there is point within radious of line end (agains all lines currently detected)
+      // 2. If no line is close decreace line length by some amount
+      // 3. If both points are if fov and both should be trimmed do the trimming as well as decreaceing probability
+      // 4. That's it. Decreace lines again in new loop with new measurements
+
+      if (p1InFov && p2InFov) {
+        // Check if line ends should be trimmed or even line removed
+      } else if (p1InFov) {
+        // Check if p1 should be moved torwards p2
+      } else if (p2InFov) {
+        // Check if p2 should me moved torwards p1
+      }
+    }
   }
 
   std::vector<Line<T>> getLines() const { return lines_; }

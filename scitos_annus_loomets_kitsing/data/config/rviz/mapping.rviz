@@ -405,7 +405,7 @@ Visualization Manager:
       Color: 255; 255; 255
       Color Transformer: Intensity
       Decay Time: 0
-      Enabled: true
+      Enabled: false
       Invert Rainbow: false
       Max Color: 255; 255; 255
       Min Color: 0; 0; 0
@@ -420,7 +420,7 @@ Visualization Manager:
       Unreliable: false
       Use Fixed Frame: true
       Use rainbow: true
-      Value: true
+      Value: false
     - Class: rviz/MarkerArray
       Enabled: false
       Marker Topic: /debug/erosion
@@ -433,12 +433,12 @@ Visualization Manager:
       Class: rviz/Map
       Color Scheme: raw
       Draw Behind: true
-      Enabled: true
+      Enabled: false
       Name: ErosionGrid
       Topic: /debug/erosion_grid
       Unreliable: false
       Use Timestamp: false
-      Value: true
+      Value: false
     - Class: rviz/MarkerArray
       Enabled: true
       Marker Topic: /debug/dbscan
@@ -510,8 +510,8 @@ Visualization Manager:
       Near Clip Distance: 0.009999999776482582
       Scale: 64.81287384033203
       Target Frame: base_link
-      X: 5.182272911071777
-      Y: 8.031319618225098
+      X: 1.7493375539779663
+      Y: 7.240893840789795
     Saved: ~
 Window Geometry:
   Displays:
