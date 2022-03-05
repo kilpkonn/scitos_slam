@@ -7,4 +7,5 @@ kmeans:
 iepf:
   epsilon: 0.1
 map:
-  merge_lines_threshold: 0.2
+  padding: 0.1
+  fade_power: 1.05 # [1, inf)

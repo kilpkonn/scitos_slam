@@ -87,8 +87,8 @@ def getKey():
     termios.tcsetattr(sys.stdin, termios.TCSADRAIN, settings)
     return key
 
-speed = .5
-turn = 1
+speed = .7
+turn = 1.1
 
 
 def vels(speed, turn):
@@ -98,8 +98,8 @@ if __name__ == "__main__":
     settings = termios.tcgetattr(sys.stdin)
 
     rospy.init_node('turtlebot_teleop')
-    # pub = rospy.Publisher('cmd_vel', Twist)
-    pub = rospy.Publisher('controller_diffdrive/cmd_vel', Twist)
+    pub = rospy.Publisher('cmd_vel', Twist)
+    # pub = rospy.Publisher('controller_diffdrive/cmd_vel', Twist)
 
     x = 0
     th = 0

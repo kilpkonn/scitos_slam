@@ -15,7 +15,10 @@ namespace scitos_common::map {
 template <typename T> class Map {
 public:
   Map() = default;
-  Map(float mergeThreshold) : mergeThreshold_{mergeThreshold} {}
+  Map(float padding, float fadePower)
+      : padding_{padding}, fadePower_{fadePower} {}
+
+  // TODO: Decide if this should be removed in favour of accumulate2
   void accumulate(const std::vector<Line<T>> &newLines) {
     std::vector<bool> merged(newLines.size(), false);
 
@@ -26,14 +29,13 @@ public:
       T xMax = std::max(line.p1.x, line.p2.x);
       T yMin = std::min(line.p1.y, line.p2.y);
       T yMax = std::max(line.p1.y, line.p2.y);
-      float confidence =
-          line.confidence; // TODO: Bayesian probability: p1 + p2 - p1 * p2
+      float confidence = line.confidence;
       auto updated = line.toHoughSpace(); // * confidence;
       for (size_t j = 0; j < newLines.size(); j++) {
         auto newLine = newLines.at(j);
         auto nHough = newLine.toHoughSpace();
         if (line.overlaps(newLine, padding_) &&
-            std::atan(lHough.x - nHough.x) < mergeThreshold_) {
+            std::atan(lHough.x - nHough.x) < 0.3f) {
           updated = nHough; /*   * newLine.confidence; */
           confidence += newLine.confidence;
           xMin = std::min(xMin, std::min(newLine.p1.x, newLine.p2.x));
@@ -56,7 +58,6 @@ public:
         lines_.push_back(newLines.at(i));
       }
     }
-    // TODO: Lines in self should be merged as well
   }
 
   void accumulate2(const std::vector<Line<T>> &newLines) {
@@ -70,12 +71,10 @@ public:
     tmpLines.reserve(merged.size());
     for (int i = 0; i < merged.size(); i++) {
       auto line = merged.at(i);
-      // float confidence = line.confidence;
       Vec2<T> p1 = line.p1;
       Vec2<T> p2 = line.p2;
       Line<T> regLine = line;
       for (size_t j = i + 1; j < merged.size(); j++) {
-        // if (i == j) continue;
 
         // TODO: Merge also lines from farther away that have low conf
         auto newLine = merged.at(j);
@@ -86,28 +85,22 @@ public:
                            (newLine.p2 - regLine.p1).length();
           auto np1 = np1Closer ? newLine.p1 : newLine.p2;
           auto np2 = !np1Closer ? newLine.p1 : newLine.p2;
-          regLine = {
-              (regLine.p1 * regLine.confidence + np1 * newLine.confidence) /
-                  (regLine.confidence + newLine.confidence),
-              (regLine.p2 * regLine.confidence + np2 * newLine.confidence) /
-                  (regLine.confidence + newLine.confidence),
-              regLine.confidence + newLine.confidence -
-                  regLine.confidence * newLine.confidence};
+          float rpow2 = regLine.confidence * regLine.confidence;
+          float npow2 = newLine.confidence * newLine.confidence;
+          regLine = {(regLine.p1 * rpow2 + np1 * npow2) / (rpow2 + npow2),
+                     (regLine.p2 * rpow2 + np2 * npow2) / (rpow2 + npow2),
+                     regLine.confidence + newLine.confidence -
+                         regLine.confidence * newLine.confidence};
 
           auto [a, b] = maxDist({p1, p2, newLine.p1, newLine.p2});
           p1 = a;
           p2 = b;
           toAdd[j] = false;
-          // confidence =
-          //     confidence + newLine.confidence - confidence *
-          //     newLine.confidence;
         }
       }
       if (regLine.confidence > 0.05 && toAdd.at(i)) {
-        // ROS_INFO("conf: %f", regLine.confidence);
-        // tmpLines.push_back({p1, p2, confidence * confFade});
         tmpLines.push_back({regLine.projectInf(p1), regLine.projectInf(p2),
-                            regLine.confidence * confFade});
+                            std::pow(regLine.confidence, fadePower_)});
       }
     }
     lines_ = tmpLines;
@@ -116,9 +109,8 @@ public:
   std::vector<Line<T>> getLines() const { return lines_; }
 
 private:
-  float mergeThreshold_;
-  float confFade = 0.998f;
-  float padding_ = 0.16f; // TODO: Move to params and reasonable value
+  float fadePower_;
+  float padding_;
   std::vector<Line<T>> lines_;
 
   // Needs at least 2 points not to segfault

@@ -1,9 +1,11 @@
+#include <algorithm>
 #include <cstddef>
+#include <vector>
+
 #include <nav_msgs/OccupancyGrid.h>
 #include <ros/console.h>
 #include <tf/LinearMath/Matrix3x3.h>
 #include <tf/transform_datatypes.h>
-#include <vector>
 #include <visualization_msgs/MarkerArray.h>
 
 #include "scitos_common/dbscan.hpp"
@@ -12,9 +14,9 @@
 #include "scitos_common/kmeans.hpp"
 #include "scitos_common/map/line.hpp"
 #include "scitos_common/polar2.hpp"
+#include "scitos_common/vec2.hpp"
 
 #include "scitos_annus_loomets_kitsing/mapper.hpp"
-#include "scitos_common/vec2.hpp"
 
 Mapper::Mapper(ros::NodeHandle nh) : nh_{nh} {
   odometrySub_ =
@@ -37,9 +39,10 @@ Mapper::Mapper(ros::NodeHandle nh) : nh_{nh} {
   kmeans_.k = nh_.param("/kmeans/k", 10);
   kmeans_.iterations = nh_.param("/kmeans/iterations", 5);
   iepf_.epsilon = nh_.param("/iepf/epsilon", 0.5f);
-  float mergeLinesThreshold = nh_.param("/map/merge_lines_threshold", 0.5f);
+  float padding = nh_.param("/map/padding", 0.05f);
+  float fadePower = nh_.param("/map/fade_power", 0.1f);
 
-  map_ = scitos_common::map::Map<float>(mergeLinesThreshold);
+  map_ = scitos_common::map::Map<float>(padding, fadePower);
 }
 
 void Mapper::step(const ros::TimerEvent &event) {
@@ -86,16 +89,20 @@ void Mapper::step(const ros::TimerEvent &event) {
   // Split to segments
   std::vector<scitos_common::map::Line<float>> mapLines;
   mapLines.reserve(iepf_.lines.size());
-  for (const auto &line : iepf_.lines) {
+  for (int i = 0; i < iepf_.lines.size(); i++) {
+    auto line = iepf_.lines.at(i);
+    auto conf =
+        static_cast<float>(clusters.at(i).size()) / laserScan_.ranges.size();
+    conf = std::clamp(conf * 2, 0.f, 0.5f); // TODO: to params
     if (line.size() >= 2) {
       for (size_t i = 0; i < line.size() - 1; i++) {
-        mapLines.push_back({line.at(i), line.at(i + 1), 0.05f});  // TODO: Some estimate for confidence
+        mapLines.push_back({line.at(i), line.at(i + 1), conf});  // TODO: Move to iepf as it has info of points
       }
     }
   }
 
   map_.accumulate2(mapLines);
-  ROS_INFO("map size: %zu", map_.getLines().size());
+  // ROS_INFO("map size: %zu", map_.getLines().size());
 
   // ROS_INFO("done");
 
