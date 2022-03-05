@@ -1,8 +1,8 @@
 #pragma once
 
 #include <cmath>
-#include <vector>
 #include <iostream>
+#include <vector>
 
 #include <opencv2/core/types.hpp>
 
@@ -31,7 +31,7 @@ template <typename T> struct Vec2 {
   auto operator>(float n) const { return length() > n; }
   auto operator>=(float n) const { return length() >= n; }
   auto operator==(Vec2<T> &o) const { return x == o.x && y == o.y; }
-  friend std::ostream& operator<<(std::ostream& os, const Vec2<T>& v){
+  friend std::ostream &operator<<(std::ostream &os, const Vec2<T> &v) {
     os << '{' << v.x << ',' << v.y << '}';
     return os;
   }
@@ -43,7 +43,9 @@ template <typename T> struct Vec2 {
   operator cv::Point_<T>() const { return {x, y}; }
 
   float dot() const { return x * x + y * y; }
+  float dot(const Vec2<T> &o) const { return x * o.x + y * o.y; }
   float length() const { return std::sqrt(dot()); }
   Vec2<T> round() { return {std::round(x), std::round(y)}; }
   Vec2<T> ceil() { return {std::ceil(x), std::ceil(y)}; }
+  Vec2<T> normalize() { return *this / length(); }
 };

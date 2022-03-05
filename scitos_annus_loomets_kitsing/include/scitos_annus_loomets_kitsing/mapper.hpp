@@ -52,7 +52,6 @@ private:
   void odometryCallback(nav_msgs::OdometryPtr msg);
   void laserScanCallback(sensor_msgs::LaserScan msg);
   std::vector<Vec2<float>> getLaserScanPoints();
-  sensor_msgs::LaserScan getLaserScan(std::vector<Vec2<float>> points);
   void publishDbscan(const std::vector<Vec2<float>> &points,
                      const std::vector<int> &labels) const;
   void publishKMeans(const std::vector<Vec2<float>> &centroids) const;

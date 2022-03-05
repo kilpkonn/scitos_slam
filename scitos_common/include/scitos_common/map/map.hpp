@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <cmath>
 #include <cstddef>
+#include <iterator>
 #include <tuple>
 #include <vector>
 
@@ -59,56 +60,50 @@ public:
   }
 
   void accumulate2(const std::vector<Line<T>> &newLines) {
-    std::vector<bool> merged(newLines.size(), false);
-
-    for (int i = 0; i < lines_.size(); i++) {
-      auto line = lines_.at(i);
-      float confidence = line.confidence;
-      Vec2<T> p1 = line.p1;
-      Vec2<T> p2 = line.p2;
-      for (size_t j = 0; j < newLines.size(); j++) {
-        auto newLine = newLines.at(j);
-        // TODO: Confidence, maybe merge lines that are farther away with
-        // smaller conf
-        if (line.perpendicularDistance(newLine.p1) < padding_ &&
-            line.perpendicularDistance(newLine.p2) < padding_ &&
-            line.overlaps(newLine, padding_)) {
-          auto [a, b] = maxDist({p1, p2, newLine.p1, newLine.p2});
-          p1 = a;
-          p2 = b;
-          merged[j] = true;
-        }
-      }
-      // updated = updated / confidence;
-      Line<T> updatedLine(p1, p2, confidence);
-      lines_[i] = updatedLine;
-    }
-
-    for (size_t i = 0; i < newLines.size(); i++) {
-      if (!merged.at(i)) {
-        lines_.push_back(newLines.at(i));
-      }
-    }
+    std::vector<Line<T>> merged = lines_;
+    merged.reserve(merged.size() + newLines.size());
+    merged.insert(merged.end(), newLines.begin(), newLines.end());
 
     // Merge exsisting
     std::vector<Line<T>> tmpLines;
-    tmpLines.reserve(lines_.size());
-    for (int i = 0; i < lines_.size(); i++) {
-      auto line = lines_.at(i);
-      float confidence = line.confidence;
+    tmpLines.reserve(merged.size());
+    for (int i = 0; i < merged.size(); i++) {
+      auto line = merged.at(i);
+      // float confidence = line.confidence;
       Vec2<T> p1 = line.p1;
       Vec2<T> p2 = line.p2;
-      for (size_t j = 0; j < lines_.size(); j++) {
-        auto newLine = lines_.at(j);
+      Line<T> regLine = line;
+      for (size_t j = 0; j < merged.size(); j++) {
+        auto newLine = merged.at(j);
         if (line.perpendicularDistance(newLine.p1) < padding_ &&
             line.perpendicularDistance(newLine.p2) < padding_ &&
             line.overlaps(newLine, padding_)) {
+          auto np1Closer = (newLine.p1 - regLine.p1).length() <
+                           (newLine.p2 - regLine.p1).length();
+          auto np1 = np1Closer ? newLine.p1 : newLine.p2;
+          auto np2 = !np1Closer ? newLine.p1 : newLine.p2;
+          regLine = {
+              (regLine.p1 * regLine.confidence + np1 * newLine.confidence) /
+                  (regLine.confidence + newLine.confidence),
+              (regLine.p2 * regLine.confidence + np2 * newLine.confidence) /
+                  (regLine.confidence + newLine.confidence),
+              regLine.confidence + newLine.confidence -
+                  regLine.confidence * newLine.confidence};
+
           auto [a, b] = maxDist({p1, p2, newLine.p1, newLine.p2});
           p1 = a;
           p2 = b;
+          // confidence =
+          //     confidence + newLine.confidence - confidence *
+          //     newLine.confidence;
         }
       }
-      tmpLines.push_back({p1, p2, confidence});
+      if (regLine.confidence > 0.1) {
+        // ROS_INFO("conf: %f", regLine.confidence);
+        // tmpLines.push_back({p1, p2, confidence * confFade});
+        tmpLines.push_back({regLine.projectInf(p1), regLine.projectInf(p2),
+                            regLine.confidence * confFade});
+      }
     }
     lines_ = tmpLines;
   }
@@ -117,9 +112,11 @@ public:
 
 private:
   float mergeThreshold_;
-  float padding_ = 0.3f; // TODO: Move to params and reasonable value
+  float confFade = 0.95f;
+  float padding_ = 0.1f; // TODO: Move to params and reasonable value
   std::vector<Line<T>> lines_;
 
+  // Needs at least 2 points not to segfault
   std::tuple<Vec2<T>, Vec2<T>> maxDist(const std::vector<Vec2<T>> &points) {
     auto p1 = points.at(0);
     auto p2 = points.at(1);

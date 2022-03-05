@@ -131,16 +131,6 @@ std::vector<Vec2<float>> Mapper::getLaserScanPoints() {
   return output;
 }
 
-sensor_msgs::LaserScan Mapper::getLaserScan(std::vector<Vec2<float>> points) {
-  sensor_msgs::LaserScan scan;
-  if (laserScan_.header.stamp.isValid()) {
-    scan.header = laserScan_.header;
-  }
-
-  // TODO: Finish this. or is this even required?
-  return scan;
-}
-
 void Mapper::publishDbscan(const std::vector<Vec2<float>> &points,
                            const std::vector<int> &labels) const {
   visualization_msgs::MarkerArray markers;
@@ -263,9 +253,9 @@ void Mapper::publishMap() const {
     marker.scale.x = 0.1;
     marker.scale.y = 0.1;
     marker.scale.z = 0.1;
-    marker.color.a = 1.0;
-    marker.color.r = std::clamp(i * 0.2, 0.0, 1.0);
-    marker.color.g = std::clamp(-1.0 + i * 0.2, 0.0, 1.0);
+    marker.color.a = line.confidence;
+    marker.color.r = std::clamp(i * 0.1, 0.0, 1.0);
+    marker.color.g = std::clamp(-1.0 + i * 0.1, 0.0, 1.0);
     marker.color.b = 1.0;
     marker.pose.orientation.w = 1.0;
 

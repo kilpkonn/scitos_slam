@@ -1,6 +1,7 @@
 #pragma once
 
 #include <algorithm>
+#include <cmath>
 #include <vector>
 
 #include "scitos_common/vec2.hpp"
@@ -38,6 +39,18 @@ template <typename T> struct Line {
     float d = abs(cross_product / d_vec2);
     return d;
   }
+
+  Vec2<T> projectInf(const Vec2<T> &p) const {
+    Vec2<T> heading = (p2 - p1).normalize();
+    Vec2<T> lhs = p - p1;
+    return p1 + heading * lhs.dot(heading);
+  }
+  Vec2<T> project(const Vec2<T> &p) const {
+    Vec2<T> r = projectInf(p);
+    float magMax = (p2 - p1).length();
+    return p1 + (p2 - p1).normalize() * std::clamp(r.length(), 0.f, magMax);
+  }
+  float length() const { return (p1 - p2).length(); }
 
   Vec2<T> p1;
   Vec2<T> p2;
