@@ -4,6 +4,7 @@
 #include <cmath>
 #include <cstddef>
 #include <iterator>
+#include <optional>
 #include <tuple>
 #include <vector>
 
@@ -119,16 +120,20 @@ public:
       bool p1InFov = l.cross(line.p1 - loc) > 0 && (line.p1 - loc).cross(r) > 0;
       bool p2InFov = l.cross(line.p2 - loc) > 0 && (line.p2 - loc).cross(r) > 0;
 
-      // BUG: It needs to be checked if line is visible eg. not behind some
-      // other line
-      if (p1InFov && p2InFov) {
-        // Check if line ends should be trimmed or even line removed
-        lines_[i].p1 = line.p1 + (line.p2 - line.p1).normalize() * 0.03f;
-        lines_[i].p2 = line.p2 + (line.p1 - line.p2).normalize() * 0.03f;
-      } else if (p1InFov) {
+      bool p1Visible = true;
+      bool p2Visible = true;
+
+      // BUG: Visibility check seems to fail
+      for (auto ln : lines) {
+        p1Visible &= ln.intersect({line.p1, loc}) == std::nullopt;
+        p2Visible &= ln.intersect({line.p2, loc}) == std::nullopt;
+      }
+
+      if (p1InFov && p1Visible) {
         // Check if p1 should be moved torwards p2
         lines_[i].p1 = line.p1 + (line.p2 - line.p1).normalize() * 0.03f;
-      } else if (p2InFov) {
+      }
+      if (p2InFov && p2Visible) {
         // Check if p2 should me moved torwards p1
         lines_[i].p2 = line.p2 + (line.p1 - line.p2).normalize() * 0.03f;
       }
