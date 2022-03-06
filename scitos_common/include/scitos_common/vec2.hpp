@@ -44,6 +44,7 @@ template <typename T> struct Vec2 {
 
   float dot() const { return x * x + y * y; }
   float dot(const Vec2<T> &o) const { return x * o.x + y * o.y; }
+  float cross(const Vec2<T> &o) const { return x * o.y - y * o.x; }
   float length() const { return std::sqrt(dot()); }
   Vec2<T> round() { return {std::round(x), std::round(y)}; }
   Vec2<T> ceil() { return {std::ceil(x), std::ceil(y)}; }

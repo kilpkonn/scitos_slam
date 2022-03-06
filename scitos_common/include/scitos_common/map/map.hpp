@@ -81,7 +81,7 @@ public:
       Line<T> regLine = line;
       for (size_t j = i + 1; j < merged.size(); j++) {
 
-        // TODO: Merge also lines from farther away that have low conf
+        // TODO: Merge also lines from farther away that have low conf?
         auto newLine = merged.at(j);
         if (line.perpendicularDistance(newLine.p1) < padding_ &&
             line.perpendicularDistance(newLine.p2) < padding_ &&
@@ -93,7 +93,7 @@ public:
           toAdd[j] = false;
         }
       }
-      if (regLine.confidence > 0.05 && toAdd.at(i)) {
+      if (regLine.confidence > 0.05 && toAdd.at(i) && regLine.length() > 0.02) {
         tmpLines.push_back({regLine.projectInf(p1), regLine.projectInf(p2),
                             std::pow(regLine.confidence, fadePower_)});
       }
@@ -105,33 +105,33 @@ public:
    * Prune lines that do not exsist and line endings that extend too far
    *
    * @param lines - lines from latest measurement
+   * @param loc - current location
    * @param l - left bound vector
    * @param r - right bound vector
    */
-  void prune(const std::vector<T> &lines, const Vec2<T> &l, const Vec2<T> &r) {
+  void prune(const std::vector<Line<T>> &lines, const Vec2<T> &loc,
+             const Vec2<T> &l, const Vec2<T> &r) {
     if (lines_.size() < 1) {
       return;
     }
     for (size_t i = 0; i < lines_.size(); i++) {
       auto line = lines_.at(i);
-      // Recheck these just in case
-      bool p1InFov =
-          (l.y * line.p1.x - l.x * line.p1.y) * (l.y * r.x - l.x * r.y) < 0;
-      bool p2InFov =
-          (l.y * line.p2.x - l.x * line.p2.y) * (l.y * r.x - l.x * r.y) < 0;
+      // BUG: This is broken
+      bool p1InFov = l.cross(line.p1 - loc) * l.cross(r) > 0;
+      bool p2InFov = l.cross(line.p2 - loc) * l.cross(r) > 0;
 
-      // Some ideas for checking if end should be trimmed
-      // 1. Check if there is point within radious of line end (agains all lines currently detected)
-      // 2. If no line is close decreace line length by some amount
-      // 3. If both points are if fov and both should be trimmed do the trimming as well as decreaceing probability
-      // 4. That's it. Decreace lines again in new loop with new measurements
-
+      // BUG: It needs to be checked if line is visible eg. not behind some
+      // other line
       if (p1InFov && p2InFov) {
         // Check if line ends should be trimmed or even line removed
+        lines_[i].p1 = line.p1 + (line.p2 - line.p1).normalize() * 0.03f;
+        lines_[i].p2 = line.p2 + (line.p1 - line.p2).normalize() * 0.03f;
       } else if (p1InFov) {
         // Check if p1 should be moved torwards p2
+        lines_[i].p1 = line.p1 + (line.p2 - line.p1).normalize() * 0.03f;
       } else if (p2InFov) {
         // Check if p2 should me moved torwards p1
+        lines_[i].p2 = line.p2 + (line.p1 - line.p2).normalize() * 0.03f;
       }
     }
   }

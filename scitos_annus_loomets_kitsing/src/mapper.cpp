@@ -99,6 +99,13 @@ void Mapper::step(const ros::TimerEvent &event) {
   }
 
   map_.accumulate2(mapLines);
+
+  if (erodedPoints.size() > 0) {
+    const Vec2<float> loc(odometry_->pose.pose.position.x,
+                          odometry_->pose.pose.position.y);
+    map_.prune(mapLines, loc, erodedPoints[0] - loc,
+               erodedPoints[erodedPoints.size() - 1] - loc);
+  }
   // ROS_INFO("map size: %zu", map_.getLines().size());
 
   // ROS_INFO("done");
