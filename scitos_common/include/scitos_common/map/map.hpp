@@ -125,8 +125,9 @@ public:
 
       // BUG: Visibility check seems to fail
       for (auto ln : lines) {
-        p1Visible &= ln.intersect({line.p1, loc}) == std::nullopt;
-        p2Visible &= ln.intersect({line.p2, loc}) == std::nullopt;
+        // Raycast
+        p1Visible &= !ln.intersect({line.p1, loc});
+        p2Visible &= !ln.intersect({line.p2, loc});
       }
 
       if (p1InFov && p1Visible) {
