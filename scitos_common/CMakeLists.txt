@@ -11,6 +11,7 @@ endif()
 find_package(catkin REQUIRED
   std_msgs
   message_generation
+  tf
 )
 
 find_package( OpenCV REQUIRED )
@@ -62,7 +63,7 @@ enable_testing()
 file(GLOB_RECURSE SCITOS_COMMON_TESTS_SRC test/*.cpp)
 add_executable(sciots_common_tests ${SCITOS_COMMON_TESTS_SRC})
 
-target_link_libraries(sciots_common_tests gtest_main ${OpenCV_LIBS})
+target_link_libraries(sciots_common_tests gtest_main ${OpenCV_LIBS} ${catkin_LIBRARIES})
 
 include(GoogleTest)
 gtest_discover_tests(sciots_common_tests)

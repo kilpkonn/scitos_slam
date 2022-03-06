@@ -18,6 +18,7 @@ find_package(catkin REQUIRED COMPONENTS
   visualization_msgs
   roscpp
   rospy
+  tf
   scitos_common
 )
 

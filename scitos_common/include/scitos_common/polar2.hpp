@@ -3,6 +3,8 @@
 #include <cmath>
 #include <vector>
 
+#include <tf/transform_datatypes.h>
+
 #include "scitos_common/vec2.hpp"
 #include "scitos_common/util.hpp"
 
@@ -48,6 +50,7 @@ template <typename T> struct Polar2 {
 
   operator float() const { return length(); }
   operator Vec2<T>() const { return {r * cos(theta), r * sin(theta)}; }
+  operator tf::Vector3() const { return {r * cos(theta), r * sin(theta), 0}; }
 
   float dot() const { return r * r; }
   float length() const { return r; }

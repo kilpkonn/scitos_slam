@@ -6,6 +6,9 @@
 #include <sensor_msgs/LaserScan.h>
 #include <visualization_msgs/MarkerArray.h>
 
+#include <tf/transform_listener.h>
+#include <tf/transform_broadcaster.h>
+
 #include "scitos_common/growing_pc.hpp"
 #include "scitos_common/map/line.hpp"
 #include "scitos_common/map/map.hpp"
@@ -20,6 +23,7 @@ private:
   ros::NodeHandle nh_;
 
   nav_msgs::OdometryPtr odometry_;
+  tf::StampedTransform worldToRobot_;
   sensor_msgs::LaserScan laserScan_;
 
   ros::Subscriber odometrySub_;
@@ -31,6 +35,8 @@ private:
   ros::Publisher kmeansPub_;
   ros::Publisher linesPub_;
   ros::Publisher mapPub_;
+
+  tf::TransformListener tfListener_;
 
   struct {
     float r;
@@ -51,7 +57,7 @@ private:
 
   void odometryCallback(nav_msgs::OdometryPtr msg);
   void laserScanCallback(sensor_msgs::LaserScan msg);
-  std::vector<Vec2<float>> getLaserScanPoints();
+  std::vector<Vec2<float>> getLaserScanPoints(const ros::Time& currentTime);
   void publishDbscan(const std::vector<Vec2<float>> &points,
                      const std::vector<int> &labels) const;
   void publishKMeans(const std::vector<Vec2<float>> &centroids) const;

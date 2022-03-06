@@ -57,7 +57,7 @@ void Mapper::step(const ros::TimerEvent &event) {
 
   // ROS_INFO("start");
   nav_msgs::OccupancyGrid erodedGrid;
-  std::vector<Vec2<float>> scanPoints = getLaserScanPoints();
+  std::vector<Vec2<float>> scanPoints = getLaserScanPoints(event.last_real);
   std::vector<Vec2<float>> erodedPoints =
       grid::open(scanPoints, 0.1f, erodedGrid);
   erodedGrid.info.origin.orientation = odometry_->pose.pose.orientation;
@@ -118,14 +118,37 @@ void Mapper::step(const ros::TimerEvent &event) {
   publishMap();
 }
 
-void Mapper::odometryCallback(nav_msgs::OdometryPtr msg) { odometry_ = msg; }
+void Mapper::odometryCallback(nav_msgs::OdometryPtr msg) {
+  odometry_ = msg;
+
+  worldToRobot_.child_frame_id_ = odometry_->child_frame_id;
+  worldToRobot_.frame_id_ = odometry_->header.frame_id;
+  worldToRobot_.stamp_ = odometry_->header.stamp;
+  worldToRobot_.setOrigin({odometry_->pose.pose.position.x
+                           , odometry_->pose.pose.position.y
+                           , odometry_->pose.pose.position.z});
+  worldToRobot_.setRotation({odometry_->pose.pose.orientation.x
+                             , odometry_->pose.pose.orientation.y
+                             , odometry_->pose.pose.orientation.z
+                             , odometry_->pose.pose.orientation.w});
+}
 
 void Mapper::laserScanCallback(sensor_msgs::LaserScan msg) { laserScan_ = msg; }
 
-std::vector<Vec2<float>> Mapper::getLaserScanPoints() {
+std::vector<Vec2<float>> Mapper::getLaserScanPoints(const ros::Time& currentTime) {
   if (!laserScan_.header.stamp.isValid() || odometry_ == nullptr) {
     return {};
   }
+
+  tf::StampedTransform lidarToRobot;
+    try{
+      tfListener_.lookupTransform("/base_footprint", "/hokuyo_link",
+                               currentTime, lidarToRobot);
+    }
+    catch (tf::TransformException ex){
+      ROS_ERROR("%s",ex.what());
+      ros::Duration(1.0).sleep();
+    }
 
   const Vec2<float> loc(odometry_->pose.pose.position.x,
                         odometry_->pose.pose.position.y);
@@ -137,8 +160,7 @@ std::vector<Vec2<float>> Mapper::getLaserScanPoints() {
   std::vector<Vec2<float>> output;
   output.reserve(laserScan_.ranges.size());
   for (uint i = 0; i < laserScan_.ranges.size(); i++) {
-    float angle = yaw + laserScan_.angle_min + laserScan_.angle_increment * i;
-    output.push_back(Polar2(laserScan_.ranges[i], angle) + loc);
+    output.push_back(worldToRobot_ * lidarToRobot * static_cast<tf::Vector3>(Polar2(laserScan_.ranges[i], laserScan_.angle_min + laserScan_.angle_increment * i)));
   }
   return output;
 }
