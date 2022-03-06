@@ -1,5 +1,7 @@
 #include <algorithm>
+#include <cmath>
 #include <cstddef>
+#include <iterator>
 #include <vector>
 
 #include <nav_msgs/OccupancyGrid.h>
@@ -82,23 +84,18 @@ void Mapper::step(const ros::TimerEvent &event) {
 
   iepf_.lines.clear();
   for (const auto &cluster : clusters) {
-    iepf_.lines.push_back(
-        scitos_common::douglas_peuker::simplify(cluster, iepf_.epsilon));
+    iepf_.lines.push_back(scitos_common::douglas_peuker::simplify2<float>(
+        cluster, iepf_.epsilon, [&](const std::vector<Vec2<float>> &v) {
+          float len = v.size() > 0 ? (v[0] - v[v.size() - 1]).length() : 1.f;
+          return std::clamp(static_cast<float>(v.size()) / len, 0.f, 0.5f);
+        }));
   }
 
-  // Split to segments
+  // Flatten lines
   std::vector<scitos_common::map::Line<float>> mapLines;
   mapLines.reserve(iepf_.lines.size());
-  for (int i = 0; i < iepf_.lines.size(); i++) {
-    auto line = iepf_.lines.at(i);
-    auto conf =
-        static_cast<float>(clusters.at(i).size()) / laserScan_.ranges.size();
-    conf = std::clamp(conf * 2, 0.f, 0.5f); // TODO: to params
-    if (line.size() >= 2) {
-      for (size_t i = 0; i < line.size() - 1; i++) {
-        mapLines.push_back({line.at(i), line.at(i + 1), conf});  // TODO: Move to iepf as it has info of points
-      }
-    }
+  for (auto line : iepf_.lines) {
+    mapLines.insert(mapLines.end(), line.begin(), line.end());
   }
 
   map_.accumulate2(mapLines);
@@ -236,11 +233,14 @@ void Mapper::publishLines() const {
     marker.color.b = 1.0;
     marker.pose.orientation.w = 1.0;
 
-    for (auto point : line) {
+    for (auto segment : line) {
       geometry_msgs::Point p;
-      p.x = point.x;
-      p.y = point.y;
       p.z = 0.05;
+      p.x = segment.p1.x;
+      p.y = segment.p1.y;
+      marker.points.push_back(p);
+      p.x = segment.p2.x;
+      p.y = segment.p2.y;
       marker.points.push_back(p);
     }
     marker.id = i;

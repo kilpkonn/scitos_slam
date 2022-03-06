@@ -6,9 +6,10 @@
 #include <sensor_msgs/LaserScan.h>
 #include <visualization_msgs/MarkerArray.h>
 
+#include "scitos_common/growing_pc.hpp"
+#include "scitos_common/map/line.hpp"
 #include "scitos_common/map/map.hpp"
 #include "scitos_common/vec2.hpp"
-#include "scitos_common/growing_pc.hpp"
 
 class Mapper {
 public:
@@ -43,11 +44,10 @@ private:
 
   struct {
     float epsilon;
-    std::vector<std::vector<Vec2<float>>> lines;
+    std::vector<std::vector<scitos_common::map::Line<float>>> lines;
   } iepf_;
 
   scitos_common::map::Map<float> map_;
-
 
   void odometryCallback(nav_msgs::OdometryPtr msg);
   void laserScanCallback(sensor_msgs::LaserScan msg);
