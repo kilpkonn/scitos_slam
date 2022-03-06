@@ -1,0 +1,11 @@
+[ver:1,total:5100,branch:master]
+scitos_common/include/scitos_common/map/line.hpp:2716,1646589600:934,1646593200:1782,m
+scitos_common/test/line_test.cpp:755,1646589600:276,1646593200:479,m
+scitos_common/include/scitos_common/map/map.hpp:507,1646589600:462,1646593200:45,m
+scitos_common/CMakeLists.txt:300,1646589600:120,1646593200:180,r
+scitos_common/test/grid_transformations_test.cpp:210,1646589600:180,1646593200:30,m
+.git/COMMIT_EDITMSG:200,1646589600:140,1646593200:60,r
+scitos_annus_loomets_kitsing/data/config/mapper.yaml:160,1646593200:160,r
+scitos_annus_loomets_kitsing/src/mapper.cpp:144,1646589600:60,1646593200:84,r
+scitos_common/include/scitos_common/vec2.hpp:84,1646589600:24,1646593200:60,r
+scitos_common/test/polar2_test.cpp:24,1646589600:24,r
