@@ -116,9 +116,8 @@ public:
     }
     for (size_t i = 0; i < lines_.size(); i++) {
       auto line = lines_.at(i);
-      // BUG: This is broken
-      bool p1InFov = l.cross(line.p1 - loc) * l.cross(r) > 0;
-      bool p2InFov = l.cross(line.p2 - loc) * l.cross(r) > 0;
+      bool p1InFov = l.cross(line.p1 - loc) > 0 && (line.p1 - loc).cross(r) > 0;
+      bool p2InFov = l.cross(line.p2 - loc) > 0 && (line.p2 - loc).cross(r) > 0;
 
       // BUG: It needs to be checked if line is visible eg. not behind some
       // other line
