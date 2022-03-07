@@ -37,3 +37,11 @@ TEST(Test1, NoIntersction) {
   auto res = l1.intersect(l2);
   ASSERT_TRUE(res == std::nullopt);
 }
+
+TEST(TestParallel, Intersction) {
+  Line<float> l1({1.f, 0.f}, {1.f, 2.f});
+  Line<float> l2({0.f, 1.f}, {2.f, 1.f});
+  auto res = l1.intersect(l2);
+  ASSERT_FLOAT_EQ(res->x, 1.f);
+  ASSERT_FLOAT_EQ(res->y, 1.f);
+}

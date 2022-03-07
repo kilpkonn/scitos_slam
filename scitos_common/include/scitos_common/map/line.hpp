@@ -59,12 +59,12 @@ template <typename T> struct Line {
    */
   std::optional<Vec2<T>> intersectInf(const Line<T> &o) const {
     const double Precision = std::sqrt(std::numeric_limits<double>::epsilon());
-    double d = -v().cross(o.v());
+    double d = u().cross(o.u());
     if (std::abs(d) < Precision) {
       return std::nullopt;
     } else {
-      double x = (p1.cross(p2) * o.v().x - v().x * o.p1.cross(o.p2)) / d;
-      double y = (p1.cross(p2) * o.v().y - v().y * o.p1.cross(o.p2)) / d;
+      double x = (p1.cross(p2) * o.u().x - u().x * o.p1.cross(o.p2)) / d;
+      double y = (p1.cross(p2) * o.u().y - u().y * o.p1.cross(o.p2)) / d;
       return std::make_optional(Vec2<T>(static_cast<T>(x), static_cast<T>(y)));
     }
   }
@@ -82,10 +82,7 @@ template <typename T> struct Line {
 
   bool contains(const Vec2<T> &p) const {
     float e = 0.02f;
-    bool onLine = std::abs(slope() * (p.x - p1.x) - (p.y - p1.y)) < e;
-    return onLine && std::min(p1.x, p2.x) - e < p.x &&
-           p.x < std::max(p1.x, p2.x) + e;
-    // return std::abs(length() - (p - p1).length() - (p - p2).length()) < e;
+    return std::abs(length() - (p - p1).length() - (p - p2).length()) < e;
   }
 
   float length() const { return (p1 - p2).length(); }
@@ -104,6 +101,7 @@ template <typename T> struct Line {
   }
   Vec2<T> dir() const { return v().normalize(); }
   Vec2<T> v() const { return p2 - p1; }
+  Vec2<T> u() const { return p1 - p2; }
 
   Vec2<T> p1;
   Vec2<T> p2;

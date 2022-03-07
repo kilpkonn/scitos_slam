@@ -97,12 +97,9 @@ void Mapper::step(const ros::TimerEvent &event) {
   if (erodedPoints.size() > 0) {
     const Vec2<float> loc(odometry_->pose.pose.position.x,
                           odometry_->pose.pose.position.y);
-    auto dir = ((erodedPoints[0] - loc).normalize() +
-                (erodedPoints[erodedPoints.size() - 1] - loc).normalize()) /
-               2.f;
     // Use FOV = 90deg to be conservative
-    map_.prune(mapLines, loc, (erodedPoints[0] - loc).normalize() + dir,
-               (erodedPoints[erodedPoints.size() - 1] - loc).normalize() + dir);
+    map_.prune(mapLines, loc, (erodedPoints[0] - loc).normalize(),
+               (erodedPoints[erodedPoints.size() - 1] - loc).normalize());
   }
   // ROS_INFO("map size: %zu", map_.getLines().size());
 
