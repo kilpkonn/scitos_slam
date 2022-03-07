@@ -58,8 +58,8 @@ void Mapper::step(const ros::TimerEvent &event) {
   std::vector<Vec2<float>> scanPoints = getLaserScanPoints(event.last_real);
   std::vector<Vec2<float>> erodedPoints =
       grid::open(scanPoints, 0.1f, erodedGrid);
-  erodedGrid.info.origin.orientation = odometry_->pose.pose.orientation;
   erodedGrid.header = laserScan_.header;
+  erodedGrid.header.frame_id = "odom";
 
   auto labels = scitos_common::dbscan<Vec2<float>>(
       erodedPoints, [](auto a, auto b) { return (a - b).length(); }, dbscan_.n,

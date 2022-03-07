@@ -21,7 +21,15 @@ Mattias Kitsing
 - Tweak parameters
 
 ---
-
+# Erosion grid correction
+- 0.1 m grid resolution
+- Close -> bitwise and against dilation with \[\[1, 1, 1], [1, 0, 1], [1, 1, 1]]
+![bg right 100%](./fig/erosion.png)
+---
+# Tf tansformation from Lidar to robot
+- Lidar (_hokuyo_link_) -> Robot (_base_footprint_) -> Map (_map_)
+![bg right 100%](./fig/tf_tree.png)
+---
 # Accumulating map
 - Add new lines
 - Merge lines on map
@@ -69,6 +77,8 @@ Mattias Kitsing
 ---
 
 # Overall result
+Around 50 - 100 lines in map
+
 ![bg right 100%](./fig/mapv1.png)
 
 ---

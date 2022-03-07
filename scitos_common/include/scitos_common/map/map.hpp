@@ -113,7 +113,7 @@ private:
     float dist = (p1 - p2).length();
     for (size_t i = 0; i < points.size(); i++) {
       auto a = points.at(i);
-      for (size_t j = 0; j < points.size(); j++) {
+      for (size_t j = i + 1; j < points.size(); j++) {
         auto b = points.at(j);
         if ((a - b).length() > dist) {
           p1 = a;
