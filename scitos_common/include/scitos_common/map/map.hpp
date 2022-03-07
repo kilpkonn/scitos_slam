@@ -44,7 +44,8 @@ public:
         auto newLine = merged.at(j);
         if (line.perpendicularDistance(newLine.p1) < padding_ &&
             line.perpendicularDistance(newLine.p2) < padding_ &&
-            line.overlaps(newLine, padding_)) {
+            line.overlaps(newLine, 0.f)) { // &&
+          // line.v().angle_nodir(newLine.v()) < 0.6) {
           regLine = regLine.merge(newLine);
           auto [a, b] = maxDist({p1, p2, newLine.p1, newLine.p2});
           p1 = a;
@@ -52,7 +53,7 @@ public:
           toAdd[j] = false;
         }
       }
-      if (regLine.confidence > 0.05 && toAdd.at(i) && regLine.length() > 0.02) {
+      if (regLine.confidence > 0.05 && toAdd.at(i) && regLine.length() > 0.04) {
         tmpLines.push_back({regLine.projectInf(p1), regLine.projectInf(p2),
                             std::pow(regLine.confidence, fadePower_)});
       }
@@ -68,11 +69,20 @@ public:
    * @param l - left bound vector
    * @param r - right bound vector
    */
-  void prune(const std::vector<Line<T>> &lines, const Vec2<T> &loc,
-             const Vec2<T> &l, const Vec2<T> &r) {
+  void prune(std::vector<Line<T>> lines, const Vec2<T> &loc, const Vec2<T> &l,
+             const Vec2<T> &r) {
     if (lines_.size() < 1) {
       return;
     }
+
+    // Add padding to lines
+    for (size_t i = 0; i < lines.size(); i++) {
+      lines[i].p1 =
+          lines[i].p1 + (lines[i].p1 - lines[i].p2).normalize() * 0.05f;
+      lines[i].p2 =
+          lines[i].p2 + (lines[i].p2 - lines[i].p1).normalize() * 0.05f;
+    }
+
     for (size_t i = 0; i < lines_.size(); i++) {
       auto line = lines_.at(i);
       bool p1InFov = l.cross(line.p1 - loc) > 0 && (line.p1 - loc).cross(r) > 0;
@@ -81,20 +91,25 @@ public:
       bool p1Visible = true;
       bool p2Visible = true;
 
-      // BUG: Visibility check seems to fail
       for (const auto &ln : lines) {
         // Raycast
         p1Visible &= !ln.intersect({loc, line.p1}).has_value();
         p2Visible &= !ln.intersect({loc, line.p2}).has_value();
       }
 
+      // Treat too parallel as not visible
+      p1Visible &= (line.p1 - loc).angle_nodir(line.v()) > 0.6f;
+      p2Visible &= (line.p2 - loc).angle_nodir(line.v()) > 0.6f;
+
       if (p1InFov && p1Visible) {
         // Check if p1 should be moved torwards p2
         lines_[i].p1 = line.p1 + (line.p2 - line.p1).normalize() * 0.05f;
+        // lines_[i].confidence *= 0.99f;
       }
       if (p2InFov && p2Visible) {
         // Check if p2 should me moved torwards p1
         lines_[i].p2 = line.p2 + (line.p1 - line.p2).normalize() * 0.05f;
+        // lines_[i].confidence *= 0.99f;
       }
     }
   }

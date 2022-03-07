@@ -5,7 +5,7 @@ kmeans:
   k: 30
   iterations: 10
 iepf:
-  epsilon: 0.15
+  epsilon: 0.1
 map:
-  padding: 0.15
+  padding: 0.1
   fade_power: 1.05 # [1, inf)

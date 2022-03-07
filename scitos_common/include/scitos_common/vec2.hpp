@@ -7,7 +7,6 @@
 #include <opencv2/core/types.hpp>
 #include <tf/transform_datatypes.h>
 
-
 template <typename T> struct Vec2 {
   T x, y;
 
@@ -53,4 +52,12 @@ template <typename T> struct Vec2 {
   Vec2<T> round() { return {std::round(x), std::round(y)}; }
   Vec2<T> ceil() { return {std::ceil(x), std::ceil(y)}; }
   Vec2<T> normalize() { return *this / length(); }
+  // Inner angle
+  float angle(const Vec2<T> &o) const {
+    return std::acos(std::clamp(dot(o), -1.f, 1.f));
+  }
+
+  float angle_nodir(const Vec2<T> &o) const {
+    return std::min(angle(o), M_PIf - angle(o));
+  }
 };
