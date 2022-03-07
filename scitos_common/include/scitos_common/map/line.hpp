@@ -58,7 +58,7 @@ template <typename T> struct Line {
    * @see: https://en.wikipedia.org/wiki/Line%E2%80%93line_intersection
    */
   std::optional<Vec2<T>> intersectInf(const Line<T> &o) const {
-    const float Precision = std::numeric_limits<double>::epsilon();
+    const double Precision = std::sqrt(std::numeric_limits<double>::epsilon());
     double d = -v().cross(o.v());
     if (std::abs(d) < Precision) {
       return std::nullopt;
@@ -74,8 +74,7 @@ template <typename T> struct Line {
     if (!p.has_value())
       return std::nullopt;
 
-    // BUG: This seems broken
-    if (!contains(*p))
+    if (!contains(*p) || !o.contains(*p))
       return std::nullopt;
 
     return p;
@@ -86,6 +85,7 @@ template <typename T> struct Line {
     bool onLine = std::abs(slope() * (p.x - p1.x) - (p.y - p1.y)) < e;
     return onLine && std::min(p1.x, p2.x) - e < p.x &&
            p.x < std::max(p1.x, p2.x) + e;
+    // return std::abs(length() - (p - p1).length() - (p - p2).length()) < e;
   }
 
   float length() const { return (p1 - p2).length(); }

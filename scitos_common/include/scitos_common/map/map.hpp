@@ -124,10 +124,10 @@ public:
       bool p2Visible = true;
 
       // BUG: Visibility check seems to fail
-      for (auto ln : lines) {
+      for (const auto &ln : lines) {
         // Raycast
-        p1Visible &= !ln.intersect({line.p1, loc});
-        p2Visible &= !ln.intersect({line.p2, loc});
+        p1Visible &= !ln.intersect({loc, line.p1}).has_value();
+        p2Visible &= !ln.intersect({loc, line.p2}).has_value();
       }
 
       if (p1InFov && p1Visible) {

@@ -113,7 +113,6 @@ void Mapper::step(const ros::TimerEvent &event) {
   erosionGridPub_.publish(erodedGrid);
   publishErosion(erodedPoints);
   publishDbscan(erodedPoints, labels);
-  publishKMeans(centroids);
   publishLines();
   publishMap();
 }
@@ -124,31 +123,30 @@ void Mapper::odometryCallback(nav_msgs::OdometryPtr msg) {
   worldToRobot_.child_frame_id_ = odometry_->child_frame_id;
   worldToRobot_.frame_id_ = odometry_->header.frame_id;
   worldToRobot_.stamp_ = odometry_->header.stamp;
-  worldToRobot_.setOrigin({odometry_->pose.pose.position.x
-                           , odometry_->pose.pose.position.y
-                           , odometry_->pose.pose.position.z});
-  worldToRobot_.setRotation({odometry_->pose.pose.orientation.x
-                             , odometry_->pose.pose.orientation.y
-                             , odometry_->pose.pose.orientation.z
-                             , odometry_->pose.pose.orientation.w});
+  worldToRobot_.setOrigin({odometry_->pose.pose.position.x,
+                           odometry_->pose.pose.position.y,
+                           odometry_->pose.pose.position.z});
+  worldToRobot_.setRotation(
+      {odometry_->pose.pose.orientation.x, odometry_->pose.pose.orientation.y,
+       odometry_->pose.pose.orientation.z, odometry_->pose.pose.orientation.w});
 }
 
 void Mapper::laserScanCallback(sensor_msgs::LaserScan msg) { laserScan_ = msg; }
 
-std::vector<Vec2<float>> Mapper::getLaserScanPoints(const ros::Time& currentTime) {
+std::vector<Vec2<float>>
+Mapper::getLaserScanPoints(const ros::Time &currentTime) {
   if (!laserScan_.header.stamp.isValid() || odometry_ == nullptr) {
     return {};
   }
 
   tf::StampedTransform lidarToRobot;
-    try{
-      tfListener_.lookupTransform("/base_footprint", "/hokuyo_link",
-                               currentTime, lidarToRobot);
-    }
-    catch (tf::TransformException ex){
-      ROS_ERROR("%s",ex.what());
-      ros::Duration(1.0).sleep();
-    }
+  try {
+    tfListener_.lookupTransform("/base_footprint", "/hokuyo_link", currentTime,
+                                lidarToRobot);
+  } catch (tf::TransformException ex) {
+    ROS_ERROR("%s", ex.what());
+    ros::Duration(1.0).sleep();
+  }
 
   const Vec2<float> loc(odometry_->pose.pose.position.x,
                         odometry_->pose.pose.position.y);
@@ -160,7 +158,11 @@ std::vector<Vec2<float>> Mapper::getLaserScanPoints(const ros::Time& currentTime
   std::vector<Vec2<float>> output;
   output.reserve(laserScan_.ranges.size());
   for (uint i = 0; i < laserScan_.ranges.size(); i++) {
-    output.push_back(worldToRobot_ * lidarToRobot * static_cast<tf::Vector3>(Polar2(laserScan_.ranges[i], laserScan_.angle_min + laserScan_.angle_increment * i)));
+    output.push_back(
+        worldToRobot_ * lidarToRobot *
+        static_cast<tf::Vector3>(
+            Polar2(laserScan_.ranges[i],
+                   laserScan_.angle_min + laserScan_.angle_increment * i)));
   }
   return output;
 }
@@ -191,32 +193,6 @@ void Mapper::publishDbscan(const std::vector<Vec2<float>> &points,
   }
 
   dbscanPub_.publish(markers);
-}
-
-void Mapper::publishKMeans(const std::vector<Vec2<float>> &centroids) const {
-  visualization_msgs::MarkerArray markers;
-  for (size_t i = 0; i < centroids.size(); i++) {
-    auto p = centroids.at(i);
-    visualization_msgs::Marker marker;
-    marker.header.frame_id = "odom";
-    marker.type = visualization_msgs::Marker::SPHERE;
-    marker.action = visualization_msgs::Marker::ADD;
-    marker.scale.x = 0.1;
-    marker.scale.y = 0.1;
-    marker.scale.z = 0.1;
-    marker.color.a = 1.0;
-    marker.color.r = std::clamp(i * 0.1, 0.0, 1.0);
-    marker.color.g = std::clamp(-1.0 + i * 0.1, 0.0, 1.0);
-    marker.color.b = std::clamp(-2.0 + i * 0.1, 0.0, 1.0);
-    marker.pose.orientation.w = 1.0;
-    marker.pose.position.x = p.x;
-    marker.pose.position.y = p.y;
-    marker.pose.position.z = 0.05;
-    marker.id = i++;
-    markers.markers.push_back(marker);
-  }
-
-  kmeansPub_.publish(markers);
 }
 
 void Mapper::publishErosion(const std::vector<Vec2<float>> &points) const {
@@ -291,8 +267,8 @@ void Mapper::publishMap() const {
     marker.scale.y = 0.1;
     marker.scale.z = 0.1;
     marker.color.a = line.confidence;
-    marker.color.r = std::clamp(i * 0.1, 0.0, 1.0);
-    marker.color.g = std::clamp(-1.0 + i * 0.1, 0.0, 1.0);
+    marker.color.r = std::clamp(i * 0.05, 0.0, 1.0);
+    marker.color.g = std::clamp(-1.0 + i * 0.05, 0.0, 1.0);
     marker.color.b = 1.0;
     marker.pose.orientation.w = 1.0;
 
