@@ -81,7 +81,7 @@ template <typename T> struct Line {
   }
 
   bool contains(const Vec2<T> &p) const {
-    float e = std::numeric_limits<float>::epsilon();
+    float e = 0.02f;
     bool onLine = std::abs(slope() * (p.x - p1.x) - (p.y - p1.y)) < e;
     return onLine && std::min(p1.x, p2.x) - e < p.x &&
            p.x < std::max(p1.x, p2.x) + e;

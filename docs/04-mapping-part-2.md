@@ -69,7 +69,7 @@ Mattias Kitsing
 ---
 
 # Overall result
-- TODO
+![bg right 100%](./fig/mapv1.png)
 
 ---
 

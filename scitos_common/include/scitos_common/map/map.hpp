@@ -90,11 +90,11 @@ public:
 
       if (p1InFov && p1Visible) {
         // Check if p1 should be moved torwards p2
-        lines_[i].p1 = line.p1 + (line.p2 - line.p1).normalize() * 0.03f;
+        lines_[i].p1 = line.p1 + (line.p2 - line.p1).normalize() * 0.05f;
       }
       if (p2InFov && p2Visible) {
         // Check if p2 should me moved torwards p1
-        lines_[i].p2 = line.p2 + (line.p1 - line.p2).normalize() * 0.03f;
+        lines_[i].p2 = line.p2 + (line.p1 - line.p2).normalize() * 0.05f;
       }
     }
   }
