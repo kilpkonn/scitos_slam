@@ -19,48 +19,6 @@ public:
   Map(float padding, float fadePower)
       : padding_{padding}, fadePower_{fadePower} {}
 
-  // TODO: Decide if this should be removed in favour of accumulate2
-  void accumulate(const std::vector<Line<T>> &newLines) {
-    std::vector<bool> merged(newLines.size(), false);
-
-    for (int i = 0; i < lines_.size(); i++) {
-      auto line = lines_.at(i);
-      auto lHough = line.toHoughSpace();
-      T xMin = std::min(line.p1.x, line.p2.x);
-      T xMax = std::max(line.p1.x, line.p2.x);
-      T yMin = std::min(line.p1.y, line.p2.y);
-      T yMax = std::max(line.p1.y, line.p2.y);
-      float confidence = line.confidence;
-      auto updated = line.toHoughSpace(); // * confidence;
-      for (size_t j = 0; j < newLines.size(); j++) {
-        auto newLine = newLines.at(j);
-        auto nHough = newLine.toHoughSpace();
-        if (line.overlaps(newLine, padding_) &&
-            std::atan(lHough.x - nHough.x) < 0.3f) {
-          updated = nHough; /*   * newLine.confidence; */
-          confidence += newLine.confidence;
-          xMin = std::min(xMin, std::min(newLine.p1.x, newLine.p2.x));
-          xMax = std::max(xMax, std::max(newLine.p1.x, newLine.p2.x));
-          yMin = std::min(yMin, std::min(newLine.p1.y, newLine.p2.y));
-          yMax = std::max(yMax, std::max(newLine.p1.y, newLine.p2.y));
-          merged[j] = true;
-        }
-      }
-      // updated = updated / confidence;
-      Line<T> updatedLine(
-          {xMin, std::clamp(updated.y + xMin * updated.x, yMin, yMax)},
-          {xMax, std::clamp(updated.y + xMax * updated.x, yMin, yMax)},
-          confidence);
-      lines_[i] = updatedLine;
-    }
-
-    for (size_t i = 0; i < newLines.size(); i++) {
-      if (!merged.at(i)) {
-        lines_.push_back(newLines.at(i));
-      }
-    }
-  }
-
   /*!
    * Accumulate new lines onto map
    *

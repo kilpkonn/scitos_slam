@@ -31,8 +31,6 @@ Mapper::Mapper(ros::NodeHandle nh) : nh_{nh} {
       nh_.advertise<nav_msgs::OccupancyGrid>("/debug/erosion_grid", 3);
   dbscanPub_ =
       nh_.advertise<visualization_msgs::MarkerArray>("/debug/dbscan", 3);
-  kmeansPub_ =
-      nh_.advertise<visualization_msgs::MarkerArray>("/debug/kmeans", 3);
   linesPub_ = nh_.advertise<visualization_msgs::MarkerArray>("/debug/lines", 3);
   mapPub_ = nh_.advertise<visualization_msgs::MarkerArray>("/debug/map", 3);
 
@@ -74,10 +72,6 @@ void Mapper::step(const ros::TimerEvent &event) {
       filteredPoints.push_back(scanPoints.at(i));
   }
 
-  // NOTE: Kmeans can likely be removed
-  auto centroids = scitos_common::kmeans<Vec2<float>>(
-      filteredPoints, kmeans_.k,
-      [](auto a, auto b) { return (a - b).length(); }, kmeans_.iterations);
   auto clusters = scitos_common::dbscan2<Vec2<float>>(
       erodedPoints, [](auto a, auto b) { return (a - b).length(); }, dbscan_.n,
       dbscan_.r);
