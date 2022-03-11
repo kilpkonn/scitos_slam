@@ -58,6 +58,6 @@ template <typename T> struct Vec2 {
   }
 
   float angle_nodir(const Vec2<T> &o) const {
-    return std::min(angle(o), M_PIf - angle(o));
+    return std::min(angle(o), static_cast<float>(M_PI) - angle(o));
   }
 };

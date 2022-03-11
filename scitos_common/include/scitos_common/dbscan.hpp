@@ -46,7 +46,7 @@ std::vector<int> dbscan(const std::vector<T> &data,
     bool merged = cluster.size() > n;
     while (merged) {
       merged = false;
-      for (int j = 0; j < data.size(); j++) {
+      for (size_t j = 0; j < data.size(); j++) {
         if (lables.at(j) != 0 || cluster.find(j) != cluster.end()) {
           continue;
         }
@@ -115,7 +115,7 @@ std::vector<std::vector<T>> dbscan2(const std::vector<T> &data,
     bool merged = cluster.size() > n;
     while (merged) {
       merged = false;
-      for (int j = 0; j < data.size(); j++) {
+      for (size_t j = 0; j < data.size(); j++) {
         if (lables.at(j) != 0 || cluster.find(j) != cluster.end()) {
           continue;
         }

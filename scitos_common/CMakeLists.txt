@@ -22,6 +22,7 @@ find_package(rostest REQUIRED)
 add_message_files(
   FILES
   Polar2.msg
+  Vec2Array.msg
 )
 
 generate_messages(

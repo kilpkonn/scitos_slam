@@ -9,7 +9,9 @@
 #include <vector>
 
 #include "scitos_common/map/line.hpp"
+#include "scitos_common/dbscan.hpp"
 #include "scitos_common/vec2.hpp"
+#include "scitos_common/polar2.hpp"
 
 namespace scitos_common::map {
 
@@ -33,7 +35,7 @@ public:
     // Merge exsisting
     std::vector<Line<T>> tmpLines;
     tmpLines.reserve(merged.size());
-    for (int i = 0; i < merged.size(); i++) {
+    for (size_t i = 0; i < merged.size(); i++) {
       auto line = merged.at(i);
       Vec2<T> p1 = line.p1;
       Vec2<T> p2 = line.p2;
@@ -114,13 +116,140 @@ public:
     }
   }
 
+  void align(int k)
+  {
+    if (lines_.size() < k * 20)
+      return;
+
+    auto headingDistance = [](const float a, const float b) { return std::fmod(abs(a - b), M_PI_2); };
+
+    std::vector<float> angles;
+    if(k > 1)
+    {
+      for (int i=0; i<k; i++)
+      {
+        angles.push_back((i * M_PI_2) / (k - 1));
+      }
+    }
+    else
+    {
+      angles.push_back(0);
+    }
+
+    std::vector<uint> angleIndices(lines_.size(), 0);
+
+    for(int n=0; n < 50; n++)
+    {
+      std::vector<std::pair<float, float>> angleSums(angles.size(), {0.0f, 0.0f});
+      std::vector<int> angleCounts(angles.size(), 0);
+      for (uint lineIndex=0; lineIndex < lines_.size(); lineIndex++)
+      {
+        auto line = lines_[lineIndex];
+        const float heading = line.heading();
+        float bestDistance = std::numeric_limits<float>::infinity();
+        for (uint angleIndex=0; angleIndex < angles.size(); angleIndex++){
+          float distance = headingDistance(heading, angles[angleIndex]);
+          if (distance < bestDistance)
+          {
+            angleIndices[lineIndex] = angleIndex;
+            bestDistance = distance;
+          }
+        }
+        angleSums[angleIndices[lineIndex]].first += sin(2 * heading);
+        angleSums[angleIndices[lineIndex]].second += cos(2 * heading);
+        ++angleCounts[angleIndices[lineIndex]];
+      }
+      float maxChange = 0.0f;
+      for (uint angleIndex=0; angleIndex < angles.size(); angleIndex++){
+        float newAngle = atan2(angleSums[angleIndex].first / angleCounts[angleIndex]
+                              , angleSums[angleIndex].second / angleCounts[angleIndex]) / 2.0f;
+        maxChange = std::max(maxChange, abs(angles[angleIndex] - newAngle));
+        angles[angleIndex] = newAngle;
+      }
+      if (maxChange < 1.0f / 180.0f * M_PI) // Stop if improvement is less than 2 degrees
+      {
+        break;
+      }
+    }
+
+    for (uint lineIndex=0; lineIndex < lines_.size(); lineIndex++)
+    {
+      Line<T>& line = lines_[lineIndex];
+      const Vec2<T> center = (line.p1 + line.p2) / 2.0f;
+      ::Polar2<float> pointHeading(line.length() / 2.0f, angles[angleIndices[lineIndex]]);
+      const Vec2<T> newP1 = center + pointHeading;
+      const Vec2<T> newP2 = center + pointHeading.opposite();
+      line.p1 = line.p1 * 0.95f + newP1 * 0.05f;
+      line.p2 = line.p2 * 0.95f + newP2 * 0.05f;
+    }
+  }
+
+  void combineCorners(const int n, const float r, std::vector<std::pair<Vec2<T>, std::set<Vec2<T>*>>>& cornerVisualization){
+    std::map<Vec2<T>*,Line<T>*> pointLines = getPointLinePointers();
+    std::map<Vec2<T>*,Line<T>*> tmp;
+    std::vector<Vec2<T>*> points;
+    for (auto const& pointLine: pointLines)
+    {
+      if (pointLine.second->confidence < 0.9f)
+        continue;
+      tmp.insert(pointLine);
+      points.push_back(pointLine.first);
+    }
+    pointLines = tmp;
+    
+    std::vector<std::vector<Vec2<T>*>> clusters = scitos_common::dbscan2<Vec2<T>*>(
+      points, [](auto a, auto b) { return (*a - *b).length(); }, n, r);
+    for (auto cluster: clusters){
+      auto [a, b] = maxDist(cluster);
+      if ((*a - *b).length() > r)
+        continue;
+      std::set<Line<T>*> encounteredLines;
+      std::set<Vec2<T>*> pointsToMove;
+      Vec2<T> clusterCenter;
+      float confidenceSum = 0;
+      for (auto point: cluster){
+        Line<T>* line = pointLines.at(point);
+        if (encounteredLines.erase(line)){
+          pointsToMove.erase(&line->p1);
+          pointsToMove.erase(&line->p2);
+          continue;
+        }
+        clusterCenter += (*point) * line->confidence;
+        confidenceSum += line->confidence;
+        if (line->length() > r * 2){
+          encounteredLines.insert(line);
+          pointsToMove.insert(point);
+        }
+      }
+      if (pointsToMove.size() < 2)
+        continue;
+
+      clusterCenter = clusterCenter / confidenceSum;
+      cornerVisualization.push_back(std::make_pair(clusterCenter, pointsToMove));
+      for(auto pointToMove: pointsToMove){
+        if((clusterCenter - *pointToMove).length() <= r)
+        {
+          *pointToMove = clusterCenter;
+        }
+      }
+    }
+  }
+
   std::vector<Line<T>> getLines() const { return lines_; }
 
 private:
-  float fadePower_;
   float padding_;
+  float fadePower_;
   std::vector<Line<T>> lines_;
 
+  std::map<Vec2<T>*,Line<T>*> getPointLinePointers(){
+    std::map<Vec2<T>*,Line<T>*> output;
+    for(size_t i=0; i < lines_.size(); i++){
+      output.insert(std::pair<Vec2<T>*,Line<T>*>(&lines_[i].p1,&lines_[i]));
+      output.insert(std::pair<Vec2<T>*,Line<T>*>(&lines_[i].p2,&lines_[i]));
+    }
+    return output;
+  }
   // Needs at least 2 points not to segfault
   std::tuple<Vec2<T>, Vec2<T>> maxDist(const std::vector<Vec2<T>> &points) {
     auto p1 = points.at(0);
@@ -134,6 +263,24 @@ private:
           p1 = a;
           p2 = b;
           dist = (a - b).length();
+        }
+      }
+    }
+    return std::make_tuple(p1, p2);
+  }
+  // Needs at least 2 points not to segfault
+  std::tuple<Vec2<T>*, Vec2<T>*> maxDist(const std::vector<Vec2<T>*> &points) {
+    auto p1 = points.at(0);
+    auto p2 = points.at(1);
+    float dist = (*p1 - *p2).length();
+    for (size_t i = 0; i < points.size(); i++) {
+      auto a = points.at(i);
+      for (size_t j = i + 1; j < points.size(); j++) {
+        auto b = points.at(j);
+        if ((*a - *b).length() > dist) {
+          p1 = a;
+          p2 = b;
+          dist = (*a - *b).length();
         }
       }
     }

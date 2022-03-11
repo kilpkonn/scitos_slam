@@ -1,6 +1,9 @@
 dbscan:
   r: 0.35
   n: 4
+corner_combination:
+  r: 0.1
+  n: 2
 kmeans:
   k: 30
   iterations: 10

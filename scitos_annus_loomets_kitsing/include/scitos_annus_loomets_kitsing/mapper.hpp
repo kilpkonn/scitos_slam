@@ -29,6 +29,8 @@ private:
   ros::Subscriber odometrySub_;
   ros::Subscriber laserScanSub_;
 
+  ros::Publisher mapLineHoughPub_;
+  ros::Publisher cornerCombinationPub_;
   ros::Publisher erosionGridPub_;
   ros::Publisher erosionPub_;
   ros::Publisher dbscanPub_;
@@ -40,7 +42,7 @@ private:
   struct {
     float r;
     int n;
-  } dbscan_;
+  } dbscan_, cornerCombinationDBScan;
 
   struct {
     uint32_t k;
@@ -59,6 +61,7 @@ private:
   std::vector<Vec2<float>> getLaserScanPoints(const ros::Time& currentTime);
   void publishDbscan(const std::vector<Vec2<float>> &points,
                      const std::vector<int> &labels) const;
+  void publishCornerCombining(std::vector<std::pair<Vec2<float>, std::set<Vec2<float>*>>>& cornerVisualization) const;
   void publishErosion(const std::vector<Vec2<float>> &centroids) const;
   void publishLines() const;
   void publishMap() const;

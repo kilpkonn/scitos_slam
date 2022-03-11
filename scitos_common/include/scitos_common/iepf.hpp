@@ -79,7 +79,7 @@ simplify2(const std::vector<Vec2<T>> &pointList, float epsilon,
   // Find the point with the maximum distance
   float dmax = 0;
   int index = 0;
-  for (int i = 1; i < pointList.size() - 1; ++i) {
+  for (size_t i = 1; i < pointList.size() - 1; ++i) {
     float d = perpendicularDistance(pointList[i], pointList[0],
                                     pointList[pointList.size() - 1]);
     if (d > dmax) {
@@ -94,7 +94,7 @@ simplify2(const std::vector<Vec2<T>> &pointList, float epsilon,
     next_part.reserve(pointList.size() - index);
     for (int i = 0; i <= index; ++i)
       pre_part.push_back(pointList[i]);
-    for (int i = index; i < pointList.size(); ++i)
+    for (size_t i = index; i < pointList.size(); ++i)
       next_part.push_back(pointList[i]);
     // Recursive call
     std::vector<map::Line<T>> resultList1 = simplify2(pre_part, epsilon, fc);
