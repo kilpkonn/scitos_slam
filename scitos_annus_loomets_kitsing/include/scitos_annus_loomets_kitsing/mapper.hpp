@@ -5,6 +5,7 @@
 #include <ros/ros.h>
 #include <sensor_msgs/LaserScan.h>
 #include <visualization_msgs/MarkerArray.h>
+#include <std_msgs/String.h>
 
 #include <tf/transform_listener.h>
 #include <tf/transform_broadcaster.h>
@@ -28,6 +29,7 @@ private:
 
   ros::Subscriber odometrySub_;
   ros::Subscriber laserScanSub_;
+  ros::Subscriber saveMapSub_;
 
   ros::Publisher mapLineHoughPub_;
   ros::Publisher cornerCombinationPub_;
@@ -58,6 +60,7 @@ private:
 
   void odometryCallback(nav_msgs::OdometryPtr msg);
   void laserScanCallback(sensor_msgs::LaserScan msg);
+  void saveMapCallback(std_msgs::String msg);
   std::vector<Vec2<float>> getLaserScanPoints(const ros::Time& currentTime);
   void publishDbscan(const std::vector<Vec2<float>> &points,
                      const std::vector<int> &labels) const;

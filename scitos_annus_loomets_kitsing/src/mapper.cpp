@@ -10,6 +10,8 @@
 #include <tf/transform_datatypes.h>
 #include <visualization_msgs/MarkerArray.h>
 
+#include <yaml-cpp/yaml.h>
+
 #include "scitos_common/dbscan.hpp"
 #include "scitos_common/grid/morphology.hpp"
 #include "scitos_common/iepf.hpp"
@@ -27,6 +29,8 @@ Mapper::Mapper(ros::NodeHandle nh) : nh_{nh} {
       nh_.subscribe("/ground_truth", 1, &Mapper::odometryCallback, this);
   laserScanSub_ =
       nh_.subscribe("/laser_scan", 1, &Mapper::laserScanCallback, this);
+  saveMapSub_ =
+      nh_.subscribe("/save_map", 1, &Mapper::saveMapCallback, this);
   mapLineHoughPub_ =
       nh_.advertise<scitos_common::Vec2Array>("/debug/map_line_hough", 3);
   erosionPub_ =
@@ -112,7 +116,7 @@ void Mapper::step(const ros::TimerEvent &event) {
   }
 
   std::vector<std::pair<Vec2<float>, std::set<Vec2<float>*>>> cornerVisualization;
-  map_.combineCorners(cornerCombinationDBScan.n, cornerCombinationDBScan.r, cornerVisualization);
+  //map_.combineCorners(cornerCombinationDBScan.n, cornerCombinationDBScan.r, cornerVisualization);
   //map_.align(4);
   // ROS_INFO("map size: %zu", map_.getLines().size());
 
@@ -149,6 +153,29 @@ void Mapper::odometryCallback(nav_msgs::OdometryPtr msg) {
 }
 
 void Mapper::laserScanCallback(sensor_msgs::LaserScan msg) { laserScan_ = msg; }
+
+void Mapper::saveMapCallback(std_msgs::String msg){
+  std::string map_file = msg.data;
+  ROS_INFO("SAVING MAP TO: %s", map_file.c_str());
+  YAML::Node map = YAML::Load("[]");;
+  for(const auto& line: map_.getLines()){
+    if (line.confidence > 0.75){
+      ROS_INFO("ADDING LINE");
+      YAML::Node lineNode;
+      lineNode["confidence"] = line.confidence;
+      lineNode["p1"]["x"] = line.p1.x;
+      lineNode["p1"]["y"] = line.p1.y;
+      lineNode["p2"]["x"] = line.p2.x;
+      lineNode["p2"]["y"] = line.p2.y;
+      map.push_back(lineNode);
+    }
+  }
+  ROS_INFO("OPENING SAVE FILE");
+  std::ofstream fout(map_file);
+  fout << map;
+  fout.close();
+  ROS_INFO("FINISHED MAP SAVING");
+}
 
 std::vector<Vec2<float>>
 Mapper::getLaserScanPoints(const ros::Time &currentTime) {
