@@ -47,10 +47,17 @@ Once a mobile robot has a well defined representation of it's environment the ne
 
 Many robotic systems require the system to be nonlinear - this gives rise to localization approach commonly known as the extended Kalman filter (EKF). EKF is the extension of Kalman filter to nonlinear systems. In comparison to KF, EKF performs significantly better in mobile robot position estimation \cite{Suliman2010}. \\
 
-The EKF has two phases, one is prediction phase and the other is update phase. In the prediction phase, the motion model is used to predict the current position of the mobile robot, based on not only the previous estimated position, but also the odometry information such as translational velocity and rotational velocity. \cite{featureEKF}\\
+The EKF has two phases, one is prediction phase and the other is update phase. In the prediction phase, the motion model is used to predict the current position of the mobile robot, based on not only the previous estimated position, but also the odometry information such as translational velocity and rotational velocity. \cite{featureEKF} \\
 
-EKF localization can be used with a feature map as documented in this paper here \cite{featureEKF}.As an advantage the distance error between the estimated position calculated from EKF and the ground truth remains almost the same level. Still the EKF algorithm has to have a priory map before hand, this may not be always available. \cite{featureEKF}
+EKF localization can be used with a feature map as documented in this paper here \cite{featureEKF}. As an advantage the distance error between the estimated position calculated from EKF and the ground truth remains almost the same level. Still the EKF algorithm has to have a priory map before hand, this may not be always available. \cite{featureEKF}
 
+\section{Monte Carlo localization}
+
+Monte Carlo Localization (MCL) is a method used to localize mobile sensor in the surrounding environment with Particle Filter based. MCL uses a representation of the Particle Filter to determine the position of the robot in a map that was previously made. In conducting exploration in a previously known environment, the mobile sensor navigation process is required from the initial position to the specified final position. \\
+
+One of the key advantages of the MCL over Kalman-filter based approaches is its ability to represent multi-modal probability distributions - This ability is a precondition for localizing a mobile robot without knowledge of its starting location \cite{MCL99}.
+
+Adaptive Monte Carlo Localization (AMCL) can be considered a better version of the Monte Carlo Localization pose estimation, which improves real-time performance by reducing execution time with fewer samples or particles. AMCl uses Kullback-Leibler Distance (KLD) Sampling as an additional parameter. \cite{AMCL19}
 
 % Conclusion %
 \section{Localization Comparison}
@@ -59,15 +66,15 @@ The comparison of different Localization algorithms can be found in Table~\ref{t
   \begin{center}
     \begin{tabular}[c]{|c | c c c |}
       \hline
-                       & MCL          & EKF             & etc.   \\
+                       & AMCL          & EKF             & 3rd   \\
       \hline
-      Impl. difficulty &          & Medium - High       &           \\
+      Impl. difficulty &          & Medium - High       &       \\
       \hline
       Memory complexity&          & Low                 &         \\
       \hline
       Time complexity  &          & Small               &         \\
       \hline
-      Robustness       &          & Medium        &   \\
+      Robustness       &          & Medium              &       \\
       \hline
     \end{tabular}
   \end{center}
@@ -87,6 +94,12 @@ Mobile robot position estimation using the Kalman filter
 Sci. Bull. Petru Maior Univ. Tirgu Mures Inter-Eng., 6 (XXIII) (2010), pp. 75-78
 \bibitem{featureEKF}
 L. Chen, H. Hu and K. McDonald-Maier, "EKF Based Mobile Robot Localization," 2012 Third International Conference on Emerging Security Technologies, 2012, pp. 149-154, doi: 10.1109/EST.2012.19.
+\bibitem{MCL99}
+F. Dellaert, D. Fox, W. Burgard, S. Thrun
+Monte Carlo localization for mobile robots
+Proceedings 1999 IEEE International Conference on Robotics and Automation (Cat. No.99CH36288C), Detroit, MI, USA (1999), pp. 1322-1328, 10.1109/ROBOT.1999.772544
+\bibitem{AMCL19}
+I. Wasisto, N. Istiqomah, I. K. N. Trisnawan and A. N. Jati, "Implementation of Mobile Sensor Navigation System Based on Adaptive Monte Carlo Localization," 2019 International Conference on Computer, Control, Informatics and its Applications (IC3INA), 2019, pp. 187-192, doi: 10.1109/IC3INA48034.2019.8949581.
 \end{thebibliography}
 
 \end{document}
