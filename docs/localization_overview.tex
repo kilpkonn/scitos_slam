@@ -41,64 +41,33 @@
 % Intro %
 \section{Introduction}
 
-Once a mobile robot has a well defined representation of it's environment the next essential step for autonomy is localization. Based on the world representation (for now assumed to be known) and sensor readings indicating information about the robot's odometry and environment, the robot can infer it's position within the world representation. The scope of this paper is to analyze different localization algorithms for mobile robots with special focus on 2D motion.
+Once a mobile robot has a well defined representation of it's environment the next essential step for autonomy is localization. Based on the world representation (for now assumed to be known) and sensor readings indicating information about the robot's odometry and environment, the robot can infer it's position within the world representation. The scope of this paper is to analyze different localization algorithms for mobile robots with special focus on 2D motion and using feature map as \emph{priory} map.
 
-\section{1st section...}
-The most basic way to store the map is memory is to store all the measurement datapoints (after removing noise etc.).
-However this causes heavy usage of memory that makes it not efficient.
-The easieiest way to decrease the number of datapoints is to use an occupancy grid for map where each tile is for example a square or hexagon for 2D use case.
-One problem with this kind of approach is that the grid size affects the quality of the map a lot.
-With big tiles we lose precision whilst with small tiles we might not have enough datapoints for each time which can cause errors in map.
-To keep the precision where we have enough datapoints but not suffer from underfitting instead of tile grid trees can be used.
-The motivation is that we can start with very robust map and once any cell gets enough datapoints we split it into smaller points.
-The third option is to try to detect geometrical objects (for example lines) and store these.
-These lines can be obtained by either linear regression or iterative point fitting algorithms.
-This results in a much smaller memory consumption and can give also more insight into the actual terrain in urban areas, wheras can yield poor results in more natural environment.
-\cite{AlgorithmsForIndoorMapping}
-The comparison of the algorithms described above can be found in the Table~\ref{tab:memory_models}.
+\section{Extended Kalman Filter}
 
-\begin{table}[h!]
-  \begin{center}
-    \begin{tabular}[c]{|c | c c c|}
-      \hline
-       & Raw points & Occupancy grid & Geometric features \\
-      \hline
-      Impl. difficulty & Easy & Easy - Medium & Hard \\
-      \hline
-      Memory complexity & Huge & Medium & Small \\
-      \hline
-      Time complexity* & Small & Medium & Big \\
-      \hline
-      Robustness & Good & Good & Environment specific \\
-      \hline
-      Continuous & Yes & No & Yes \\
-      \hline
-      Topological & No & No** & Yes \\
-      \hline
-    \end{tabular}
-  \end{center}
-  \caption{Comparison of different memory models}
-  \label{tab:memory_models}
-\end{table}
-\textit{*This accounts for time complexity when collecting data, not when using it.} \\
-\textit{**Topological features can be extracted, but no effort is made to keep them}
+Many robotic systems require the system to be nonlinear - this gives rise to localization approach commonly known as the extended Kalman filter (EKF). EKF is the extension of Kalman filter to nonlinear systems. In comparison to KF, EKF performs significantly better in mobile robot position estimation \cite{Suliman2010}. \\
+
+The EKF has two phases, one is prediction phase and the other is update phase. In the prediction phase, the motion model is used to predict the current position of the mobile robot, based on not only the previous estimated position, but also the odometry information such as translational velocity and rotational velocity. \cite{featureEKF}\\
+
+EKF localization can be used with a feature map as documented in this paper here \cite{featureEKF}.As an advantage the distance error between the estimated position calculated from EKF and the ground truth remains almost the same level. Still the EKF algorithm has to have a priory map before hand, this may not be always available. \cite{featureEKF}
+
 
 % Conclusion %
-\section{SLAM Comparison}
-The comparison of different SLAM algorithms can be found in Table~\ref{tab:slam_algorithms}.
+\section{Localization Comparison}
+The comparison of different Localization algorithms can be found in Table~\ref{tab:slam_algorithms}.
 \begin{table}[h!]
   \begin{center}
-    \begin{tabular}[c]{|c | c c c c |}
+    \begin{tabular}[c]{|c | c c c |}
       \hline
-                       & Graph          & EKF           & EAFC         & Paritcle filter \\
+                       & MCL          & EKF             & etc.   \\
       \hline
-      Impl. difficulty & Medium         & Medium - High & High         & Low \\
+      Impl. difficulty &          & Medium - High       &           \\
       \hline
-      Memory complexity& Medium         & Low           & Medium       & High \\
+      Memory complexity&          & Low                 &         \\
       \hline
-      Time complexity  & Medium         & Small         & Medium       & Big \\
+      Time complexity  &          & Small               &         \\
       \hline
-      Robustness       & Medium         & Low - Medium  & Low - Medium & Medium \\
+      Robustness       &          & Medium        &   \\
       \hline
     \end{tabular}
   \end{center}
@@ -108,33 +77,16 @@ The comparison of different SLAM algorithms can be found in Table~\ref{tab:slam_
 
 \section{Conclusion}
 
-The selection of algorithm should be made in combination with the map memory type. ...
-
-\begin{table}[h!]
-  \begin{center}
-    \begin{tabular}[c]{|c | c c c c |}
-      \hline
-                         & Graph & EKF & EAFC & Paritcle filter \\
-      \hline
-      Raw points         & X*    &     & X**  &  \\
-      \hline
-      Occupancy grid     & X     & X   &      & ? \\
-      \hline
-      Geometric features & X     & X   & X**  & X \\
-      \hline
-    \end{tabular}
-  \end{center}
-  \caption{Combinations of SLAM algorithms and Memory types}
-  \label{tab:slam_memory_combinations}
-\end{table}
-\textit{*May be very inefficient} \\
-\textit{**Internally uses points, but yields geometric features}
-
+The selection of algorithm should be made in ...
 \newpage
 \begin{thebibliography}{9}
-\bibitem{2DSLAM20}
-Xuexi Zhang, Jiajun Lai, Dongliang Xu, Huaijun Li, Minyue Fu, (2020) "2D Lidar-Based SLAM and Path Planning for Indoor Rescue Using Mobile Robots", Journal of Advanced Transportation, vol. 2020, Article ID 8867937, 14 pages, 2020. https://doi.org/10.1155/2020/8867937
 
+\bibitem{Suliman2010}
+C. Suliman, C. Cruceru, F. Moldoveanu
+Mobile robot position estimation using the Kalman filter
+Sci. Bull. Petru Maior Univ. Tirgu Mures Inter-Eng., 6 (XXIII) (2010), pp. 75-78
+\bibitem{featureEKF}
+L. Chen, H. Hu and K. McDonald-Maier, "EKF Based Mobile Robot Localization," 2012 Third International Conference on Emerging Security Technologies, 2012, pp. 149-154, doi: 10.1109/EST.2012.19.
 \end{thebibliography}
 
 \end{document}
