@@ -58,6 +58,9 @@ In the prediction phase, the motion model is used to predict the current positio
 EKF localization can be used with a feature map as documented in this paper here \cite{featureEKF}. 
 As an advantage the distance error between the estimated position calculated from EKF and the ground truth remains almost the same level. 
 Still the EKF algorithm has to have a priory map before hand, this may not be always available. \cite{featureEKF}
+Another problem is that as we have obstacles then in reality not all positions are allowed for the robot so it cuts off part of the gaussian for the position.
+On the other hand our feature based map seems a better fit for EKF than regular grid map as it is likely easier to track features for us so there is some motivation to go with the algorithm due tu our previous decisions.
+We also found a paper that uses line bap for EKF \cite{lineEKF}.
 
 \section{Monte Carlo localization}
 
@@ -85,20 +88,23 @@ The comparison of different Localization algorithms can be found in Table~\ref{t
       \hline
       Time complexity  &       & Medium        & Small               \\
       \hline
-      Robustness       &       &               & Medium              \\
+      Robustness       &       & Robust        & Medium              \\
       \hline
       Problems         &       & Time complexity & Non-gaussian distributions \\
-                       &       & Optimal sampling & 
+                       &       & Optimal sampling &  \\
       \hline
     \end{tabular}
   \end{center}
   \caption{Comparison of different SLAM algorithms}
   \label{tab:slam_algorithms}
 \end{table}
+The MCL algorithm can also be used directly for global localization whilst EKF would require some wrapper methods.
 
 \section{Conclusion}
 
-The selection of algorithm should be made in ...
+Both the MCL and EKF algorithms are applicable for our use case.
+MCL is computationally more heavy than the EKF but it is also more robust.
+We decided to go with TODO...
 \newpage
 \begin{thebibliography}{9}
 
@@ -114,6 +120,8 @@ Monte Carlo localization for mobile robots
 Proceedings 1999 IEEE International Conference on Robotics and Automation (Cat. No.99CH36288C), Detroit, MI, USA (1999), pp. 1322-1328, 10.1109/ROBOT.1999.772544
 \bibitem{AMCL19}
 I. Wasisto, N. Istiqomah, I. K. N. Trisnawan and A. N. Jati, "Implementation of Mobile Sensor Navigation System Based on Adaptive Monte Carlo Localization," 2019 International Conference on Computer, Control, Informatics and its Applications (IC3INA), 2019, pp. 187-192, doi: 10.1109/IC3INA48034.2019.8949581.
+\bibitem{lineEKF}
+Jixin Lv1, Yukinori Kobayashi2, Ankit A. Ravankar1, and Takanori Emaru, "Straight Line Segments Extraction and EKF-SLAM in Indoor Environment" http://www.joace.org/uploadfile/2014/0113/20140113054354731.pdf
 \end{thebibliography}
 
 \end{document}
