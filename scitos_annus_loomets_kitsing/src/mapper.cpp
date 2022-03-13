@@ -1,6 +1,7 @@
 #include <algorithm>
 #include <cmath>
 #include <cstddef>
+#include <fstream>
 #include <iterator>
 #include <vector>
 
@@ -29,8 +30,7 @@ Mapper::Mapper(ros::NodeHandle nh) : nh_{nh} {
       nh_.subscribe("/ground_truth", 1, &Mapper::odometryCallback, this);
   laserScanSub_ =
       nh_.subscribe("/laser_scan", 1, &Mapper::laserScanCallback, this);
-  saveMapSub_ =
-      nh_.subscribe("/save_map", 1, &Mapper::saveMapCallback, this);
+  saveMapSub_ = nh_.subscribe("/save_map", 1, &Mapper::saveMapCallback, this);
   mapLineHoughPub_ =
       nh_.advertise<scitos_common::Vec2Array>("/debug/map_line_hough", 3);
   erosionPub_ =
@@ -39,8 +39,8 @@ Mapper::Mapper(ros::NodeHandle nh) : nh_{nh} {
       nh_.advertise<nav_msgs::OccupancyGrid>("/debug/erosion_grid", 3);
   dbscanPub_ =
       nh_.advertise<visualization_msgs::MarkerArray>("/debug/dbscan", 3);
-  cornerCombinationPub_ =
-      nh_.advertise<visualization_msgs::MarkerArray>("/debug/corner_combination", 3);
+  cornerCombinationPub_ = nh_.advertise<visualization_msgs::MarkerArray>(
+      "/debug/corner_combination", 3);
   linesPub_ = nh_.advertise<visualization_msgs::MarkerArray>("/debug/lines", 3);
   mapPub_ = nh_.advertise<visualization_msgs::MarkerArray>("/debug/map", 3);
 
@@ -64,7 +64,8 @@ void Mapper::step(const ros::TimerEvent &event) {
   if (!laserScan_.header.stamp.isValid()) {
     return;
   }
-  //ROS_INFO("Time diff: %f", (odometry_->header.stamp - laserScan_.header.stamp).toSec());
+  // ROS_INFO("Time diff: %f", (odometry_->header.stamp -
+  // laserScan_.header.stamp).toSec());
 
   // ROS_INFO("start");
   nav_msgs::OccupancyGrid erodedGrid;
@@ -110,21 +111,20 @@ void Mapper::step(const ros::TimerEvent &event) {
   if (erodedPoints.size() > 0) {
     const Vec2<float> loc(odometry_->pose.pose.position.x,
                           odometry_->pose.pose.position.y);
-    // Use FOV = 90deg to be conservative
     map_.prune(mapLines, loc, (erodedPoints[0] - loc).normalize(),
                (erodedPoints[erodedPoints.size() - 1] - loc).normalize());
   }
 
-  std::vector<std::pair<Vec2<float>, std::set<Vec2<float>*>>> cornerVisualization;
-  //map_.combineCorners(cornerCombinationDBScan.n, cornerCombinationDBScan.r, cornerVisualization);
-  //map_.align(4);
-  // ROS_INFO("map size: %zu", map_.getLines().size());
+  std::vector<std::pair<Vec2<float>, std::set<Vec2<float> *>>>
+      cornerVisualization;
+  // map_.combineCorners(cornerCombinationDBScan.n, cornerCombinationDBScan.r,
+  // cornerVisualization); map_.align(4);
+  //  ROS_INFO("map size: %zu", map_.getLines().size());
 
   // ROS_INFO("done");
 
   scitos_common::Vec2Array mapLineHoughMsg;
-  for(auto line: map_.getLines())
-  {
+  for (auto line : map_.getLines()) {
     auto point = line.toHoughSpace();
     mapLineHoughMsg.x.push_back(point.x);
     mapLineHoughMsg.y.push_back(point.y);
@@ -154,12 +154,13 @@ void Mapper::odometryCallback(nav_msgs::OdometryPtr msg) {
 
 void Mapper::laserScanCallback(sensor_msgs::LaserScan msg) { laserScan_ = msg; }
 
-void Mapper::saveMapCallback(std_msgs::String msg){
+void Mapper::saveMapCallback(std_msgs::String msg) {
   std::string map_file = msg.data;
   ROS_INFO("SAVING MAP TO: %s", map_file.c_str());
-  YAML::Node map = YAML::Load("[]");;
-  for(const auto& line: map_.getLines()){
-    if (line.confidence > 0.75){
+  YAML::Node map = YAML::Load("[]");
+  ;
+  for (const auto &line : map_.getLines()) {
+    if (line.confidence > 0.75) {
       ROS_INFO("ADDING LINE");
       YAML::Node lineNode;
       lineNode["confidence"] = line.confidence;
@@ -211,10 +212,13 @@ Mapper::getLaserScanPoints(const ros::Time &currentTime) {
   return output;
 }
 
-void Mapper::publishCornerCombining(std::vector<std::pair<Vec2<float>, std::set<Vec2<float>*>>>& cornerVisualization) const {
+void Mapper::publishCornerCombining(
+    std::vector<std::pair<Vec2<float>, std::set<Vec2<float> *>>>
+        &cornerVisualization) const {
   visualization_msgs::MarkerArray markers;
-  for (size_t i=0; i < cornerVisualization.size(); i++) {
-    std::pair<Vec2<float>, std::set<Vec2<float>*>> corner = cornerVisualization.at(i);
+  for (size_t i = 0; i < cornerVisualization.size(); i++) {
+    std::pair<Vec2<float>, std::set<Vec2<float> *>> corner =
+        cornerVisualization.at(i);
     visualization_msgs::Marker marker;
     marker.header.frame_id = "odom";
     marker.type = visualization_msgs::Marker::SPHERE;
@@ -239,8 +243,8 @@ void Mapper::publishCornerCombining(std::vector<std::pair<Vec2<float>, std::set<
     marker.color.r = 0;
     marker.color.g = std::clamp(i * 0.1, 0.0, 1.0);
     marker.color.b = std::clamp(1.0 - i * 0.1, 0.0, 1.0);
-    int j=0;
-    for(Vec2<float>* point: corner.second){
+    int j = 0;
+    for (Vec2<float> *point : corner.second) {
       marker.pose.position.x = point->x;
       marker.pose.position.y = point->y;
       marker.id = i * 1000 + (++j);
@@ -317,8 +321,8 @@ void Mapper::publishLines() const {
     marker.scale.y = 0.1;
     marker.scale.z = 0.1;
     marker.color.a = 1.0;
-    marker.color.r = 0.0; //std::clamp(i * 0.2, 0.0, 1.0);
-    marker.color.g = 1.0; //std::clamp(-1.0 + i * 0.2, 0.0, 1.0);
+    marker.color.r = 0.0; // std::clamp(i * 0.2, 0.0, 1.0);
+    marker.color.g = 1.0; // std::clamp(-1.0 + i * 0.2, 0.0, 1.0);
     marker.color.b = 1.0;
     marker.pose.orientation.w = 1.0;
 

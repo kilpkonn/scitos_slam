@@ -90,8 +90,8 @@ public:
       bool p1InFov = l.cross(line.p1 - loc) > 0 && (line.p1 - loc).cross(r) > 0;
       bool p2InFov = l.cross(line.p2 - loc) > 0 && (line.p2 - loc).cross(r) > 0;
 
-      bool p1Visible = true;
-      bool p2Visible = true;
+      bool p1Visible = (line.p1 - loc).length() < pruneDist_;
+      bool p2Visible = (line.p2 - loc).length() < pruneDist_;
 
       for (const auto &ln : lines) {
         // Raycast
@@ -239,6 +239,7 @@ public:
 
 private:
   float padding_;
+  float pruneDist_ = 5.f;
   float fadePower_;
   std::vector<Line<T>> lines_;
 
