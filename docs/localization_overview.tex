@@ -41,23 +41,34 @@
 % Intro %
 \section{Introduction}
 
-Once a mobile robot has a well defined representation of it's environment the next essential step for autonomy is localization. Based on the world representation (for now assumed to be known) and sensor readings indicating information about the robot's odometry and environment, the robot can infer it's position within the world representation. The scope of this paper is to analyze different localization algorithms for mobile robots with special focus on 2D motion and using feature map as \emph{priory} map.
+Once a mobile robot has a well defined representation of it's environment the next essential step for autonomy is localization.
+Based on the world representation (for now assumed to be known) and sensor readings indicating information about the robot's odometry and environment, the robot can infer it's position within the world representation. 
+The scope of this paper is to analyze different localization algorithms for mobile robots with special focus on 2D motion and using feature map as \emph{priory} map.
 
 \section{Extended Kalman Filter}
 
-Many robotic systems require the system to be nonlinear - this gives rise to localization approach commonly known as the extended Kalman filter (EKF). EKF is the extension of Kalman filter to nonlinear systems. In comparison to KF, EKF performs significantly better in mobile robot position estimation \cite{Suliman2010}. \\
+Many robotic systems require the system to be nonlinear - this gives rise to localization approach commonly known as the extended Kalman filter (EKF).
+EKF is the extension of Kalman filter to nonlinear systems. 
+It uses First Order Taylor series expansion for to linearize them.
+In comparison to KF, EKF performs significantly better in mobile robot position estimation. \cite{Suliman2010}. \\
 
-The EKF has two phases, one is prediction phase and the other is update phase. In the prediction phase, the motion model is used to predict the current position of the mobile robot, based on not only the previous estimated position, but also the odometry information such as translational velocity and rotational velocity. \cite{featureEKF} \\
+The EKF has two phases, one is prediction phase and the other is update phase. 
+In the prediction phase, the motion model is used to predict the current position of the mobile robot, based on not only the previous estimated position, but also the odometry information such as translational velocity and rotational velocity. \cite{featureEKF} \\
 
-EKF localization can be used with a feature map as documented in this paper here \cite{featureEKF}. As an advantage the distance error between the estimated position calculated from EKF and the ground truth remains almost the same level. Still the EKF algorithm has to have a priory map before hand, this may not be always available. \cite{featureEKF}
+EKF localization can be used with a feature map as documented in this paper here \cite{featureEKF}. 
+As an advantage the distance error between the estimated position calculated from EKF and the ground truth remains almost the same level. 
+Still the EKF algorithm has to have a priory map before hand, this may not be always available. \cite{featureEKF}
 
 \section{Monte Carlo localization}
 
-Monte Carlo Localization (MCL) is a method used to localize mobile sensor in the surrounding environment with Particle Filter based. MCL uses a representation of the Particle Filter to determine the position of the robot in a map that was previously made. In conducting exploration in a previously known environment, the mobile sensor navigation process is required from the initial position to the specified final position. \\
+Monte Carlo Localization (MCL) is a method used to localize mobile sensor in the surrounding environment with a Particle Filter. 
+MCL uses a representation of the Particle Filter to determine the position of the robot in a map that was previously made.
+In conducting exploration in a previously known environment, the mobile sensor navigation process is required from the initial position to the specified final position. \\
 
 One of the key advantages of the MCL over Kalman-filter based approaches is its ability to represent multi-modal probability distributions - This ability is a precondition for localizing a mobile robot without knowledge of its starting location \cite{MCL99}.
 
-Adaptive Monte Carlo Localization (AMCL) can be considered a better version of the Monte Carlo Localization pose estimation, which improves real-time performance by reducing execution time with fewer samples or particles. AMCl uses Kullback-Leibler Distance (KLD) Sampling as an additional parameter. \cite{AMCL19}
+Adaptive Monte Carlo Localization (AMCL) can be considered a better version of the Monte Carlo Localization pose estimation, which improves real-time performance by reducing execution time with fewer samples or particles. 
+AMCl uses Kullback-Leibler Distance (KLD) Sampling as an additional parameter. \cite{AMCL19}
 
 % Conclusion %
 \section{Localization Comparison}
@@ -66,15 +77,18 @@ The comparison of different Localization algorithms can be found in Table~\ref{t
   \begin{center}
     \begin{tabular}[c]{|c | c c c |}
       \hline
-                       & MCL  & AMCL     & EKF                 \\
+                       & MCL   & AMCL          & EKF                 \\
       \hline
-      Impl. difficulty &       & More than MCL        & Medium - High       \\
+      Impl. difficulty &       & Medium        & Medium - High       \\
       \hline
-      Memory complexity&       & less than MCL        & Low                 \\
+      Memory complexity&       & Medium        & Low                 \\
       \hline
-      Time complexity  &        & less than MCL        & Small               \\
+      Time complexity  &       & Medium        & Small               \\
       \hline
-      Robustness       &       &          & Medium              \\
+      Robustness       &       &               & Medium              \\
+      \hline
+      Problems         &       & Time complexity & Non-gaussian distributions \\
+                       &       & Optimal sampling & 
       \hline
     \end{tabular}
   \end{center}
