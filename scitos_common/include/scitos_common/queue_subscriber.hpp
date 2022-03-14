@@ -11,6 +11,8 @@ namespace scitos_common
   template <class T> class QueueSubscriber : public ros::Subscriber
   {
     public:
+    bool hasReceivedFirst = false;
+
     QueueSubscriber(){}
 
     QueueSubscriber(ros::NodeHandle * const nh
@@ -32,6 +34,7 @@ namespace scitos_common
     }
 
     void callback(const boost::shared_ptr<T const> & msg){
+      hasReceivedFirst = true;
       ros::Time stamp;
       auto stampPointer = ros::message_traits::timeStamp(*msg);
       if (stampPointer)
@@ -43,20 +46,27 @@ namespace scitos_common
       std::sort(messages.begin(), messages.end(), lessThanKey());
     }
 
+    T getNearestOrThrow(std::chrono::nanoseconds timestamp, const char * errorMsg){
+      auto value = getNearest(timestamp);
+      if(!value.has_value())
+        throw errorMsg;
+      return value.value();
+    }
+
     std::optional<T> getNearest(std::chrono::nanoseconds timestamp){
       auto lower = std::lower_bound(messages.begin(), messages.end(), timestamp, lessThanKey());
       if (messages.empty())
         return std::nullopt;
       T toReturn;
       if (lower == messages.end())
-        toReturn = *(--lower);
+        toReturn = (*(--lower)).second;
       else if (lower == --messages.end())
-        toReturn = *lower;
+        toReturn = (*lower).second;
       else
         toReturn = abs((*(--lower)).first - timestamp) < abs((*(lower)).first - timestamp)? (*(--lower)).second : (*(lower)).second;
       
-      if (cb)
-        cb(toReturn);
+      //if (cb)
+      //  cb(toReturn);
 
       return toReturn;
     }

@@ -61,7 +61,7 @@ Mapper::Mapper(ros::NodeHandle nh) : nh_{nh} {
 }
 
 void Mapper::step(const ros::TimerEvent &event) {
-  if (odometry_ == nullptr) {
+  if (!odometrySub_.hasReceivedFirst) {
     return;
   }
   if (!laserScan_.header.stamp.isValid()) {
@@ -112,8 +112,9 @@ void Mapper::step(const ros::TimerEvent &event) {
   map_.accumulate2(mapLines);
 
   if (erodedPoints.size() > 0) {
-    const Vec2<float> loc(odometry_->pose.pose.position.x,
-                          odometry_->pose.pose.position.y);
+    nav_msgs::Odometry odometry = odometrySub_.getNearestOrThrow(std::chrono::nanoseconds(laserScan_.header.stamp.toNSec()), "MAPPER: No odometry received");
+    const Vec2<float> loc(odometry.pose.pose.position.x,
+                          odometry.pose.pose.position.y);
     map_.prune(mapLines, loc, (erodedPoints[0] - loc).normalize(),
                (erodedPoints[erodedPoints.size() - 1] - loc).normalize());
   }
@@ -183,7 +184,7 @@ void Mapper::saveMapCallback(std_msgs::String msg) {
 
 std::vector<Vec2<float>>
 Mapper::getLaserScanPoints(const ros::Time &currentTime) {
-  if (!laserScan_.header.stamp.isValid() || odometry_ == nullptr) {
+  if (!laserScan_.header.stamp.isValid() || !odometrySub_.hasReceivedFirst) {
     return {};
   }
 
@@ -196,12 +197,12 @@ Mapper::getLaserScanPoints(const ros::Time &currentTime) {
     ros::Duration(1.0).sleep();
   }
 
-  //nav_msgs::Odometry odom = odometrySub_.getNearest(laserScan_.header.stamp.toNSec());
-  const Vec2<float> loc(odometry_->pose.pose.position.x,
-                        odometry_->pose.pose.position.y);
+  nav_msgs::Odometry odometry = odometrySub_.getNearestOrThrow(std::chrono::nanoseconds(currentTime.toNSec()), "MAPPER: No odometry received");
+  const Vec2<float> loc(odometry.pose.pose.position.x,
+                        odometry.pose.pose.position.y);
   double roll, pitch, yaw;
   tf::Quaternion quat;
-  tf::quaternionMsgToTF(odometry_->pose.pose.orientation, quat);
+  tf::quaternionMsgToTF(odometry.pose.pose.orientation, quat);
   tf::Matrix3x3(quat).getRPY(roll, pitch, yaw);
 
   std::vector<Vec2<float>> output;
