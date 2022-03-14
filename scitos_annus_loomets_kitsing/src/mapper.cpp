@@ -28,8 +28,8 @@
 Mapper::Mapper(ros::NodeHandle nh) : nh_{nh} {
   odometrySub_ = scitos_common::QueueSubscriber<nav_msgs::Odometry>(&nh_
                                                                     , "/ground_truth"
-                                                                    , 50);
-                                                                    //, std::bind(&Mapper::odometryCallback, this, std::placeholders::_1));
+                                                                    , 50
+                                                                    , std::bind(&Mapper::odometryCallback, this, std::placeholders::_1));
       //nh_.subscribe("/ground_truth", 1, &Mapper::odometryCallback, this);
   laserScanSub_ =
       nh_.subscribe("/laser_scan", 1, &Mapper::laserScanCallback, this);
@@ -196,6 +196,7 @@ Mapper::getLaserScanPoints(const ros::Time &currentTime) {
     ros::Duration(1.0).sleep();
   }
 
+  //nav_msgs::Odometry odom = odometrySub_.getNearest(laserScan_.header.stamp.toNSec());
   const Vec2<float> loc(odometry_->pose.pose.position.x,
                         odometry_->pose.pose.position.y);
   double roll, pitch, yaw;

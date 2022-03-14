@@ -2,6 +2,7 @@
 #include <chrono>
 #include <deque>
 #include <algorithm>
+#include <functional>
 
 #include <ros/subscriber.h>
 
@@ -23,7 +24,8 @@ namespace scitos_common
     QueueSubscriber(ros::NodeHandle * const nh
                     , const char * const topic
                     , unsigned int queueSize
-                    , void (*cb)(const boost::shared_ptr<T>)) : cb(cb) //TODO: Fix this
+                    , std::function<void (boost::shared_ptr<T>)> cb)
+                     : cb(cb)
     {
       messages = std::deque<std::pair<std::chrono::nanoseconds, T>>(queueSize);
       *static_cast<ros::Subscriber *>(this) = nh->subscribe(topic, 1, &QueueSubscriber<T>::callback, this);
@@ -61,7 +63,7 @@ namespace scitos_common
 
     private:
     std::deque<std::pair<std::chrono::nanoseconds, T>> messages;
-    void (*cb)(const boost::shared_ptr<T>);
+    std::function<void (boost::shared_ptr<T>)> cb;
 
     struct lessThanKey{
         inline bool operator() (const std::pair<std::chrono::nanoseconds, T>& a, const std::pair<std::chrono::nanoseconds, T>& b){
