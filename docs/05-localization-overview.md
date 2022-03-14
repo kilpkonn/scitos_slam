@@ -67,6 +67,14 @@ Mattias Kitsing
 
 ---
 
+# Grid based Monte Carlo Localization
+
+- Uses histogram
+- better at solving kidnapped robot
+- sensitive to grid resolution
+
+---
+
 # Extended Kalman Filter
 
 - Faster for maps with few features
