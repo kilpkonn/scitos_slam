@@ -46,8 +46,8 @@ Mapper::Mapper(ros::NodeHandle nh) : nh_{nh} {
 
   dbscan_.r = nh_.param("/dbscan/r", 0.1f);
   dbscan_.n = nh_.param("/dbscan/n", 10);
-  cornerCombinationDBScan.n = nh_.param("/corner_combination/r", 0.2f);
-  cornerCombinationDBScan.r = nh_.param("/corner_combination/n", 2);
+  cornerCombinationDBScan.n = nh_.param("/corner_combination/n", 2);
+  cornerCombinationDBScan.r = nh_.param("/corner_combination/r", 0.2f);
   kmeans_.k = nh_.param("/kmeans/k", 10);
   kmeans_.iterations = nh_.param("/kmeans/iterations", 5);
   iepf_.epsilon = nh_.param("/iepf/epsilon", 0.5f);
@@ -117,8 +117,8 @@ void Mapper::step(const ros::TimerEvent &event) {
 
   std::vector<std::pair<Vec2<float>, std::set<Vec2<float> *>>>
       cornerVisualization;
-  // map_.combineCorners(cornerCombinationDBScan.n, cornerCombinationDBScan.r,
-  // cornerVisualization); map_.align(4);
+  map_.combineCorners(cornerCombinationDBScan.n, cornerCombinationDBScan.r, cornerVisualization);
+  //map_.align(4);
   //  ROS_INFO("map size: %zu", map_.getLines().size());
 
   // ROS_INFO("done");

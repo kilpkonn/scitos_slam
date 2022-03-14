@@ -190,7 +190,7 @@ public:
     std::vector<Vec2<T>*> points;
     for (auto const& pointLine: pointLines)
     {
-      if (pointLine.second->confidence < 0.9f)
+      if (pointLine.second->confidence < 0.5f)
         continue;
       tmp.insert(pointLine);
       points.push_back(pointLine.first);
@@ -200,8 +200,10 @@ public:
     std::vector<std::vector<Vec2<T>*>> clusters = scitos_common::dbscan2<Vec2<T>*>(
       points, [](auto a, auto b) { return (*a - *b).length(); }, n, r);
     for (auto cluster: clusters){
+      if (cluster.size() < 2)
+        continue;
       auto [a, b] = maxDist(cluster);
-      if ((*a - *b).length() > r)
+      if ((*a - *b).length() > r * 2)
         continue;
       std::set<Line<T>*> encounteredLines;
       std::set<Vec2<T>*> pointsToMove;
@@ -216,7 +218,7 @@ public:
         }
         clusterCenter += (*point) * line->confidence;
         confidenceSum += line->confidence;
-        if (line->length() > r * 2){
+        if (line->length() > r){
           encounteredLines.insert(line);
           pointsToMove.insert(point);
         }
@@ -227,7 +229,7 @@ public:
       clusterCenter = clusterCenter / confidenceSum;
       cornerVisualization.push_back(std::make_pair(clusterCenter, pointsToMove));
       for(auto pointToMove: pointsToMove){
-        if((clusterCenter - *pointToMove).length() <= r)
+        if((clusterCenter - *pointToMove).length() <= 2 * r)
         {
           *pointToMove = clusterCenter;
         }
