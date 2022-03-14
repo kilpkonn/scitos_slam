@@ -118,7 +118,7 @@ void Mapper::step(const ros::TimerEvent &event) {
   std::vector<std::pair<Vec2<float>, std::set<Vec2<float> *>>>
       cornerVisualization;
   map_.combineCorners(cornerCombinationDBScan.n, cornerCombinationDBScan.r, cornerVisualization);
-  //map_.align(4);
+  map_.align(4);
   //  ROS_INFO("map size: %zu", map_.getLines().size());
 
   // ROS_INFO("done");
