@@ -14,6 +14,7 @@
 #include "scitos_common/map/line.hpp"
 #include "scitos_common/map/map.hpp"
 #include "scitos_common/vec2.hpp"
+#include "scitos_common/queue_subscriber.hpp"
 
 class Mapper {
 public:
@@ -27,7 +28,7 @@ private:
   tf::StampedTransform worldToRobot_;
   sensor_msgs::LaserScan laserScan_;
 
-  ros::Subscriber odometrySub_;
+  scitos_common::QueueSubscriber<nav_msgs::Odometry> odometrySub_;
   ros::Subscriber laserScanSub_;
   ros::Subscriber saveMapSub_;
 

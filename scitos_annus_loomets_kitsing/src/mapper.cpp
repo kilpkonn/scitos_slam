@@ -26,8 +26,11 @@
 #include "scitos_annus_loomets_kitsing/mapper.hpp"
 
 Mapper::Mapper(ros::NodeHandle nh) : nh_{nh} {
-  odometrySub_ =
-      nh_.subscribe("/ground_truth", 1, &Mapper::odometryCallback, this);
+  odometrySub_ = scitos_common::QueueSubscriber<nav_msgs::Odometry>(&nh_
+                                                                    , "/ground_truth"
+                                                                    , 50);
+                                                                    //, std::bind(&Mapper::odometryCallback, this, std::placeholders::_1));
+      //nh_.subscribe("/ground_truth", 1, &Mapper::odometryCallback, this);
   laserScanSub_ =
       nh_.subscribe("/laser_scan", 1, &Mapper::laserScanCallback, this);
   saveMapSub_ = nh_.subscribe("/save_map", 1, &Mapper::saveMapCallback, this);

@@ -18,3 +18,5 @@ compile_commands.json
 .*.lb
 *.dvi
 *.pdf
+*.fdb_latexmk
+*.gz
