@@ -1,0 +1,73 @@
+---
+marp: true
+theme: default
+class:
+  - lead
+  <!-- - invert -->
+---
+
+# SCITOS: team 2
+
+Tavo Annus
+Timo Loomets
+Mattias Kitsing
+
+---
+
+# Tasks
+
+- Finish mapping
+- Localization overview
+
+---
+
+# Mapping
+- Fix "raycast"
+- Added saving to `yaml`
+- Better lines merge (inspired by paper we found for EKF)
+- Connect corners
+- Attempt to make lines more parallel
+
+---
+
+# Connecting corners
+- TODO
+
+---
+
+# Parallel lines
+- TODO
+
+---
+
+![bg 100%](./fig/mapv2.png)
+
+---
+
+# Localization
+- Monte Carlo Localization
+- Extended Kalman Filter localization
+
+---
+
+# Monte Carlo Localization
+
+- Uses particle filter
+- Works easily with both local and global localization
+
+---
+
+# Extended Kalman Filter
+
+- Faster for maps with few features
+- Needs wrapper for global localization (kidnapping problem etc.)
+
+---
+
+# Final choice
+
+- EKF seems to naturally fit for our feature based map
+_(Have not yet decided)_
+
+---
+
