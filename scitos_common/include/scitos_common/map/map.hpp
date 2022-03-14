@@ -44,9 +44,9 @@ public:
 
         // TODO: Merge also lines from farther away that have low conf?
         auto newLine = merged.at(j);
-        if (line.perpendicularDistance(newLine.p1) < padding_ &&
-            line.perpendicularDistance(newLine.p2) < padding_ &&
-            line.overlaps(newLine, 0.f)) { // &&
+        if (line.perpendicularDistance(newLine) < padding_ &&
+            // line.perpendicularDistance(newLine.p2) < padding_ &&
+            line.overlaps2(newLine, 0.f)) { // &&
           // line.v().angle_nodir(newLine.v()) < 0.6) {
           regLine = regLine.merge(newLine);
           auto [a, b] = maxDist({p1, p2, newLine.p1, newLine.p2});

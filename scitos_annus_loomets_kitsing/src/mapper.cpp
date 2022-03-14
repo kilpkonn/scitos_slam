@@ -106,14 +106,14 @@ void Mapper::step(const ros::TimerEvent &event) {
     mapLines.insert(mapLines.end(), line.begin(), line.end());
   }
 
-  map_.accumulate2(mapLines);
-
   if (erodedPoints.size() > 0) {
     const Vec2<float> loc(odometry_->pose.pose.position.x,
                           odometry_->pose.pose.position.y);
     map_.prune(mapLines, loc, (erodedPoints[0] - loc).normalize(),
                (erodedPoints[erodedPoints.size() - 1] - loc).normalize());
   }
+
+  map_.accumulate2(mapLines);
 
   std::vector<std::pair<Vec2<float>, std::set<Vec2<float> *>>>
       cornerVisualization;
