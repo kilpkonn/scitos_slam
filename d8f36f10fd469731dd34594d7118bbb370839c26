@@ -1,0 +1,6 @@
+[ver:1,total:2820,branch:master]
+scitos_common/include/scitos_common/map/map.hpp:1171,1647237600:585,1647241200:586,m
+scitos_common/include/scitos_common/map/line.hpp:995,1647237600:555,1647241200:440,m
+scitos_annus_loomets_kitsing/data/config/mapper.yaml:330,1647241200:330,r
+scitos_annus_loomets_kitsing/src/mapper.cpp:240,1647241200:240,m
+.git/COMMIT_EDITMSG:84,1647241200:84,r
