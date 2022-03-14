@@ -31,12 +31,19 @@ Mattias Kitsing
 ---
 
 # Connecting corners
-- TODO
+- **Assumption: No gap less than 10 cm**
+- DBScan on line end points (unknown nr of corners)
+- Sanity checks for
+  - Short lines
+  - Messy corners 
 
 ---
 
 # Parallel lines
-- TODO
+- **Assumption: Similar walls indoors are alligned**
+- K-Means clustering on line headings (2-4 main headings)
+- Global lines
+- Complex space for angle averaging
 
 ---
 
