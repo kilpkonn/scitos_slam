@@ -52,6 +52,8 @@ Mattias Kitsing
 ---
 
 # Localization
+
+- Focus on algorithms suitable for feature maps
 - Monte Carlo Localization
 - Extended Kalman Filter localization
 
@@ -61,6 +63,7 @@ Mattias Kitsing
 
 - Uses particle filter
 - Works easily with both local and global localization
+- Adaptive Monte Carlo Localization (AMCL) for improvement
 
 ---
 
