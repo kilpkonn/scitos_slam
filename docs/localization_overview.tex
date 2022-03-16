@@ -49,7 +49,7 @@ The scope of this raport is to analyze different localization algorithms for mob
 
 Many robotic systems require the system to be nonlinear - this gives rise to localization approach commonly known as the extended Kalman filter (EKF)\cite{Overview2021}.
 EKF is the extension of Kalman filter to nonlinear systems -
-It uses First Order Taylor series expansion for to linearize them\cite{Overview2021}.
+It uses First Order Taylor series expansion to linearize non-linear models\cite{Overview2021}.
 In comparison to KF, EKF performs significantly better in mobile robot position estimation\cite{Suliman2010}. \\
 
 The EKF has two phases, one is prediction phase and the other is update phase. 
@@ -60,7 +60,7 @@ As an advantage the distance error between the estimated position calculated fro
 Still the EKF algorithm has to have a priory map before hand, this may not be always available. \cite{featureEKF}
 Another problem is that as we have obstacles then in reality not all positions are allowed for the robot so it cuts off part of the gaussian for the position.
 On the other hand our feature based map seems a better fit for EKF than regular grid map as it is likely easier to track features for us so there is some motivation to go with the algorithm due tu our previous decisions.
-We also found a paper that uses line bap for EKF \cite{lineEKF}.
+We also found a paper that uses line based for EKF \cite{lineEKF}.
 
 \section{Monte Carlo localization}
 
@@ -79,7 +79,7 @@ The comparison of different Localization algorithms can be found in Table~\ref{t
   \begin{center}
     \begin{tabular}[c]{|c || c c |}
       \hline
-       Category                &  AMCL          & EKF                 \\
+       Category        &  AMCL          & EKF                 \\
       \hline
       Impl. difficulty &  Medium        & Medium - High       \\
       \hline
@@ -87,10 +87,10 @@ The comparison of different Localization algorithms can be found in Table~\ref{t
       \hline
       Time complexity  &  Medium        & Small               \\
       \hline
-      Robustness       &  Robust        & Medium              \\
+      Robustness       &  Good          & Medium              \\
       \hline
       Problems         & Time complexity & Non-gaussian distributions \\
-                       &   Optimal sampling &  \\
+                       & Optimal sampling &  \\
       \hline
     \end{tabular}
   \end{center}
@@ -103,7 +103,9 @@ The MCL algorithm can also be used directly for global localization whilst EKF w
 
 Both the MCL and EKF algorithms are applicable for our use case.
 MCL uses more computational capacity than the EKF but it is also more robust.
-We decided to go with the EKF algorithm due to the fact that we have already built up core of the features and functions that would be needed by it. EKF would go better and more naturally with our map type because of that. Furthermore we would like to use different approach than the standard grid map and to avoid using discrete localization methods - like grid MCL. 
+We decided to go with the EKF algorithm due to the fact that we have already built up core of the features and functions that would be needed by it. 
+EKF would go better and more naturally with our map type because of that. 
+Furthermore we would like to use different approach than the standard grid map and to avoid using discrete localization methods - like grid MCL. 
 \newpage
 \begin{thebibliography}{9}
 
