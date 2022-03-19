@@ -62,7 +62,8 @@ private:
 
   void odometryCallback(nav_msgs::OdometryPtr msg);
   void laserScanCallback(sensor_msgs::LaserScan msg);
-  void saveMapCallback(std_msgs::String msg);
+  void saveMapCallback(std_msgs::String msg) const;
+  void loadMap(std::string msg);
   std::vector<Vec2<float>> getLaserScanPoints(const ros::Time &currentTime);
   void publishDbscan(const std::vector<Vec2<float>> &points,
                      const std::vector<int> &labels) const;

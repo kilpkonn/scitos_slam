@@ -22,6 +22,11 @@ roslaunch scitos_annus_loomets_kitsing scitos_autonomous.launch
 rosrun scitos_annus_loomets_kitsing teleop_key.p  # To drive with keyboard
 ```
 
+## Save map
+```bash
+rostopic pub /save_map std_msgs/String '{"data":"~/catkin_ws/map.yaml"}'
+```
+
 ## Serve slides
 ```bash
 marp -s docs

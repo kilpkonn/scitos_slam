@@ -238,6 +238,9 @@ public:
   }
 
   std::vector<Line<T>> getLines() const { return lines_; }
+  void loadFromLines(std::vector<Line<T>> lines) {
+    lines_ = lines;
+  }
 
 private:
   float padding_;

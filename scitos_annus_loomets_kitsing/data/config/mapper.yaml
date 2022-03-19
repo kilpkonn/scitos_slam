@@ -12,3 +12,4 @@ iepf:
 map:
   padding: 0.1
   fade_power: 1.05 # [1, inf)
+  load: "/home/tavo/catkin_ws/map.yaml"  # BUG: Needs to be absolute path
