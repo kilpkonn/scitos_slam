@@ -1,0 +1,11 @@
+[ver:1,total:3180,branch:master]
+scitos_mapper/src/scitos_mapper.cpp:2276,1647698400:60,1647702000:2216,m
+scitos_annus_loomets_kitsing/data/config/mapper.yaml:225,1647702000:225,m
+scitos_annus_loomets_kitsing/data/urdf/scitos.gazebo.xacro:210,1647702000:210,r
+.git/COMMIT_EDITMSG:150,1647702000:150,r
+scitos_common/include/scitos_common/map/map.hpp:145,1647702000:145,m
+scitos_mapper/include/scitos_mapper/scitos_mapper.hpp:84,1647702000:84,m
+README.md:45,1647702000:45,m
+scitos_common/include/scitos_common/map/line.hpp:20,1647702000:20,r
+scitos_annus_loomets_kitsing/data/maps/map1.yml:15,1647702000:15,r
+scitos_common/include/scitos_common/vec2.hpp:10,1647702000:10,r
