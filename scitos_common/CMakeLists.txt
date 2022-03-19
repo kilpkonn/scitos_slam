@@ -14,8 +14,11 @@ find_package(catkin REQUIRED
   tf
 )
 
-find_package( OpenCV REQUIRED )
+find_package(OpenCV REQUIRED )
 include_directories( ${OpenCV_INCLUDE_DIRS} )
+
+find_package(Eigen REQUIRED)
+include_directories(${Eigen_INCLUDE_DIRS})
 
 find_package(rostest REQUIRED)
 

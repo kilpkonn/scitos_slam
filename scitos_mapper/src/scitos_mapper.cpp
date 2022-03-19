@@ -190,7 +190,6 @@ void Mapper::loadMap(std::string path) {
 
   for (size_t i = 0; i < map.size(); i++) {
     // Not sure why emblace_back doesn't work
-    ROS_INFO("Line %zu", i);
     scitos_common::map::Line<float> line = 
         {{map[i]["p1"]["x"].as<float>(), map[i]["p1"]["y"].as<float>()},
          {map[i]["p2"]["x"].as<float>(), map[i]["p2"]["y"].as<float>()},
