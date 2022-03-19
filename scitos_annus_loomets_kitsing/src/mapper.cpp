@@ -27,7 +27,7 @@
 
 Mapper::Mapper(ros::NodeHandle nh) : nh_{nh} {
   odometrySub_ =
-      nh_.subscribe("/ground_truth", 1, &Mapper::odometryCallback, this);
+      nh_.subscribe("/odom", 1, &Mapper::odometryCallback, this);
   laserScanSub_ =
       nh_.subscribe("/laser_scan", 1, &Mapper::laserScanCallback, this);
   saveMapSub_ = nh_.subscribe("/save_map", 1, &Mapper::saveMapCallback, this);
