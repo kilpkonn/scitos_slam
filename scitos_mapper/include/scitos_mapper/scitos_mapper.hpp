@@ -1,14 +1,16 @@
 #pragma once
 
 #include <cstdint>
-#include <nav_msgs/Odometry.h>
-#include <ros/ros.h>
-#include <sensor_msgs/LaserScan.h>
-#include <visualization_msgs/MarkerArray.h>
-#include <std_msgs/String.h>
 
-#include <tf/transform_listener.h>
+#include <ros/ros.h>
+
+#include <nav_msgs/Odometry.h>
+#include <sensor_msgs/LaserScan.h>
+#include <std_msgs/String.h>
+#include <visualization_msgs/MarkerArray.h>
+
 #include <tf/transform_broadcaster.h>
+#include <tf/transform_listener.h>
 
 #include "scitos_common/growing_pc.hpp"
 #include "scitos_common/map/line.hpp"
@@ -61,10 +63,12 @@ private:
   void odometryCallback(nav_msgs::OdometryPtr msg);
   void laserScanCallback(sensor_msgs::LaserScan msg);
   void saveMapCallback(std_msgs::String msg);
-  std::vector<Vec2<float>> getLaserScanPoints(const ros::Time& currentTime);
+  std::vector<Vec2<float>> getLaserScanPoints(const ros::Time &currentTime);
   void publishDbscan(const std::vector<Vec2<float>> &points,
                      const std::vector<int> &labels) const;
-  void publishCornerCombining(std::vector<std::pair<Vec2<float>, std::set<Vec2<float>*>>>& cornerVisualization) const;
+  void publishCornerCombining(
+      std::vector<std::pair<Vec2<float>, std::set<Vec2<float> *>>>
+          &cornerVisualization) const;
   void publishErosion(const std::vector<Vec2<float>> &centroids) const;
   void publishLines() const;
   void publishMap() const;

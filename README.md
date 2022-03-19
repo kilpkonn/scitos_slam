@@ -10,6 +10,10 @@ catkin build
 catkin build -DCMAKE_EXPORT_COMPILE_COMMANDS=1
 ```
 _Make sure to copy `compile_commands.json` from under build to project root!_
+```bash
+# Execute at catkin_ws
+jq -s 'map(.[])' build/**/compile_commands.json > ./src/scitos_slam_group_2/compile_commands.json
+```
 
 ## Running
 ```bash

@@ -23,7 +23,7 @@
 
 #include "scitos_common/Vec2Array.h"
 
-#include "scitos_annus_loomets_kitsing/mapper.hpp"
+#include "scitos_mapper/scitos_mapper.hpp"
 
 Mapper::Mapper(ros::NodeHandle nh) : nh_{nh} {
   odometrySub_ =
