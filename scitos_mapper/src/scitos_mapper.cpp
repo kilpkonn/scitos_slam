@@ -16,6 +16,7 @@
 #include <yaml-cpp/yaml.h>
 
 #include "geometry_msgs/PoseStamped.h"
+#include "geometry_msgs/PoseWithCovariance.h"
 #include "scitos_common/dbscan.hpp"
 #include "scitos_common/ekf.hpp"
 #include "scitos_common/grid/morphology.hpp"
@@ -49,7 +50,7 @@ Mapper::Mapper(ros::NodeHandle nh) : nh_{nh} {
       "/debug/corner_combination", 3);
   linesPub_ = nh_.advertise<visualization_msgs::MarkerArray>("/debug/lines", 3);
   mapPub_ = nh_.advertise<visualization_msgs::MarkerArray>("/debug/map", 3);
-  ekfPub_ = nh_.advertise<geometry_msgs::PoseStamped>("/debug/ekf_estimate", 3);
+  ekfPub_ = nh_.advertise<geometry_msgs::PoseWithCovariance>("/debug/ekf_estimate", 3);
 
   dbscan_.r = nh_.param("/dbscan/r", 0.1f);
   dbscan_.n = nh_.param("/dbscan/n", 10);
@@ -167,7 +168,7 @@ void Mapper::step(const ros::TimerEvent &event) {
   publishCornerCombining(cornerVisualization);
   publishLines();
   publishMap();
-  publishEkf(m);
+  publishEkf(m, sigma);
 }
 
 void Mapper::odometryCallback(nav_msgs::OdometryPtr msg) {
@@ -427,14 +428,26 @@ void Mapper::publishMap() const {
   mapPub_.publish(markers);
 }
 
-void Mapper::publishEkf(const Eigen::Vector3f &m) const {
-  geometry_msgs::PoseStamped msg;
-  msg.header.frame_id = "odom";
+void Mapper::publishEkf(const Eigen::Vector3f &m, const Eigen::Matrix3f &sigma) const {
+  // geometry_msgs::PoseStamped msg;
+  geometry_msgs::PoseWithCovariance msg;
+  // msg.header.frame_id = "odom";
   // TODO: Header timestamp
 
   msg.pose.position.x = m(0);
   msg.pose.position.y = m(1);
   msg.pose.position.z = 0.05;
+
+  msg.covariance[0] = sigma(0, 0);
+  msg.covariance[1] = sigma(0, 1);
+  msg.covariance[5] = sigma(0, 2);
+  msg.covariance[6] = sigma(1, 0);
+  msg.covariance[7] = sigma(1, 1);
+  msg.covariance[11] = sigma(1, 2);
+  msg.covariance[31] = sigma(2, 0);
+  msg.covariance[32] = sigma(2, 1);
+  msg.covariance[35] = sigma(2, 2);
+
 
   auto quat = tf::createQuaternionFromRPY(0.f, 0.f, m(2));
 

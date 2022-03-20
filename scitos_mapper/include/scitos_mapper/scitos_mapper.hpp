@@ -79,7 +79,7 @@ private:
       std::vector<std::pair<Vec2<float>, std::set<Vec2<float> *>>>
           &cornerVisualization) const;
   void publishErosion(const std::vector<Vec2<float>> &centroids) const;
-  void publishEkf(const Eigen::Vector3f &m) const;
+  void publishEkf(const Eigen::Vector3f &m, const Eigen::Matrix3f &sigma) const;
   void publishLines() const;
   void publishMap() const;
 };
