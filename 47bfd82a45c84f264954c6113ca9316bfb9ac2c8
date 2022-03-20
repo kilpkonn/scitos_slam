@@ -1,0 +1,5 @@
+[ver:1,total:1140,branch:master]
+scitos_mapper/src/scitos_mapper.cpp:1070,1647795600:630,1647799200:440,m
+scitos_mapper/src/scitos_mapper_node.cpp:42,1647795600:22,1647799200:20,r
+.git/COMMIT_EDITMSG:20,1647799200:20,r
+scitos_mapper/include/scitos_mapper/scitos_mapper.hpp:8,1647795600:8,m
