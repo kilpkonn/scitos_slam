@@ -15,6 +15,7 @@
 #include <yaml-cpp/yaml.h>
 
 #include "scitos_common/dbscan.hpp"
+#include "scitos_common/ekf.hpp"
 #include "scitos_common/grid/morphology.hpp"
 #include "scitos_common/iepf.hpp"
 #include "scitos_common/kmeans.hpp"
@@ -53,6 +54,12 @@ Mapper::Mapper(ros::NodeHandle nh) : nh_{nh} {
   iepf_.epsilon = nh_.param("/iepf/epsilon", 0.5f);
   float padding = nh_.param("/map/padding", 0.05f);
   float fadePower = nh_.param("/map/fade_power", 0.1f);
+
+  float a1 = nh_.param("/map/ekf/a1", 0.1f);
+  float a2 = nh_.param("/map/ekf/a2", 0.1f);
+  float a3 = nh_.param("/map/ekf/a3", 0.1f);
+  float a4 = nh_.param("/map/ekf/a4", 0.1f);
+  ekf_ = scitos_common::EKF(a1, a2, a3, a4);
 
   map_ = scitos_common::map::Map<float>(padding, fadePower);
   if (nh_.hasParam("/map/load")) {

@@ -12,6 +12,7 @@
 #include <tf/transform_broadcaster.h>
 #include <tf/transform_listener.h>
 
+#include "scitos_common/ekf.hpp"
 #include "scitos_common/growing_pc.hpp"
 #include "scitos_common/map/line.hpp"
 #include "scitos_common/map/map.hpp"
@@ -59,6 +60,7 @@ private:
   } iepf_;
 
   scitos_common::map::Map<float> map_;
+  scitos_common::EKF ekf_;
 
   void odometryCallback(nav_msgs::OdometryPtr msg);
   void laserScanCallback(sensor_msgs::LaserScan msg);

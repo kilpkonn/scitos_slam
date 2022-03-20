@@ -13,3 +13,8 @@ map:
   padding: 0.1
   fade_power: 1.05 # [1, inf)
   load: "/home/tavo/catkin_ws/map.yaml"  # BUG: Needs to be absolute path
+  ekf:
+    a1: 0.1  # v effect to v noise
+    a2: 0.1  # w effect to v noise
+    a3: 0.1  # v effect to w noise
+    a4: 0.1  # w effect to w noise
