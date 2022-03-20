@@ -1,0 +1,7 @@
+[ver:1,total:3900,branch:master]
+scitos_mapper/src/scitos_mapper.cpp:2692,1647792000:668,1647795600:2024,m
+scitos_common/include/scitos_common/ekf.hpp:688,1647792000:638,1647795600:50,m
+scitos_mapper/include/scitos_mapper/scitos_mapper.hpp:323,1647792000:197,1647795600:126,m
+scitos_annus_loomets_kitsing/src/motion_controller.cpp:130,1647792000:40,1647795600:90,r
+scitos_annus_loomets_kitsing/scripts/teleop_key.py:37,1647792000:17,1647795600:20,r
+.git/COMMIT_EDITMSG:30,1647795600:30,r
