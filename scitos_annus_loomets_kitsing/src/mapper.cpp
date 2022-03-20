@@ -26,7 +26,7 @@
 #include "scitos_annus_loomets_kitsing/mapper.hpp"
 
 Mapper::Mapper(ros::NodeHandle nh) : nh_{nh} {
-  odometrySub_ = scitos_common::QueueSubscriber<nav_msgs::Odometry>(&nh_
+  odometrySub_ = std::make_unique<scitos_common::QueueSubscriber<nav_msgs::Odometry>>(&nh_
                                                                     , "/ground_truth"
                                                                     , 50
                                                                     , std::bind(&Mapper::odometryCallback, this, std::placeholders::_1));
@@ -61,7 +61,7 @@ Mapper::Mapper(ros::NodeHandle nh) : nh_{nh} {
 }
 
 void Mapper::step(const ros::TimerEvent &event) {
-  if (!odometrySub_.hasReceivedFirst) {
+  if (!odometrySub_->hasReceivedFirst) {
     return;
   }
   if (!laserScan_.header.stamp.isValid()) {
@@ -112,7 +112,7 @@ void Mapper::step(const ros::TimerEvent &event) {
   map_.accumulate2(mapLines);
 
   if (erodedPoints.size() > 0) {
-    nav_msgs::Odometry odometry = odometrySub_.getNearestOrThrow(std::chrono::nanoseconds(laserScan_.header.stamp.toNSec()), "MAPPER: No odometry received");
+    nav_msgs::Odometry odometry = odometrySub_->getNearestOrThrow(std::chrono::nanoseconds(laserScan_.header.stamp.toNSec()), "MAPPER: No odometry received");
     const Vec2<float> loc(odometry.pose.pose.position.x,
                           odometry.pose.pose.position.y);
     map_.prune(mapLines, loc, (erodedPoints[0] - loc).normalize(),
@@ -142,18 +142,18 @@ void Mapper::step(const ros::TimerEvent &event) {
   publishMap();
 }
 
-void Mapper::odometryCallback(nav_msgs::OdometryPtr msg) {
-  odometry_ = msg;
+void Mapper::odometryCallback(nav_msgs::Odometry msg) {
+  //odometry_ = &msg;
 
-  worldToRobot_.child_frame_id_ = odometry_->child_frame_id;
-  worldToRobot_.frame_id_ = odometry_->header.frame_id;
-  worldToRobot_.stamp_ = odometry_->header.stamp;
-  worldToRobot_.setOrigin({odometry_->pose.pose.position.x,
-                           odometry_->pose.pose.position.y,
-                           odometry_->pose.pose.position.z});
+  worldToRobot_.child_frame_id_ = msg.child_frame_id;
+  worldToRobot_.frame_id_ = msg.header.frame_id;
+  worldToRobot_.stamp_ = msg.header.stamp;
+  worldToRobot_.setOrigin({msg.pose.pose.position.x,
+                           msg.pose.pose.position.y,
+                           msg.pose.pose.position.z});
   worldToRobot_.setRotation(
-      {odometry_->pose.pose.orientation.x, odometry_->pose.pose.orientation.y,
-       odometry_->pose.pose.orientation.z, odometry_->pose.pose.orientation.w});
+      {msg.pose.pose.orientation.x, msg.pose.pose.orientation.y,
+       msg.pose.pose.orientation.z, msg.pose.pose.orientation.w});
 }
 
 void Mapper::laserScanCallback(sensor_msgs::LaserScan msg) { laserScan_ = msg; }
@@ -184,7 +184,7 @@ void Mapper::saveMapCallback(std_msgs::String msg) {
 
 std::vector<Vec2<float>>
 Mapper::getLaserScanPoints(const ros::Time &currentTime) {
-  if (!laserScan_.header.stamp.isValid() || !odometrySub_.hasReceivedFirst) {
+  if (!laserScan_.header.stamp.isValid() || !odometrySub_->hasReceivedFirst) {
     return {};
   }
 
@@ -197,7 +197,7 @@ Mapper::getLaserScanPoints(const ros::Time &currentTime) {
     ros::Duration(1.0).sleep();
   }
 
-  nav_msgs::Odometry odometry = odometrySub_.getNearestOrThrow(std::chrono::nanoseconds(currentTime.toNSec()), "MAPPER: No odometry received");
+  nav_msgs::Odometry odometry = odometrySub_->getNearestOrThrow(std::chrono::nanoseconds(currentTime.toNSec()), "MAPPER: No odometry received");
   const Vec2<float> loc(odometry.pose.pose.position.x,
                         odometry.pose.pose.position.y);
   double roll, pitch, yaw;

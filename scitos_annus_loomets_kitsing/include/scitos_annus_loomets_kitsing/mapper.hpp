@@ -1,6 +1,8 @@
 #pragma once
 
 #include <cstdint>
+#include <memory>
+
 #include <nav_msgs/Odometry.h>
 #include <ros/ros.h>
 #include <sensor_msgs/LaserScan.h>
@@ -28,7 +30,7 @@ private:
   tf::StampedTransform worldToRobot_;
   sensor_msgs::LaserScan laserScan_;
 
-  scitos_common::QueueSubscriber<nav_msgs::Odometry> odometrySub_;
+  std::unique_ptr<scitos_common::QueueSubscriber<nav_msgs::Odometry>> odometrySub_;
   ros::Subscriber laserScanSub_;
   ros::Subscriber saveMapSub_;
 
@@ -59,7 +61,7 @@ private:
 
   scitos_common::map::Map<float> map_;
 
-  void odometryCallback(nav_msgs::OdometryPtr msg);
+  void odometryCallback(nav_msgs::Odometry msg);
   void laserScanCallback(sensor_msgs::LaserScan msg);
   void saveMapCallback(std_msgs::String msg);
   std::vector<Vec2<float>> getLaserScanPoints(const ros::Time& currentTime);
