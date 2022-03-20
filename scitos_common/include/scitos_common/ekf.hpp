@@ -1,5 +1,6 @@
 #pragma once
 
+#include <chrono>
 #include <cmath>
 #include <tuple>
 #include <vector>
@@ -27,45 +28,53 @@ public:
   /*!
    * EKF for differential drive robots
    *
-   * m = [x, y, phi]'
    * u = [v, w]'
    */
-  std::tuple<Vector3f, Matrix3f> step(Vector3f m_old, Matrix3f sigma_old,
-                                      Vector2f u, float dt,
+  std::tuple<Vector3f, Matrix3f> step(Vector2f u, std::chrono::milliseconds t,
                                       std::vector<map::Line<float>> z,
                                       map::Map<float> map) {
+    float dt = static_cast<float>(t.count()) / 1000.f;
     // Motion update
-    Vector3f m{m_old(0) + u(0) * dt * std::cos(m_old(2) + u(1) * dt / 2.f),
-               m_old(1) + u(0) * dt * std::sin(m_old(2) + u(1) * dt / 2.f),
-               m_old(2) + u(1) * dt};
+    Vector3f m{m_(0) + u(0) * dt * std::cos(m_(2) + u(1) * dt / 2.f),
+               m_(1) + u(0) * dt * std::sin(m_(2) + u(1) * dt / 2.f),
+               m_(2) + u(1) * dt};
 
     Matrix2f M{{a1_ * u(0) * u(0) + a2_ * u(1) * u(1), 0},
                {0, a3_ * u(0) * u(0) + a4_ * u(1) * u(1)}};
 
-    Matrix3f G{{1.f, 0.f, -u(0) * dt * std::sin(m_old(2) + u(1) * dt / 2.f)},
-               {0.f, 1.f, u(0) * dt * std::cos(m_old(2) + u(1) * dt / 2.f)},
+    Matrix3f G{{1.f, 0.f, -u(0) * dt * std::sin(m_(2) + u(1) * dt / 2.f)},
+               {0.f, 1.f, u(0) * dt * std::cos(m_(2) + u(1) * dt / 2.f)},
                {0.f, 0.f, 1.f}};
 
     Matrix<float, 3, 2> V{
-        {dt * std::cos(m_old(2) + u(1) * dt / 2.f),
-         -0.5f * dt * dt * std::sin(m_old(2) + u(1) * dt / 2.f)},
-        {dt * std::sin(m_old(2) + u(1) * dt / 2.f),
-         0.5f * dt * dt * std::cos(m_old(2) + u(1) * dt / 2.f)},
+        {dt * std::cos(m_(2) + u(1) * dt / 2.f),
+         -0.5f * dt * dt * std::sin(m_(2) + u(1) * dt / 2.f)},
+        {dt * std::sin(m_(2) + u(1) * dt / 2.f),
+         0.5f * dt * dt * std::cos(m_(2) + u(1) * dt / 2.f)},
         {0.f, dt}};
 
-    Matrix3f sigma = G * sigma_old * G.transpose() + V * M * V.transpose();
+    Matrix3f sigma = G * sigma_* G.transpose() + V * M * V.transpose();
 
     // TODO: Features to position
-    // TODO: EKF update to m and sigma
+    // TODO: EKF correction to m and sigma
+    
+    m_= m;
+    sigma_= sigma;
+
     return std::make_tuple(m, sigma);
   }
 
+  void setState(Vector3f m) { m_ = m; }
+  void setVariances(Matrix3f sigma) { sigma_ = sigma; }
+
 private:
-  // TODO: Sensor covariances, add to params
   float a1_;
   float a2_;
   float a3_;
   float a4_;
+  // [x, y, phi]'
+  Vector3f m_;
+  Matrix3f sigma_;
 };
 
 } // namespace scitos_common

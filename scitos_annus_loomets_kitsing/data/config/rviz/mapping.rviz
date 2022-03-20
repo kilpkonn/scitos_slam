@@ -4,16 +4,11 @@ Panels:
     Name: Displays
     Property Tree Widget:
       Expanded:
-        - /Global Options1
-        - /RobotModel1
-        - /ground_truth1
-        - /ground_truth1/Status1
         - /ground_truth1/Shape1
-        - /odom1
         - /odom1/Shape1
         - /odom1/Covariance1
         - /odom1/Covariance1/Position1
-        - /Map2
+        - /EKF Prediction1
       Splitter Ratio: 0.5739750266075134
     Tree Height: 1683
   - Class: rviz/Selection
@@ -483,6 +478,22 @@ Visualization Manager:
         "": true
       Queue Size: 100
       Value: true
+    - Alpha: 1
+      Axes Length: 1
+      Axes Radius: 0.10000000149011612
+      Class: rviz/Pose
+      Color: 0; 255; 238
+      Enabled: true
+      Head Length: 0.30000001192092896
+      Head Radius: 0.10000000149011612
+      Name: EKF Prediction
+      Queue Size: 10
+      Shaft Length: 1
+      Shaft Radius: 0.05000000074505806
+      Shape: Arrow
+      Topic: /debug/ekf_estimate
+      Unreliable: false
+      Value: true
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
@@ -510,7 +521,7 @@ Visualization Manager:
   Value: true
   Views:
     Current:
-      Angle: 0.009999746456742287
+      Angle: 0.014999746344983578
       Class: rviz/TopDownOrtho
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549

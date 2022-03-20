@@ -2,6 +2,7 @@
 
 #include <cstdint>
 
+#include <eigen3/Eigen/Eigen>
 #include <ros/ros.h>
 
 #include <nav_msgs/Odometry.h>
@@ -12,6 +13,7 @@
 #include <tf/transform_broadcaster.h>
 #include <tf/transform_listener.h>
 
+#include "geometry_msgs/Twist.h"
 #include "scitos_common/ekf.hpp"
 #include "scitos_common/growing_pc.hpp"
 #include "scitos_common/map/line.hpp"
@@ -29,9 +31,11 @@ private:
   nav_msgs::OdometryPtr odometry_;
   tf::StampedTransform worldToRobot_;
   sensor_msgs::LaserScan laserScan_;
+  geometry_msgs::Twist cmdVel_;
 
   ros::Subscriber odometrySub_;
   ros::Subscriber laserScanSub_;
+  ros::Subscriber cmdVelSub_;
   ros::Subscriber saveMapSub_;
 
   ros::Publisher mapLineHoughPub_;
@@ -41,6 +45,7 @@ private:
   ros::Publisher dbscanPub_;
   ros::Publisher linesPub_;
   ros::Publisher mapPub_;
+  ros::Publisher ekfPub_;
 
   tf::TransformListener tfListener_;
 
@@ -65,6 +70,7 @@ private:
   void odometryCallback(nav_msgs::OdometryPtr msg);
   void laserScanCallback(sensor_msgs::LaserScan msg);
   void saveMapCallback(std_msgs::String msg) const;
+  void cmdVelCallback(geometry_msgs::Twist msg);
   void loadMap(std::string msg);
   std::vector<Vec2<float>> getLaserScanPoints(const ros::Time &currentTime);
   void publishDbscan(const std::vector<Vec2<float>> &points,
@@ -73,6 +79,7 @@ private:
       std::vector<std::pair<Vec2<float>, std::set<Vec2<float> *>>>
           &cornerVisualization) const;
   void publishErosion(const std::vector<Vec2<float>> &centroids) const;
+  void publishEkf(const Eigen::Vector3f &m) const;
   void publishLines() const;
   void publishMap() const;
 };

@@ -6,6 +6,7 @@
 #include <string>
 #include <vector>
 
+#include <geometry_msgs/Twist.h>
 #include <nav_msgs/OccupancyGrid.h>
 #include <ros/console.h>
 #include <tf/LinearMath/Matrix3x3.h>
@@ -14,6 +15,7 @@
 
 #include <yaml-cpp/yaml.h>
 
+#include "geometry_msgs/PoseStamped.h"
 #include "scitos_common/dbscan.hpp"
 #include "scitos_common/ekf.hpp"
 #include "scitos_common/grid/morphology.hpp"
@@ -28,10 +30,13 @@
 #include "scitos_mapper/scitos_mapper.hpp"
 
 Mapper::Mapper(ros::NodeHandle nh) : nh_{nh} {
-  odometrySub_ = nh_.subscribe("/ground_truth", 1, &Mapper::odometryCallback, this);
+  odometrySub_ =
+      nh_.subscribe("/ground_truth", 1, &Mapper::odometryCallback, this);
   laserScanSub_ =
       nh_.subscribe("/laser_scan", 1, &Mapper::laserScanCallback, this);
   saveMapSub_ = nh_.subscribe("/save_map", 1, &Mapper::saveMapCallback, this);
+  cmdVelSub_ = nh_.subscribe("/cmd_vel", 1, &Mapper::cmdVelCallback, this);
+
   mapLineHoughPub_ =
       nh_.advertise<scitos_common::Vec2Array>("/debug/map_line_hough", 3);
   erosionPub_ =
@@ -44,6 +49,7 @@ Mapper::Mapper(ros::NodeHandle nh) : nh_{nh} {
       "/debug/corner_combination", 3);
   linesPub_ = nh_.advertise<visualization_msgs::MarkerArray>("/debug/lines", 3);
   mapPub_ = nh_.advertise<visualization_msgs::MarkerArray>("/debug/map", 3);
+  ekfPub_ = nh_.advertise<geometry_msgs::PoseStamped>("/debug/ekf_estimate", 3);
 
   dbscan_.r = nh_.param("/dbscan/r", 0.1f);
   dbscan_.n = nh_.param("/dbscan/n", 10);
@@ -60,6 +66,10 @@ Mapper::Mapper(ros::NodeHandle nh) : nh_{nh} {
   float a3 = nh_.param("/map/ekf/a3", 0.1f);
   float a4 = nh_.param("/map/ekf/a4", 0.1f);
   ekf_ = scitos_common::EKF(a1, a2, a3, a4);
+  ekf_.setState({0.f, 0.f, 0.f});
+  // TODO: Reasinable variance estimates
+  Eigen::Matrix3f sigma{{1.f, 1.f, 1.f}, {1.f, 1.f, 1.f}, {1.f, 1.f, 1.f}};
+  ekf_.setVariances(sigma);
 
   map_ = scitos_common::map::Map<float>(padding, fadePower);
   if (nh_.hasParam("/map/load")) {
@@ -75,6 +85,8 @@ void Mapper::step(const ros::TimerEvent &event) {
   if (!laserScan_.header.stamp.isValid()) {
     return;
   }
+
+  std::chrono::nanoseconds dt(event.profile.last_duration.toNSec());
   // ROS_INFO("Time diff: %f", (odometry_->header.stamp -
   // laserScan_.header.stamp).toSec());
 
@@ -117,11 +129,12 @@ void Mapper::step(const ros::TimerEvent &event) {
     mapLines.insert(mapLines.end(), line.begin(), line.end());
   }
 
-  if (erodedPoints.size() > 0) {
+  if (erodedPoints.size() > 1) {
     const Vec2<float> loc(odometry_->pose.pose.position.x,
                           odometry_->pose.pose.position.y);
-    map_.prune(mapLines, loc, (erodedPoints[0] - loc).normalize(),
-               (erodedPoints[erodedPoints.size() - 1] - loc).normalize());
+    size_t n = erodedPoints.size() / 4; // Skip 25% on both sides
+    map_.prune(mapLines, loc, (erodedPoints[n] - loc).normalize(),
+               (erodedPoints[erodedPoints.size() - n] - loc).normalize());
   }
 
   map_.accumulate2(mapLines);
@@ -130,8 +143,14 @@ void Mapper::step(const ros::TimerEvent &event) {
       cornerVisualization;
   map_.combineCorners(cornerCombinationDBScan.n, cornerCombinationDBScan.r,
                       cornerVisualization);
-  map_.align(4);
+  // BUG: align is broken
+  // map_.align(4);
   //  ROS_INFO("map size: %zu", map_.getLines().size());
+
+  Eigen::Vector2f u = {cmdVel_.linear.x, cmdVel_.angular.z};
+  auto [m, sigma] =
+      ekf_.step(u, std::chrono::duration_cast<std::chrono::milliseconds>(dt),
+                mapLines, map_);
 
   // ROS_INFO("done");
 
@@ -148,6 +167,7 @@ void Mapper::step(const ros::TimerEvent &event) {
   publishCornerCombining(cornerVisualization);
   publishLines();
   publishMap();
+  publishEkf(m);
 }
 
 void Mapper::odometryCallback(nav_msgs::OdometryPtr msg) {
@@ -165,6 +185,8 @@ void Mapper::odometryCallback(nav_msgs::OdometryPtr msg) {
 }
 
 void Mapper::laserScanCallback(sensor_msgs::LaserScan msg) { laserScan_ = msg; }
+
+void Mapper::cmdVelCallback(geometry_msgs::Twist msg) { cmdVel_ = msg; }
 
 void Mapper::saveMapCallback(std_msgs::String msg) const {
   std::string map_file = msg.data;
@@ -197,10 +219,10 @@ void Mapper::loadMap(std::string path) {
 
   for (size_t i = 0; i < map.size(); i++) {
     // Not sure why emblace_back doesn't work
-    scitos_common::map::Line<float> line = 
-        {{map[i]["p1"]["x"].as<float>(), map[i]["p1"]["y"].as<float>()},
-         {map[i]["p2"]["x"].as<float>(), map[i]["p2"]["y"].as<float>()},
-         map[i]["confidence"].as<float>()};
+    scitos_common::map::Line<float> line = {
+        {map[i]["p1"]["x"].as<float>(), map[i]["p1"]["y"].as<float>()},
+        {map[i]["p2"]["x"].as<float>(), map[i]["p2"]["y"].as<float>()},
+        map[i]["confidence"].as<float>()};
     lines.push_back(line);
   }
   map_.loadFromLines(lines);
@@ -403,4 +425,23 @@ void Mapper::publishMap() const {
   }
 
   mapPub_.publish(markers);
+}
+
+void Mapper::publishEkf(const Eigen::Vector3f &m) const {
+  geometry_msgs::PoseStamped msg;
+  msg.header.frame_id = "odom";
+  // TODO: Header timestamp
+
+  msg.pose.position.x = m(0);
+  msg.pose.position.y = m(1);
+  msg.pose.position.z = 0.05;
+
+  auto quat = tf::createQuaternionFromRPY(0.f, 0.f, m(2));
+
+  msg.pose.orientation.w = quat.getW();
+  msg.pose.orientation.x = quat.getX();
+  msg.pose.orientation.y = quat.getY();
+  msg.pose.orientation.z = quat.getZ();
+
+  ekfPub_.publish(msg);
 }
