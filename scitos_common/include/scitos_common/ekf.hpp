@@ -28,36 +28,33 @@ public:
   /*!
    * EKF for differential drive robots
    *
-   * u = [v, w]'
+   * @param v - linear velocity
+   * @param w - angular velocity
+   * @param t - time since last update
    */
-  std::tuple<Vector3f, Matrix3f> step(Vector2f u, std::chrono::milliseconds t,
-                                      std::vector<map::Line<float>> z,
-                                      map::Map<float> map) {
+  std::tuple<Vector3f, Matrix3f> predict(float v, float w, std::chrono::milliseconds t) {
     float dt = static_cast<float>(t.count()) / 1000.f;
     // Motion update
-    Vector3f m{m_(0) + u(0) * dt * std::cos(m_(2) + u(1) * dt / 2.f),
-               m_(1) + u(0) * dt * std::sin(m_(2) + u(1) * dt / 2.f),
-               m_(2) + u(1) * dt};
+    Vector3f m{m_(0) + v * dt * std::cos(m_(2) + w * dt / 2.f),
+               m_(1) + v * dt * std::sin(m_(2) + w * dt / 2.f),
+               m_(2) + w * dt};
 
-    Matrix2f M{{a1_ * u(0) * u(0) + a2_ * u(1) * u(1), 0},
-               {0, a3_ * u(0) * u(0) + a4_ * u(1) * u(1)}};
+    Matrix2f M{{a1_ * v * v + a2_ * w * w, 0},
+               {0, a3_ * v * v + a4_ * w * w}};
 
-    Matrix3f G{{1.f, 0.f, -u(0) * dt * std::sin(m_(2) + u(1) * dt / 2.f)},
-               {0.f, 1.f, u(0) * dt * std::cos(m_(2) + u(1) * dt / 2.f)},
+    Matrix3f G{{1.f, 0.f, -v * dt * std::sin(m_(2) + w * dt / 2.f)},
+               {0.f, 1.f, v * dt * std::cos(m_(2) + w * dt / 2.f)},
                {0.f, 0.f, 1.f}};
 
     Matrix<float, 3, 2> V{
-        {dt * std::cos(m_(2) + u(1) * dt / 2.f),
-         -0.5f * dt * dt * std::sin(m_(2) + u(1) * dt / 2.f)},
-        {dt * std::sin(m_(2) + u(1) * dt / 2.f),
-         0.5f * dt * dt * std::cos(m_(2) + u(1) * dt / 2.f)},
+        {dt * std::cos(m_(2) + w * dt / 2.f),
+         -0.5f * dt * dt * std::sin(m_(2) + w * dt / 2.f)},
+        {dt * std::sin(m_(2) + w * dt / 2.f),
+         0.5f * dt * dt * std::cos(m_(2) + w * dt / 2.f)},
         {0.f, dt}};
 
     Matrix3f sigma = G * sigma_* G.transpose() + V * M * V.transpose();
 
-    // TODO: Features to position
-    // TODO: EKF correction to m and sigma
-    
     m_= m;
     sigma_= sigma;
 

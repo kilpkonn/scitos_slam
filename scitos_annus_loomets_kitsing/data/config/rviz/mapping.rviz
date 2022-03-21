@@ -4,11 +4,13 @@ Panels:
     Name: Displays
     Property Tree Widget:
       Expanded:
+        - /ground_truth1
         - /ground_truth1/Shape1
         - /odom1/Shape1
         - /odom1/Covariance1
         - /odom1/Covariance1/Position1
         - /EKF Prediction 21
+        - /EKF Prediction 21/Covariance1
       Splitter Ratio: 0.5739750266075134
     Tree Height: 1683
   - Class: rviz/Selection
@@ -475,7 +477,7 @@ Visualization Manager:
       Marker Topic: /debug/corner_combination
       Name: cornerCombining
       Namespaces:
-        {}
+        "": true
       Queue Size: 100
       Value: true
     - Alpha: 1
@@ -498,7 +500,7 @@ Visualization Manager:
       Axes Length: 1
       Axes Radius: 0.10000000149011612
       Class: rviz/PoseWithCovariance
-      Color: 3; 255; 238
+      Color: 0; 170; 0
       Covariance:
         Orientation:
           Alpha: 0.5
@@ -552,7 +554,7 @@ Visualization Manager:
   Value: true
   Views:
     Current:
-      Angle: 0.014999746344983578
+      Angle: -0.005000242032110691
       Class: rviz/TopDownOrtho
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
@@ -562,10 +564,10 @@ Visualization Manager:
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Scale: 69.47076416015625
+      Scale: 77.80725860595703
       Target Frame: base_link
-      X: 1.5748292207717896
-      Y: 5.398806571960449
+      X: -1.891675591468811
+      Y: 5.204341411590576
     Saved: ~
 Window Geometry:
   Displays:

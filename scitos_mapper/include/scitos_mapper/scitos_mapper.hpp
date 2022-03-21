@@ -31,7 +31,8 @@ private:
   nav_msgs::OdometryPtr odometry_;
   tf::StampedTransform worldToRobot_;
   sensor_msgs::LaserScan laserScan_;
-  geometry_msgs::Twist cmdVel_;
+
+  ros::Time cmdVelStamp_ = ros::Time::now();
 
   ros::Subscriber odometrySub_;
   ros::Subscriber laserScanSub_;

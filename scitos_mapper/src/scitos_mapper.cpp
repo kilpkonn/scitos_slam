@@ -1,4 +1,5 @@
 #include <algorithm>
+#include <chrono>
 #include <cmath>
 #include <cstddef>
 #include <fstream>
@@ -16,7 +17,7 @@
 #include <yaml-cpp/yaml.h>
 
 #include "geometry_msgs/PoseStamped.h"
-#include "geometry_msgs/PoseWithCovariance.h"
+#include "geometry_msgs/PoseWithCovarianceStamped.h"
 #include "scitos_common/dbscan.hpp"
 #include "scitos_common/ekf.hpp"
 #include "scitos_common/grid/morphology.hpp"
@@ -50,7 +51,8 @@ Mapper::Mapper(ros::NodeHandle nh) : nh_{nh} {
       "/debug/corner_combination", 3);
   linesPub_ = nh_.advertise<visualization_msgs::MarkerArray>("/debug/lines", 3);
   mapPub_ = nh_.advertise<visualization_msgs::MarkerArray>("/debug/map", 3);
-  ekfPub_ = nh_.advertise<geometry_msgs::PoseWithCovariance>("/debug/ekf_estimate", 3);
+  ekfPub_ = nh_.advertise<geometry_msgs::PoseWithCovarianceStamped>(
+      "/debug/ekf_estimate", 3);
 
   dbscan_.r = nh_.param("/dbscan/r", 0.1f);
   dbscan_.n = nh_.param("/dbscan/n", 10);
@@ -68,8 +70,7 @@ Mapper::Mapper(ros::NodeHandle nh) : nh_{nh} {
   float a4 = nh_.param("/map/ekf/a4", 0.1f);
   ekf_ = scitos_common::EKF(a1, a2, a3, a4);
   ekf_.setState({0.f, 0.f, 0.f});
-  // TODO: Reasinable variance estimates
-  Eigen::Matrix3f sigma{{1.f, 1.f, 1.f}, {1.f, 1.f, 1.f}, {1.f, 1.f, 1.f}};
+  Eigen::Matrix3f sigma{{0.f, 0.f, 0.f}, {0.f, 0.f, 0.f}, {0.f, 0.f, 0.f}};
   ekf_.setVariances(sigma);
 
   map_ = scitos_common::map::Map<float>(padding, fadePower);
@@ -148,11 +149,6 @@ void Mapper::step(const ros::TimerEvent &event) {
   // map_.align(4);
   //  ROS_INFO("map size: %zu", map_.getLines().size());
 
-  Eigen::Vector2f u = {cmdVel_.linear.x, cmdVel_.angular.z};
-  auto [m, sigma] =
-      ekf_.step(u, std::chrono::duration_cast<std::chrono::milliseconds>(dt),
-                mapLines, map_);
-
   // ROS_INFO("done");
 
   scitos_common::Vec2Array mapLineHoughMsg;
@@ -168,7 +164,6 @@ void Mapper::step(const ros::TimerEvent &event) {
   publishCornerCombining(cornerVisualization);
   publishLines();
   publishMap();
-  publishEkf(m, sigma);
 }
 
 void Mapper::odometryCallback(nav_msgs::OdometryPtr msg) {
@@ -187,7 +182,15 @@ void Mapper::odometryCallback(nav_msgs::OdometryPtr msg) {
 
 void Mapper::laserScanCallback(sensor_msgs::LaserScan msg) { laserScan_ = msg; }
 
-void Mapper::cmdVelCallback(geometry_msgs::Twist msg) { cmdVel_ = msg; }
+void Mapper::cmdVelCallback(geometry_msgs::Twist msg) {
+  auto dt =
+      std::chrono::nanoseconds((ros::Time::now() - cmdVelStamp_).toNSec());
+  auto [m, sigma] =
+      ekf_.predict(msg.linear.x, msg.angular.z,
+                   std::chrono::duration_cast<std::chrono::milliseconds>(dt));
+  cmdVelStamp_ = ros::Time::now();
+  publishEkf(m, sigma);
+}
 
 void Mapper::saveMapCallback(std_msgs::String msg) const {
   std::string map_file = msg.data;
@@ -428,33 +431,33 @@ void Mapper::publishMap() const {
   mapPub_.publish(markers);
 }
 
-void Mapper::publishEkf(const Eigen::Vector3f &m, const Eigen::Matrix3f &sigma) const {
+void Mapper::publishEkf(const Eigen::Vector3f &m,
+                        const Eigen::Matrix3f &sigma) const {
   // geometry_msgs::PoseStamped msg;
-  geometry_msgs::PoseWithCovariance msg;
-  // msg.header.frame_id = "odom";
-  // TODO: Header timestamp
+  geometry_msgs::PoseWithCovarianceStamped msg;
+  msg.header.frame_id = "odom";
+  msg.header.stamp = ros::Time::now();
 
-  msg.pose.position.x = m(0);
-  msg.pose.position.y = m(1);
-  msg.pose.position.z = 0.05;
+  msg.pose.pose.position.x = m(0);
+  msg.pose.pose.position.y = m(1);
+  msg.pose.pose.position.z = 0.05;
 
-  msg.covariance[0] = sigma(0, 0);
-  msg.covariance[1] = sigma(0, 1);
-  msg.covariance[5] = sigma(0, 2);
-  msg.covariance[6] = sigma(1, 0);
-  msg.covariance[7] = sigma(1, 1);
-  msg.covariance[11] = sigma(1, 2);
-  msg.covariance[31] = sigma(2, 0);
-  msg.covariance[32] = sigma(2, 1);
-  msg.covariance[35] = sigma(2, 2);
-
+  msg.pose.covariance[0] = sigma(0, 0);
+  msg.pose.covariance[1] = sigma(0, 1);
+  msg.pose.covariance[5] = sigma(0, 2);
+  msg.pose.covariance[6] = sigma(1, 0);
+  msg.pose.covariance[7] = sigma(1, 1);
+  msg.pose.covariance[11] = sigma(1, 2);
+  msg.pose.covariance[31] = sigma(2, 0);
+  msg.pose.covariance[32] = sigma(2, 1);
+  msg.pose.covariance[35] = sigma(2, 2);
 
   auto quat = tf::createQuaternionFromRPY(0.f, 0.f, m(2));
 
-  msg.pose.orientation.w = quat.getW();
-  msg.pose.orientation.x = quat.getX();
-  msg.pose.orientation.y = quat.getY();
-  msg.pose.orientation.z = quat.getZ();
+  msg.pose.pose.orientation.w = quat.getW();
+  msg.pose.pose.orientation.x = quat.getX();
+  msg.pose.pose.orientation.y = quat.getY();
+  msg.pose.pose.orientation.z = quat.getZ();
 
   ekfPub_.publish(msg);
 }
