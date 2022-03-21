@@ -31,7 +31,10 @@ Mattias Kitsing
 - Move localization and mapping to new node
 
 ---
-
+# Message queue'ing
+- Added closest timestamp based localisation msg getting
+- Ordered queue with max size
+---
 # Problems
 - `PoseWithCovariance` not visualized correctly
 - Some other small `RViz` related problems
@@ -42,6 +45,8 @@ Mattias Kitsing
 - Fix `RViz` problems
 - Clean up / refacto robot vs map frame
 - Fix some mapping reated bugs
+- Interpolation for localisation
+- Extrapolation for localisation
 
 ---
 
