@@ -22,7 +22,12 @@ find_package(catkin REQUIRED COMPONENTS
   rospy
   tf
   scitos_common
+  roslib
 )
+
+#find_package(
+#  roslib REQUIRED
+#)
 
 catkin_package(
 )
@@ -36,6 +41,10 @@ file(GLOB_RECURSE SOURCE_FILES *.cpp)
 
 add_library(scitos_mapper ${SOURCE_FILES})
 
+#target_link_libraries(scitos_mapper
+#  roslib
+#)
+
 add_executable(${PROJECT_NAME}_node
   src/scitos_mapper_node.cpp
 )
@@ -45,5 +54,6 @@ target_link_libraries(${PROJECT_NAME}_node
   scitos_mapper
   ${OpenCV_LIBS}
   yaml-cpp
+  roslib
 )
 

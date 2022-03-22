@@ -34,6 +34,8 @@
   <build_depend>tf</build_depend>
   <exec_depend>tf</exec_depend>
   <exec_depend>scitos_common</exec_depend>
+  <build_depend>roslib</build_depend>
+  <exec_depend>roslib</exec_depend>
 
 
   <!-- The export tag contains other, unspecified, tags -->

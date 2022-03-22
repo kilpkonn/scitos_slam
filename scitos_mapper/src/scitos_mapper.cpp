@@ -7,6 +7,8 @@
 #include <string>
 #include <vector>
 
+#include <ros/package.h>
+
 #include <geometry_msgs/Twist.h>
 #include <nav_msgs/OccupancyGrid.h>
 #include <ros/console.h>
@@ -216,8 +218,10 @@ void Mapper::saveMapCallback(std_msgs::String msg) const {
 }
 
 void Mapper::loadMap(std::string path) {
-  ROS_INFO("LOADING MAP FROM: %s", path.c_str());
-  YAML::Node map = YAML::LoadFile(path);
+  std::string mapperPackagePath = ros::package::getPath("scitos_mapper");
+  std::string fullPath = mapperPackagePath + "/" + path;
+  ROS_INFO("LOADING MAP FROM: %s", fullPath.c_str());
+  YAML::Node map = YAML::LoadFile(fullPath);
   std::vector<scitos_common::map::Line<float>> lines;
   lines.reserve(map.size());
 
