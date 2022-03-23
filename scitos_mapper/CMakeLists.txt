@@ -27,6 +27,7 @@ find_package(catkin REQUIRED COMPONENTS
 
 catkin_package(
   LIBRARIES ${PROJECT_NAME}
+  roslib
 )
 
 include_directories(
@@ -38,6 +39,9 @@ file(GLOB_RECURSE SOURCE_FILES *.cpp)
 
 add_library(scitos_mapper ${SOURCE_FILES})
 
+target_link_libraries(scitos_mapper
+  ${catkin_LIBRARIES}
+)
 
 add_executable(${PROJECT_NAME}_node
   src/scitos_mapper_node.cpp
