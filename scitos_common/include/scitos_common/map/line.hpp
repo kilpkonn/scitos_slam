@@ -49,6 +49,7 @@ template <typename T> struct Line {
     float d = abs(cross_product / d_vec2);
     return d;
   }
+
   float perpendicularDistance(const Line<T> &l) const {
     float d1 = perpendicularDistance(l.center());
     float d2 = l.perpendicularDistance(center());
