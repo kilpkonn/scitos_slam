@@ -1,0 +1,12 @@
+[ver:1,total:5220,branch:master]
+scitos_common/include/scitos_common/ekf.hpp:3935,1648314000:900,1648317600:1625,1648321200:1200,1648324800:210,m
+scitos_mapper/CMakeLists.txt:360,1648062000:60,1648065600:300,r
+scitos_common/include/scitos_common/map/map.hpp:293,1648314000:150,1648317600:143,r
+scitos_annus_loomets_kitsing/package.xml:180,1648062000:180,r
+scitos_annus_loomets_kitsing/launch/scitos_autonomous_mapping.launch:180,1648062000:180,r
+scitos_common/include/scitos_common/polar2.hpp:89,1648314000:30,1648317600:59,r
+scitos_common/include/scitos_common/map/line.hpp:80,1648317600:80,m
+.git/COMMIT_EDITMSG:30,1648324800:30,r
+scitos_annus_loomets_kitsing/data/config/mapper.yaml:30,1648317600:30,r
+scitos_common/include/scitos_common/vec2.hpp:27,1648317600:27,r
+scitos_annus_loomets_kitsing/src/motion_controller.cpp:16,1648317600:16,r
