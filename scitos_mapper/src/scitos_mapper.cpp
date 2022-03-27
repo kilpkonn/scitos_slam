@@ -70,11 +70,14 @@ Mapper::Mapper(ros::NodeHandle nh) : nh_{nh} {
   float a2 = nh_.param("/map/ekf/a2", 0.1f);
   float a3 = nh_.param("/map/ekf/a3", 0.1f);
   float a4 = nh_.param("/map/ekf/a4", 0.1f);
+  float s1 = nh_.param("/map/ekf/s1", 0.1f);
+  float s2 = nh_.param("/map/ekf/s2", 0.1f);
+  float s3 = nh_.param("/map/ekf/s3", 0.1f);
   ekf_ = scitos_common::EKF(a1, a2, a3, a4);
   ekf_.setState({0.f, 0.f, 0.f});
   Eigen::Matrix3f sigma{{0.f, 0.f, 0.f}, {0.f, 0.f, 0.f}, {0.f, 0.f, 0.f}};
   ekf_.setVariances(sigma);
-  Eigen::Matrix3f covs{{1.2f, 0.f, 0.f}, {0.f, 1.2f, 0.f}, {0.f, 0.f, 0.9f}};
+  Eigen::Matrix3f covs{{s1, 0.f, 0.f}, {0.f, s2, 0.f}, {0.f, 0.f, s3}};
   ekf_.setSensorVariances(covs);
 
   map_ = scitos_common::map::Map<float>(padding, fadePower);

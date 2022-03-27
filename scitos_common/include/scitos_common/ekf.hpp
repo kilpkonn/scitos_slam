@@ -79,11 +79,12 @@ public:
       Matrix3f H1;
       Matrix3f S1;
       Vector3f dz1;
+      bool matchFound = false;
 
       // auto mapLine = findMatchingLine(line, mapLines);
       for (const auto &mapLine : mapLines) {
-        // if (line.perpendicularDistance(mapLine) > 1.f)
-        //   continue;
+        if (line.perpendicularDistance(mapLine) > 1.f)
+          continue;
 
         for (int i = 0; i < 2; i++) {
           Vec2<float> mp1, mp2;
@@ -92,6 +93,14 @@ public:
           } else {
             mp1 = mapLine.p2, mp2 = mapLine.p1;
           }
+
+          auto p =
+              (line.p1 - mp1).length() < (line.p2 - mp1) ? line.p1 : line.p2;
+
+          // Too dangerous, likely incorrectly mapped
+          if ((p - mp1).length() > 0.3f)
+            continue;
+
           float rq1 = (mp1 - pos).length();
           float q1 = rq1 * rq1;
           Vector3f zHat1 = {(mp1 - pos).length(),
@@ -110,8 +119,8 @@ public:
           //          sigma_(1, 2));
           Matrix3f S1curr = H1curr * sigma_ * H1curr.transpose() + sensorCovs_;
 
-          Vector3f z1 = {(line.p1 - pos).length(),
-                         ::Polar2<float>(line.p1 - pos).theta - rot.theta,
+          Vector3f z1 = {(p - pos).length(),
+                         ::Polar2<float>(p - pos).theta - rot.theta,
                          line.heading_nodir()};
           auto dz1_curr = z1 - zHat1;
 
@@ -126,17 +135,17 @@ public:
           if (likelyhood > bestLikelyhood) {
             bestLikelyhood = likelyhood;
             H1 = H1curr;
-            // H2 = H2curr;
             S1 = S1curr;
-            // S2 = S2curr;
             dz1 = dz1_curr;
-            // dz2 = dz2_curr;
+            matchFound = true;
           }
         }
       }
-      auto K = sigma_ * H1.transpose() * S1.inverse();
-      m_ = m_ + K * dz1;
-      sigma_ = (Matrix3f::Identity() - K * H1) * sigma_;
+      if (matchFound) {
+        auto K1 = sigma_ * H1.transpose() * S1.inverse();
+        m_ = m_ + K1 * dz1;
+        sigma_ = (Matrix3f::Identity() - K1 * H1) * sigma_;
+      }
     }
 
     return std::make_tuple(m_, sigma_);

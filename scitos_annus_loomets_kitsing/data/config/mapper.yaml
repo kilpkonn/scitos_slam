@@ -18,3 +18,6 @@ map:
     a2: 0.1  # w effect to v noise
     a3: 0.2  # v effect to w noise
     a4: 0.5  # w effect to w noise
+    s1: 2.2  # Sensord r noise
+    s2: 1.2  # Sensor angle noise
+    s3: 2.0  # 
