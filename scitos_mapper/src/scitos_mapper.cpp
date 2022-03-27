@@ -75,8 +75,8 @@ Mapper::Mapper(ros::NodeHandle nh) : nh_{nh} {
   Eigen::Matrix3f sigma{{0.f, 0.f, 0.f}, {0.f, 0.f, 0.f}, {0.f, 0.f, 0.f}};
   ekf_.setVariances(sigma);
   Eigen::Matrix2f covs{
-      {0.2f, 0.f},
-      {0.f, 0.2f},
+      {5.2f, 0.f},
+      {0.f, 5.2f},
   };
   ekf_.setSensorVariances(covs);
 
@@ -253,7 +253,7 @@ void Mapper::loadMap(std::string path) {
 
 std::vector<Vec2<float>>
 Mapper::getLaserScanPoints(const ros::Time &currentTime) {
-  if (!laserScan_.header.stamp.isValid() || odometry_ == nullptr) {
+  if (!laserScan_.header.stamp.isValid()) {
     return {};
   }
 
@@ -265,13 +265,6 @@ Mapper::getLaserScanPoints(const ros::Time &currentTime) {
     ROS_ERROR("%s", ex.what());
     ros::Duration(1.0).sleep();
   }
-
-  const Vec2<float> loc(odometry_->pose.pose.position.x,
-                        odometry_->pose.pose.position.y);
-  double roll, pitch, yaw;
-  tf::Quaternion quat;
-  tf::quaternionMsgToTF(odometry_->pose.pose.orientation, quat);
-  tf::Matrix3x3(quat).getRPY(roll, pitch, yaw);
 
   std::vector<Vec2<float>> output;
   output.reserve(laserScan_.ranges.size());
