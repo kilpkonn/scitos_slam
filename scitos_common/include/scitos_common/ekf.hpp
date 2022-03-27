@@ -75,59 +75,63 @@ public:
     ::Polar2<float> rot(1.f, m_(2)); // Unit vector
 
     for (const auto &line : lines) {
-      float bestLikelyhood = -1.f; // std::numeric_limits<float>::min();
-      // NOTE: Maybe only one set of H and S could be used
-      Matrix<float, 2, 3> H1;
-      // Matrix<float, 2, 3> H2;
-      Matrix<float, 2, 2> S1;
-      // Matrix<float, 2, 2> S2;
-      Matrix<float, 2, 1> dz1;
-      // Matrix<float, 2, 1> dz2;
-      auto mapLine = findMatchingLine(line, mapLines);
-      for (int i = 0; i < 2; i++) {
-        Vec2<float> mp1, mp2;
-        if (i == 1) {
-          mp1 = mapLine.p1, mp2 = mapLine.p2;
-        } else {
-          mp1 = mapLine.p2, mp2 = mapLine.p1;
-        }
-        float rq1 = (mp1 - pos).length();
-        float q1 = rq1 * rq1;
-        Vector2f zHat1 = {(mp1 - pos).length(),
-                         ::Polar2<float>(mp1 - pos).theta};
+      float bestLikelyhood = -1.f;
+      Matrix3f H1;
+      Matrix3f S1;
+      Vector3f dz1;
 
-        Matrix<float, 2, 3> H1curr{
-            {(-mp1.x - pos.x) / rq1, (-mp1.y - pos.y) / rq1, 0.f},
-            {(mp1.y - pos.y) / q1, (mp1.x - pos.x) / q1, -1.f}};
+      // auto mapLine = findMatchingLine(line, mapLines);
+      for (const auto &mapLine : mapLines) {
+        // if (line.perpendicularDistance(mapLine) > 1.f)
+        //   continue;
 
-        // ROS_INFO("H: %f, %f, %f\n   %f, %f, %f", H1curr(0, 0), H1curr(0, 1),
-        //          H1curr(0, 2), H1curr(1, 0), H1curr(1, 1), H1curr(1, 2));
-        // ROS_INFO("Sig: % f, % f, % f\n % f, % f, % f ", sigma_(0, 0),
-        //          sigma_(0, 1), sigma_(0, 2), sigma_(1, 0), sigma_(1, 1),
-        //          sigma_(1, 2));
-        Matrix<float, 2, 2> S1curr =
-            H1curr * sigma_ * H1curr.transpose() + sensorCovs_;
+        for (int i = 0; i < 2; i++) {
+          Vec2<float> mp1, mp2;
+          if (i == 1) {
+            mp1 = mapLine.p1, mp2 = mapLine.p2;
+          } else {
+            mp1 = mapLine.p2, mp2 = mapLine.p1;
+          }
+          float rq1 = (mp1 - pos).length();
+          float q1 = rq1 * rq1;
+          Vector3f zHat1 = {(mp1 - pos).length(),
+                            ::Polar2<float>(mp1 - pos).theta - rot.theta,
+                            line.heading_nodir()};
 
-        Vector2f z1 = {(line.p1 - pos).length(),
-                      ::Polar2<float>(line.p1 - pos).theta};
-        auto dz1_curr = z1 - zHat1;
+          Matrix3f H1curr{{(mp1.x - pos.x) / -rq1, (mp1.y - pos.y) / -rq1, 0.f},
+                          {(mp1.y - pos.y) / q1, (mp1.x - pos.x) / q1, -1.f},
+                          {0.f, 0.f, 0.f}};
 
-        // ROS_INFO("S1: %f", S1curr.determinant());
-        // ROS_INFO("dz: (%f, %f)", dz1_curr(0), dz1_curr(1));
-        float likelyhood1 =
-            1 / std::sqrt(2.f * M_PIf32 * S1curr.determinant()) *
-            std::exp(-0.5f * static_cast<float>(dz1_curr.transpose() *
-                                                S1curr.inverse() * dz1_curr));
-        float likelyhood = likelyhood1; // * likelyhood2;
-        // ROS_INFO("likelyhood: %f", bestLikelyhood);
-        if (likelyhood > bestLikelyhood) {
-          bestLikelyhood = likelyhood;
-          H1 = H1curr;
-          // H2 = H2curr;
-          S1 = S1curr;
-          // S2 = S2curr;
-          dz1 = dz1_curr;
-          // dz2 = dz2_curr;
+          // ROS_INFO("H: %f, %f, %f\n   %f, %f, %f", H1curr(0, 0), H1curr(0,
+          // 1),
+          //          H1curr(0, 2), H1curr(1, 0), H1curr(1, 1), H1curr(1, 2));
+          // ROS_INFO("Sig: % f, % f, % f\n % f, % f, % f ", sigma_(0, 0),
+          //          sigma_(0, 1), sigma_(0, 2), sigma_(1, 0), sigma_(1, 1),
+          //          sigma_(1, 2));
+          Matrix3f S1curr = H1curr * sigma_ * H1curr.transpose() + sensorCovs_;
+
+          Vector3f z1 = {(line.p1 - pos).length(),
+                         ::Polar2<float>(line.p1 - pos).theta - rot.theta,
+                         line.heading_nodir()};
+          auto dz1_curr = z1 - zHat1;
+
+          // ROS_INFO("S1: %f", S1curr.determinant());
+          // ROS_INFO("dz: (%f, %f)", dz1_curr(0), dz1_curr(1));
+          float likelyhood1 =
+              1 / std::sqrt(2.f * M_PIf32 * S1curr.determinant()) *
+              std::exp(-0.5f * static_cast<float>(dz1_curr.transpose() *
+                                                  S1curr.inverse() * dz1_curr));
+          float likelyhood = likelyhood1; // * likelyhood2;
+          // ROS_INFO("likelyhood: %f", bestLikelyhood);
+          if (likelyhood > bestLikelyhood) {
+            bestLikelyhood = likelyhood;
+            H1 = H1curr;
+            // H2 = H2curr;
+            S1 = S1curr;
+            // S2 = S2curr;
+            dz1 = dz1_curr;
+            // dz2 = dz2_curr;
+          }
         }
       }
       auto K = sigma_ * H1.transpose() * S1.inverse();
@@ -140,7 +144,7 @@ public:
 
   void setState(Vector3f m) { m_ = m; }
   void setVariances(Matrix3f sigma) { sigma_ = sigma; }
-  void setSensorVariances(Matrix2f covs) { sensorCovs_ = covs; }
+  void setSensorVariances(Matrix3f covs) { sensorCovs_ = covs; }
   Vec2<float> getPos() const { return {m_(0), m_(1)}; }
   float getRotation() const { return m_(2); }
 
@@ -152,7 +156,7 @@ private:
   // [x, y, phi]'
   Vector3f m_;
   Matrix3f sigma_;
-  Matrix2f sensorCovs_;
+  Matrix3f sensorCovs_;
 
   // Needs at least 1 line to exist in map
   map::Line<float>

@@ -74,10 +74,7 @@ Mapper::Mapper(ros::NodeHandle nh) : nh_{nh} {
   ekf_.setState({0.f, 0.f, 0.f});
   Eigen::Matrix3f sigma{{0.f, 0.f, 0.f}, {0.f, 0.f, 0.f}, {0.f, 0.f, 0.f}};
   ekf_.setVariances(sigma);
-  Eigen::Matrix2f covs{
-      {5.2f, 0.f},
-      {0.f, 5.2f},
-  };
+  Eigen::Matrix3f covs{{1.2f, 0.f, 0.f}, {0.f, 1.2f, 0.f}, {0.f, 0.f, 0.9f}};
   ekf_.setSensorVariances(covs);
 
   map_ = scitos_common::map::Map<float>(padding, fadePower);
@@ -138,25 +135,26 @@ void Mapper::step(const ros::TimerEvent &event) {
     mapLines.insert(mapLines.end(), line.begin(), line.end());
   }
 
-  if (erodedPoints.size() > 1) {
-    const Vec2<float> loc(odometry_->pose.pose.position.x,
-                          odometry_->pose.pose.position.y);
-    size_t n = erodedPoints.size() / 4; // Skip 25% on both sides
-    map_.prune(mapLines, loc, (erodedPoints[n] - loc).normalize(),
-               (erodedPoints[erodedPoints.size() - n] - loc).normalize());
-  }
+  ekf_.correct(map_, mapLines);
 
-  map_.accumulate2(mapLines);
+  // if (erodedPoints.size() > 1) {
+  //   const Vec2<float> loc(odometry_->pose.pose.position.x,
+  //                         odometry_->pose.pose.position.y);
+  //   size_t n = erodedPoints.size() / 4; // Skip 25% on both sides
+  //   map_.prune(mapLines, loc, (erodedPoints[n] - loc).normalize(),
+  //              (erodedPoints[erodedPoints.size() - n] - loc).normalize());
+  // }
 
-  std::vector<std::pair<Vec2<float>, std::set<Vec2<float> *>>>
-      cornerVisualization;
-  map_.combineCorners(cornerCombinationDBScan.n, cornerCombinationDBScan.r,
-                      cornerVisualization);
+  // map_.accumulate2(mapLines);
+
+  // std::vector<std::pair<Vec2<float>, std::set<Vec2<float> *>>>
+  //     cornerVisualization;
+  // map_.combineCorners(cornerCombinationDBScan.n, cornerCombinationDBScan.r,
+  //                     cornerVisualization);
   // BUG: align is broken
   // map_.align(4);
   //  ROS_INFO("map size: %zu", map_.getLines().size());
 
-  ekf_.correct(map_, mapLines);
   // ROS_INFO("done");
 
   scitos_common::Vec2Array mapLineHoughMsg;
@@ -169,7 +167,7 @@ void Mapper::step(const ros::TimerEvent &event) {
   erosionGridPub_.publish(erodedGrid);
   publishErosion(erodedPoints);
   publishDbscan(erodedPoints, labels);
-  publishCornerCombining(cornerVisualization);
+  // publishCornerCombining(cornerVisualization);
   publishLines();
   publishMap();
 }
