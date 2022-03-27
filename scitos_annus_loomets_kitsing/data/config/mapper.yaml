@@ -16,5 +16,5 @@ map:
   ekf:
     a1: 0.1  # v effect to v noise
     a2: 0.1  # w effect to v noise
-    a3: 0.1  # v effect to w noise
-    a4: 0.1  # w effect to w noise
+    a3: 0.2  # v effect to w noise
+    a4: 0.5  # w effect to w noise

@@ -74,6 +74,11 @@ Mapper::Mapper(ros::NodeHandle nh) : nh_{nh} {
   ekf_.setState({0.f, 0.f, 0.f});
   Eigen::Matrix3f sigma{{0.f, 0.f, 0.f}, {0.f, 0.f, 0.f}, {0.f, 0.f, 0.f}};
   ekf_.setVariances(sigma);
+  Eigen::Matrix2f covs{
+      {0.2f, 0.f},
+      {0.f, 0.2f},
+  };
+  ekf_.setSensorVariances(covs);
 
   map_ = scitos_common::map::Map<float>(padding, fadePower);
   if (nh_.hasParam("/map/load")) {
@@ -151,6 +156,7 @@ void Mapper::step(const ros::TimerEvent &event) {
   // map_.align(4);
   //  ROS_INFO("map size: %zu", map_.getLines().size());
 
+  ekf_.correct(map_, mapLines);
   // ROS_INFO("done");
 
   scitos_common::Vec2Array mapLineHoughMsg;
@@ -170,16 +176,17 @@ void Mapper::step(const ros::TimerEvent &event) {
 
 void Mapper::odometryCallback(nav_msgs::OdometryPtr msg) {
   odometry_ = msg;
-
-  worldToRobot_.child_frame_id_ = odometry_->child_frame_id;
-  worldToRobot_.frame_id_ = odometry_->header.frame_id;
-  worldToRobot_.stamp_ = odometry_->header.stamp;
-  worldToRobot_.setOrigin({odometry_->pose.pose.position.x,
-                           odometry_->pose.pose.position.y,
-                           odometry_->pose.pose.position.z});
-  worldToRobot_.setRotation(
-      {odometry_->pose.pose.orientation.x, odometry_->pose.pose.orientation.y,
-       odometry_->pose.pose.orientation.z, odometry_->pose.pose.orientation.w});
+  // worldToRobot_.child_frame_id_ = odometry_->child_frame_id;
+  // worldToRobot_.frame_id_ = odometry_->header.frame_id;
+  // worldToRobot_.stamp_ = odometry_->header.stamp;
+  // worldToRobot_.setOrigin({odometry_->pose.pose.position.x,
+  //                          odometry_->pose.pose.position.y,
+  //                          odometry_->pose.pose.position.z});
+  // worldToRobot_.setRotation(
+  //     {odometry_->pose.pose.orientation.x,
+  //     odometry_->pose.pose.orientation.y,
+  //      odometry_->pose.pose.orientation.z,
+  //      odometry_->pose.pose.orientation.w});
 }
 
 void Mapper::laserScanCallback(sensor_msgs::LaserScan msg) { laserScan_ = msg; }
@@ -190,6 +197,13 @@ void Mapper::cmdVelCallback(geometry_msgs::Twist msg) {
   auto [m, sigma] =
       ekf_.predict(msg.linear.x, msg.angular.z,
                    std::chrono::duration_cast<std::chrono::milliseconds>(dt));
+  worldToRobot_.child_frame_id_ = odometry_->child_frame_id;
+  worldToRobot_.frame_id_ = odometry_->header.frame_id;
+  worldToRobot_.stamp_ = odometry_->header.stamp;
+  worldToRobot_.setOrigin({m(0), m(1), 0.05f});
+  ROS_INFO("(%f, %f, %f)", m(0), m(1), m(2));
+  worldToRobot_.setRotation(tf::createQuaternionFromRPY(0.f, 0.f, m(2)));
+
   cmdVelStamp_ = ros::Time::now();
   publishEkf(m, sigma);
 }
