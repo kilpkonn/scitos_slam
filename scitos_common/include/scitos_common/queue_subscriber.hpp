@@ -32,7 +32,7 @@ namespace scitos_common
                     , std::function<void (T)> cb)
                      : cb(cb), queueSize(queueSize)
     {
-      *static_cast<ros::Subscriber *>(this) = nh->subscribe<nav_msgs::Odometry>(topic, 1, &QueueSubscriber<T>::callback, this);
+      *static_cast<ros::Subscriber *>(this) = nh->subscribe(topic, 1, &QueueSubscriber<T>::callback, this);
       messages = std::deque<std::pair<std::chrono::nanoseconds, T>>(queueSize);
     }
 
@@ -65,7 +65,7 @@ namespace scitos_common
       return value.value();
     }
 
-    std::optional<T> getNearest(std::chrono::nanoseconds timestamp){
+    virtual std::optional<T> getNearest(std::chrono::nanoseconds timestamp){
       auto lower = std::lower_bound(messages.begin(), messages.end(), std::make_pair(timestamp, T()), lessThanKey());
       if (messages.empty())
         return std::nullopt;
@@ -83,7 +83,7 @@ namespace scitos_common
       return toReturn;
     }
 
-    private:
+    protected:
     struct lessThanKey{
         inline bool operator() (const std::pair<std::chrono::nanoseconds, T>& a, const std::pair<std::chrono::nanoseconds, T>& b){
             return (a.first < b.first);

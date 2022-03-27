@@ -20,13 +20,14 @@
 #include "scitos_common/map/line.hpp"
 #include "scitos_common/polar2.hpp"
 #include "scitos_common/vec2.hpp"
+#include "scitos_common/odometry_subscriber.hpp"
 
 #include "scitos_common/Vec2Array.h"
 
 #include "scitos_annus_loomets_kitsing/mapper.hpp"
 
 Mapper::Mapper(ros::NodeHandle nh) : nh_{nh} {
-  odometrySub_ = std::make_unique<scitos_common::QueueSubscriber<nav_msgs::Odometry>>(&nh_
+  odometrySub_ = std::make_unique<scitos_common::OdometrySubscriber>(&nh_
                                                                     , "/ground_truth"
                                                                     , 50
                                                                     , std::bind(&Mapper::odometryCallback, this, std::placeholders::_1));
