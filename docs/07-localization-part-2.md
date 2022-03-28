@@ -56,10 +56,20 @@ Mattias Kitsing
   - We had some errors in derivatives which caused nonsense
 
 ---
+
 # Extrapolation
-![right 33%](./fig/extrapolation/accelerating-growth.png)
-![right 33%](./fig/extrapolation/growth-overshoot.png)
-![right 33%](./fig/extrapolation/oscillation.png)
+![bg right](./fig/extrapolation/accelerating-growth.png)
+
+---
+
+# Extrapolation
+![bg right](./fig/extrapolation/growth-overshoot.png)
+
+---
+
+# Extrapolation
+![bg right](./fig/extrapolation/oscillation.png)
+
 ---
 
 # Problems

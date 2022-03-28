@@ -88,9 +88,9 @@ Mapper::Mapper(ros::NodeHandle nh) : nh_{nh} {
 }
 
 void Mapper::step(const ros::TimerEvent &event) {
-  if (odometry_ == nullptr) {
-    return;
-  }
+  // if (odometry_ == nullptr) {
+  //   return;
+  // }
   if (!laserScan_.header.stamp.isValid()) {
     return;
   }
@@ -139,6 +139,8 @@ void Mapper::step(const ros::TimerEvent &event) {
   }
 
   ekf_.correct(map_, mapLines);
+
+  // NOTE:mapLines should be updated to new pos and rot before accumulate
 
   // if (erodedPoints.size() > 1) {
   //   const Vec2<float> loc(odometry_->pose.pose.position.x,
@@ -198,9 +200,10 @@ void Mapper::cmdVelCallback(geometry_msgs::Twist msg) {
   auto [m, sigma] =
       ekf_.predict(msg.linear.x, msg.angular.z,
                    std::chrono::duration_cast<std::chrono::milliseconds>(dt));
+  // TODO: Don't use odometry here
   worldToRobot_.child_frame_id_ = odometry_->child_frame_id;
   worldToRobot_.frame_id_ = odometry_->header.frame_id;
-  worldToRobot_.stamp_ = odometry_->header.stamp;
+  worldToRobot_.stamp_ = ros::Time::now();
   worldToRobot_.setOrigin({m(0), m(1), 0.05f});
   ROS_INFO("(%f, %f, %f)", m(0), m(1), m(2));
   worldToRobot_.setRotation(tf::createQuaternionFromRPY(0.f, 0.f, m(2)));
