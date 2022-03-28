@@ -25,15 +25,25 @@ namespace scitos_common
     std::optional<nav_msgs::Odometry> getNearest(std::chrono::nanoseconds timestamp) override
     {
       auto lower = std::lower_bound(messages.begin(), messages.end(), std::make_pair(timestamp, nav_msgs::Odometry()), lessThanKey());
+      static double extrapolationCount = 0; 
+      static double interpolationCount = 0; 
       if (messages.empty())
         return std::nullopt;
       nav_msgs::Odometry toReturn;
       if (lower == messages.end()){
-        toReturn = (*(--lower)).second;
+        std::vector<nav_msgs::Odometry> recentOdometry;
+        std::transform(messages.end() - std::min(3, static_cast<int>(messages.size())), messages.end(), std::back_inserter(recentOdometry),
+                       [](std::pair<std::chrono::nanoseconds, nav_msgs::Odometry> e) -> nav_msgs::Odometry { return e.second; });
+        toReturn = extrapolate(recentOdometry, timestamp);//(*(--lower)).second;
+        ++extrapolationCount;
       }
       else{
         toReturn = interpolate((*(std::prev(lower))).second, (*(lower)).second, timestamp);//abs((*(std::prev(lower))).first - timestamp) < abs((*(lower)).first - timestamp)? (*(--lower)).second : (*(lower)).second;
+        ++interpolationCount;
       }
+
+      std::cout << "extrapolation " << extrapolationCount / (extrapolationCount + interpolationCount) * 100 
+                << "% interpolation " << interpolationCount / (extrapolationCount + interpolationCount) * 100 << "%\n";
 
       if (cb)
         cb(toReturn);
@@ -42,9 +52,108 @@ namespace scitos_common
     }
 
     private:
+    nav_msgs::Odometry extrapolate(const std::vector<nav_msgs::Odometry>& past_odometry, const std::chrono::nanoseconds timestamp)
+    {
+      nav_msgs::Odometry o = past_odometry[past_odometry.size()-1];
+      double timeDiff = timestamp.count() - o.header.stamp.toNSec();
+      nav_msgs::Odometry v;
+      nav_msgs::Odometry a;
+
+      if(past_odometry.size() > 1)
+      {
+        v = odometryDiff(past_odometry[past_odometry.size()-1], past_odometry[past_odometry.size()-2]);
+        v = odometryMultiply(v, 1.0 / static_cast<double>(v.header.stamp.toNSec()));
+        if(past_odometry.size() > 2)
+        {
+          nav_msgs::Odometry v1 = odometryDiff(past_odometry[past_odometry.size()-2], past_odometry[past_odometry.size()-3]);
+          v1 = odometryMultiply(v1, 1.0 / static_cast<double>(v1.header.stamp.toNSec()));
+          nav_msgs::Odometry a = odometryDiff(v1, v);
+        }
+      }
+
+      nav_msgs::Odometry toReturn = odometryAdd(o, 
+                                                odometryAdd(odometryMultiply(v, timeDiff),
+                                                            odometryMultiply(a, timeDiff * timeDiff / 2.0)));
+      
+      return toReturn;
+    }
+
+    nav_msgs::Odometry odometryDiff(const nav_msgs::Odometry& o0, const nav_msgs::Odometry& o1) const
+    {
+      nav_msgs::Odometry toReturn;
+
+      //std::cout << "time diff: " << (o1.header.stamp - o0.header.stamp).toSec() << "\n";
+      toReturn.header.stamp = ros::Time((o0.header.stamp - o1.header.stamp).toSec());
+      toReturn.header.frame_id = o0.header.frame_id;
+      toReturn.child_frame_id = o0.child_frame_id;
+      toReturn.pose.pose.position.x = o0.pose.pose.position.x - o1.pose.pose.position.x;
+      toReturn.pose.pose.position.y = o0.pose.pose.position.y - o1.pose.pose.position.y;
+      toReturn.pose.pose.position.z = o0.pose.pose.position.z - o1.pose.pose.position.z;
+      tf2::Quaternion q0;
+      tf2::Quaternion q1;
+      tf2::fromMsg(o0.pose.pose.orientation, q0);
+      tf2::fromMsg(o1.pose.pose.orientation, q1);
+      toReturn.pose.pose.orientation = tf2::toMsg(q0 - q1);
+      toReturn.twist.twist.linear.x = o0.twist.twist.linear.x - o1.twist.twist.linear.x;
+      toReturn.twist.twist.linear.y = o0.twist.twist.linear.y - o1.twist.twist.linear.y;
+      toReturn.twist.twist.linear.z = o0.twist.twist.linear.z - o1.twist.twist.linear.z;
+      toReturn.twist.twist.angular.x = o0.twist.twist.angular.x - o1.twist.twist.angular.x;
+      toReturn.twist.twist.angular.y = o0.twist.twist.angular.y - o1.twist.twist.angular.y;
+      toReturn.twist.twist.angular.z = o0.twist.twist.angular.z - o1.twist.twist.angular.z;
+
+      return toReturn;
+    }
+
+    nav_msgs::Odometry odometryAdd(const nav_msgs::Odometry& o0, const nav_msgs::Odometry& o1) const
+    {
+      nav_msgs::Odometry toReturn;
+
+      toReturn.header.stamp = ros::Time((ros::Duration(o0.header.stamp.toSec()) + ros::Duration(o1.header.stamp.toSec())).toSec());
+      toReturn.header.frame_id = o0.header.frame_id;
+      toReturn.child_frame_id = o0.child_frame_id;
+      toReturn.pose.pose.position.x = o0.pose.pose.position.x + o1.pose.pose.position.x;
+      toReturn.pose.pose.position.y = o0.pose.pose.position.y + o1.pose.pose.position.y;
+      toReturn.pose.pose.position.z = o0.pose.pose.position.z + o1.pose.pose.position.z;
+      tf2::Quaternion q0;
+      tf2::Quaternion q1;
+      tf2::fromMsg(o0.pose.pose.orientation, q0);
+      tf2::fromMsg(o1.pose.pose.orientation, q1);
+      toReturn.pose.pose.orientation = tf2::toMsg(q0 + q1);
+      toReturn.twist.twist.linear.x = o0.twist.twist.linear.x + o1.twist.twist.linear.x;
+      toReturn.twist.twist.linear.y = o0.twist.twist.linear.y + o1.twist.twist.linear.y;
+      toReturn.twist.twist.linear.z = o0.twist.twist.linear.z + o1.twist.twist.linear.z;
+      toReturn.twist.twist.angular.x = o0.twist.twist.angular.x + o1.twist.twist.angular.x;
+      toReturn.twist.twist.angular.y = o0.twist.twist.angular.y + o1.twist.twist.angular.y;
+      toReturn.twist.twist.angular.z = o0.twist.twist.angular.z + o1.twist.twist.angular.z;
+
+      return toReturn;
+    }
+
+    nav_msgs::Odometry odometryMultiply(const nav_msgs::Odometry& o, const double m) const
+    {
+      nav_msgs::Odometry toReturn;
+
+      toReturn.header.stamp = ros::Time((ros::Duration(o.header.stamp.toSec()) * m).toSec());
+      toReturn.header.frame_id = o.header.frame_id;
+      toReturn.child_frame_id = o.child_frame_id;
+      toReturn.pose.pose.position.x = o.pose.pose.position.x * m;
+      toReturn.pose.pose.position.y = o.pose.pose.position.y * m;
+      toReturn.pose.pose.position.z = o.pose.pose.position.z * m;
+      tf2::Quaternion q;
+      tf2::fromMsg(o.pose.pose.orientation, q);
+      toReturn.pose.pose.orientation = tf2::toMsg(q * m);
+      toReturn.twist.twist.linear.x = o.twist.twist.linear.x * m;
+      toReturn.twist.twist.linear.y = o.twist.twist.linear.y * m;
+      toReturn.twist.twist.linear.z = o.twist.twist.linear.z * m;
+      toReturn.twist.twist.angular.x = o.twist.twist.angular.x * m;
+      toReturn.twist.twist.angular.y = o.twist.twist.angular.y * m;
+      toReturn.twist.twist.angular.z = o.twist.twist.angular.z * m;
+
+      return toReturn;
+    }
+
     nav_msgs::Odometry interpolate(const nav_msgs::Odometry& o0, const nav_msgs::Odometry& o1, const std::chrono::nanoseconds timestamp)
     {
-      std::cout << "GETTING FROM ODOMETRY SUB\n";
       if(o0.header.stamp==o1.header.stamp)
         throw "OdometrySubscriber: Interpolating between same timestamp points and request";
       double weight0 = abs(static_cast<double>(o0.header.stamp.toNSec() - timestamp.count()));
