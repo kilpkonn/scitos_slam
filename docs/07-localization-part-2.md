@@ -56,19 +56,26 @@ Mattias Kitsing
   - We had some errors in derivatives which caused nonsense
 
 ---
+# Extrapolation
+![right 33%](./fig/extrapolation/accelerating-growth.png)
+![right 33%](./fig/extrapolation/growth-overshoot.png)
+![right 33%](./fig/extrapolation/oscillation.png)
+---
 
 # Problems
 - Incorrect feature matches made me doubt in everything
 - Lot's of ambiguity how exatly EKF works 
 _(what are features, what to pass where, etc.)_
-- Interpolation is a must have _(Hopefully ready soon)_
+- Interpolation is a must have _(Hopefully merged soon)_
+- Interpolation of quaternions _(slerp)_ required special consideration
+- Extrapolation using higher than 2-nd degree derivative is unstable with oscillation
 
 ---
 
 # TODO
 - Clean up for code
 - More sanity checks to feature mapping
-- Interpolation/extrapolation
+- Finish extrapolation
 - Update everything to use EKF estimations
 - Graphs, statistics
 - Tweak params
