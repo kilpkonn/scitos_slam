@@ -19,7 +19,7 @@ jq -s 'map(.[])' build/**/compile_commands.json > ./src/scitos_slam_group_2/comp
 ```bash
 roslaunch scitos_annus_loomets_kitsing scitos_autonomous.launch
 
-rosrun scitos_annus_loomets_kitsing teleop_key.p  # To drive with keyboard
+rosrun scitos_annus_loomets_kitsing teleop_key.py  # To drive with keyboard
 ```
 
 ## Save map
