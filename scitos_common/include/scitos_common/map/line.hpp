@@ -102,6 +102,11 @@ template <typename T> struct Line {
 
   float length() const { return (p1 - p2).length(); }
 
+  Line<T> padded(T padding) const {
+    auto d = dir() * padding;
+    return {p1 - d, p2 + d, confidence};
+  }
+
   Line<T> merge(const Line<T> &o) const {
     // See which way to match
     auto np1Closer = (o.p1 - p1).length() < (o.p2 - p1).length();

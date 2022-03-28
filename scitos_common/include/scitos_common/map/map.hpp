@@ -237,6 +237,47 @@ public:
     }
   }
 
+  /*!
+   * Get visible lines
+   *
+   * @param loc - current location
+   * @param l - left bound vector
+   * @param r - right bound vector
+   */
+  std::vector<Line<T>> getVisibleLines(const Vec2<T> &loc) const {
+    if (lines_.size() < 1) {
+      return {};
+    }
+
+    std::vector<Line<T>> filtered;
+
+    for (size_t i = 0; i < lines_.size(); i++) {
+      auto line = lines_.at(i);
+      bool p1Visible = true;
+      bool p2Visible = true;
+
+      for (const auto &ln : lines_) {
+        // Raycast
+        p1Visible &= !ln.padded(0.05f).intersect({loc, line.p1}).has_value();
+        p2Visible &= !ln.padded(0.05f).intersect({loc, line.p2}).has_value();
+      }
+
+      if (p1Visible || p2Visible) {
+        filtered.push_back(line);
+      }
+    }
+    return filtered;
+  }
+
+  bool isVisible(const Vec2<T> &p, const Vec2<T> &loc) const {
+    for (const auto &ln : lines_) {
+      if (ln.padded(0.05f).intersect({loc, p - (p - loc).normalize() * 0.05f}).has_value()) {
+        return false;
+      }
+    }
+    return true;
+  }
+
   std::vector<Line<T>> getLines() const { return lines_; }
   void loadFromLines(std::vector<Line<T>> lines) { lines_ = lines; }
 

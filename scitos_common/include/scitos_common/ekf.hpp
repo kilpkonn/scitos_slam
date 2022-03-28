@@ -66,13 +66,14 @@ public:
   std::tuple<Vector3f, Matrix3f>
   correct(const map::Map<float> &map,
           const std::vector<map::Line<float>> &lines) {
+
+    Vec2<float> pos(m_(0), m_(1));
+    ::Polar2<float> rot(1.f, m_(2)); // Unit vector
+
     auto mapLines = map.getLines();
     if (mapLines.size() < 1) {
       return std::make_tuple(m_, sigma_);
     }
-
-    Vec2<float> pos(m_(0), m_(1));
-    ::Polar2<float> rot(1.f, m_(2)); // Unit vector
 
     for (const auto &line : lines) {
       float bestLikelyhood = -1.f;
@@ -94,11 +95,15 @@ public:
             mp1 = mapLine.p2, mp2 = mapLine.p1;
           }
 
+          // NOTE: Check if this is needed
+          if (!map.isVisible(mp1, pos))
+            continue;
+
           auto p =
               (line.p1 - mp1).length() < (line.p2 - mp1) ? line.p1 : line.p2;
 
           // Too dangerous, likely incorrectly mapped
-          if ((p - mp1).length() > 0.3f)
+          if ((p - mp1).length() > 1.f)
             continue;
 
           float rq1 = (mp1 - pos).length();
