@@ -1,0 +1,6 @@
+[ver:1,total:840,branch:master]
+scitos_mapper/src/scitos_mapper.cpp:420,1648486800:420,r
+scitos_annus_loomets_kitsing/data/urdf/scitos.gazebo.xacro:240,1648486800:240,r
+scitos_common/include/scitos_common/map/line.hpp:105,1648562400:105,m
+.git/COMMIT_EDITMSG:60,1648566000:60,r
+scitos_common/include/scitos_common/vec2.hpp:15,1648562400:15,r
