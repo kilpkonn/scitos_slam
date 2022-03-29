@@ -16,7 +16,7 @@ template <typename T> struct Line {
       : p1{s}, p2{e}, confidence{conf} {}
   float slope() const { return (p2.y - p1.y) / (p2.x - p1.x); }
   float heading() const { return atan2(p2.y - p1.y, p2.x - p1.x); }
-  float heading_nodir() const { auto a = heading() + M_PIf32; return a < M_PIf32 ? a : a + M_PIf32; }
+  float heading_nodir() const { return atan((p2.y - p1.y) / (p2.x - p1.x)); }
   float yIntersept() const { return p1.y - slope() * p1.x; }
   bool overlaps(const Line<T> &line, float padding) const {
     Vec2<T> minSelf = Vec2(std::min(p1.x, p2.x), std::min(p1.y, p2.y));
