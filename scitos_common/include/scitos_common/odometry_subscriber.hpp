@@ -102,7 +102,7 @@ namespace scitos_common
       tf2::Quaternion q1;
       tf2::fromMsg(o0.pose.pose.orientation, q0);
       tf2::fromMsg(o1.pose.pose.orientation, q1);
-      toReturn.pose.pose.orientation = tf2::toMsg(q0 - q1);
+      toReturn.pose.pose.orientation = tf2::toMsg((q0 - q1).normalize());
       toReturn.twist.twist.linear.x = o0.twist.twist.linear.x - o1.twist.twist.linear.x;
       toReturn.twist.twist.linear.y = o0.twist.twist.linear.y - o1.twist.twist.linear.y;
       toReturn.twist.twist.linear.z = o0.twist.twist.linear.z - o1.twist.twist.linear.z;
@@ -127,7 +127,7 @@ namespace scitos_common
       tf2::Quaternion q1;
       tf2::fromMsg(o0.pose.pose.orientation, q0);
       tf2::fromMsg(o1.pose.pose.orientation, q1);
-      toReturn.pose.pose.orientation = tf2::toMsg(q0 + q1);
+      toReturn.pose.pose.orientation = tf2::toMsg((q0 + q1).normalize());
       toReturn.twist.twist.linear.x = o0.twist.twist.linear.x + o1.twist.twist.linear.x;
       toReturn.twist.twist.linear.y = o0.twist.twist.linear.y + o1.twist.twist.linear.y;
       toReturn.twist.twist.linear.z = o0.twist.twist.linear.z + o1.twist.twist.linear.z;
@@ -150,7 +150,7 @@ namespace scitos_common
       toReturn.pose.pose.position.z = o.pose.pose.position.z * m;
       tf2::Quaternion q;
       tf2::fromMsg(o.pose.pose.orientation, q);
-      toReturn.pose.pose.orientation = tf2::toMsg(q * m);
+      toReturn.pose.pose.orientation = tf2::toMsg((q * m).normalize());
       toReturn.twist.twist.linear.x = o.twist.twist.linear.x * m;
       toReturn.twist.twist.linear.y = o.twist.twist.linear.y * m;
       toReturn.twist.twist.linear.z = o.twist.twist.linear.z * m;
@@ -179,7 +179,7 @@ namespace scitos_common
       tf2::Quaternion q1;
       tf2::fromMsg(o0.pose.pose.orientation, q0);
       tf2::fromMsg(o1.pose.pose.orientation, q1);
-      toReturn.pose.pose.orientation = tf2::toMsg(q0.slerp(q1, 1.0 - weight0));
+      toReturn.pose.pose.orientation = tf2::toMsg(q0.slerp(q1, 1.0 - weight0).normalize());
       toReturn.twist.twist.linear.x = interpolateLinear(o0.twist.twist.linear.x, o1.twist.twist.linear.x, weight0);
       toReturn.twist.twist.linear.y = interpolateLinear(o0.twist.twist.linear.y, o1.twist.twist.linear.y, weight0);
       toReturn.twist.twist.linear.z = interpolateLinear(o0.twist.twist.linear.z, o1.twist.twist.linear.z, weight0);
@@ -194,35 +194,6 @@ namespace scitos_common
     {
       return v0 * w0 + v1 * (1.0 - w0);
     }
-
-    /*geometry_msgs::Quaternion slerp(const geometry_msgs::Quaternion& q0, const geometry_msgs::Quaternion& q1, double w0)
-    {
-      //https://www.lix.polytechnique.fr/~nielsen/WEBvisualcomputing/programs/slerp.cpp
-      float dotproduct = q0.x * q1.x + q0.y * q1.y + q0.z * q1.z + q0.w * q1.w;
-
-      // algorithm adapted from Shoemake's paper
-      w0 = w0 / 2.0;
-
-      float theta = (float) acos(dotproduct);
-      if (theta < 0.0)
-        theta=-theta;
-      
-      float st = sin(theta);
-      float sut = sin(w0 * theta);
-      float sout = sin((1-w0) * theta);
-      float coeff0 = sout/st;
-      float coeff1 = sut/st;
-
-      tf2::Quaternion toReturn;
-      toReturn.x = coeff0 * q0.x + coeff1 * q1.x;
-      toReturn.y = coeff0 * q0.y + coeff1 * q1.y;
-      toReturn.z = coeff0 * q0.z + coeff1 * q1.z;
-      toReturn.w = coeff0 * q0.w + coeff1 * q1.w;
-
-      toReturn.normalize();
-
-      return tf2::toMsg(toReturn);
-    }*/
   };
 } // namespace scitos_common
 
