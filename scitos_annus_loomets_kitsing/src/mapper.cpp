@@ -198,7 +198,7 @@ Mapper::getLaserScanPoints(const ros::Time &currentTime) {
     ros::Duration(1.0).sleep();
   }
 
-  nav_msgs::Odometry odometry = odometrySub_->getNearestOrThrow(std::chrono::nanoseconds(currentTime.toNSec()), "MAPPER: No odometry received");
+  nav_msgs::Odometry odometry = odometrySub_->getNearestOrThrow(std::chrono::nanoseconds(laserScan_.header.stamp.toNSec()), "MAPPER: No odometry received");
   const Vec2<float> loc(odometry.pose.pose.position.x,
                         odometry.pose.pose.position.y);
   double roll, pitch, yaw;
