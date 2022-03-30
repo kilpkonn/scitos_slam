@@ -1,0 +1,9 @@
+[ver:1,total:6120,branch:queue_subscriber2]
+scitos_common/include/scitos_common/odometry_subscriber.hpp:2384,1648634400:1140,1648638000:1244,m
+scitos_mapper/src/scitos_mapper.cpp:1824,1648630800:320,1648634400:1118,1648638000:386,m
+scitos_common/include/scitos_common/queue_subscriber.hpp:1296,1648634400:950,1648638000:346,m
+scitos_annus_loomets_kitsing/launch/scitos_autonomous_mapping.launch:350,1648634400:350,r
+scitos_mapper/include/scitos_mapper/scitos_mapper.hpp:145,1648630800:109,1648634400:12,1648638000:24,m
+scitos_common/include/scitos_common/ekf.hpp:51,1648630800:51,m
+.git/COMMIT_EDITMSG:40,1648638000:40,r
+scitos_annus_loomets_kitsing/launch/scitos_autonomous.launch:30,1648634400:30,r
