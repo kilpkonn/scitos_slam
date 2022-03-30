@@ -71,10 +71,10 @@ The uncertanity kept increasing in that case as shown in the figure~\ref{fig:err
   \caption{EKF y error}
   \label{fig:err_y}
 \end{figure}
-Note that both the graph for x and y come from the same run meaning that sometimes (depending on feature locations) the algorithm managed
+Note that both the graph for x and y come from the same run. That means that sometimes (depending on feature locations) the algorithm managed
 to zero in on one axis but not on the other.
 
-Sometimes the EKF algorithm managed to recover quite well from these kind of situations, but if the error accumulated to be too big it failed.
+Sometimes the EKF algorithm managed to recover quite well from these kind of situations, but if the error accumulated and became too big, then recovery failed.
 \begin{figure}[h!]
   \begin{center}
     \includegraphics[width=0.95\textwidth]{./fig/ekf_recovery.png}
@@ -89,7 +89,7 @@ Sometimes the EKF algorithm managed to recover quite well from these kind of sit
 
 There was also quite a lot of problems with incorrectly mapped features that caused localization to jump.
 These were common to corners of the map where some double lines existed.
-We added some sanity checks to avoid these jumps as they completely broke the localization in some cases, but the heuristics anly helped to some extent.
+We added some sanity checks to avoid these jumps as they completely broke the localization in some cases, but the heuristics only helped to some extent.
 
 Some of these jumps in yaw can be seen in the figure~\ref{fig:rmse}.
 
