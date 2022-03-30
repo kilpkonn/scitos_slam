@@ -1,0 +1,6 @@
+[ver:1,total:1380,branch:master]
+scitos_mapper/src/scitos_mapper.cpp:1102,1648638000:622,1648641600:480,m
+scitos_common/include/scitos_common/odometry_subscriber.hpp:156,1648638000:156,m
+.git/COMMIT_EDITMSG:60,1648641600:60,r
+scitos_mapper/include/scitos_mapper/scitos_mapper.hpp:50,1648638000:50,m
+scitos_common/include/scitos_common/queue_subscriber.hpp:12,1648638000:12,r
