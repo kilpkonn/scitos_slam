@@ -13,4 +13,8 @@
     <node name="scitos_annus_loomets_kitsing" pkg="scitos_annus_loomets_kitsing" type="scitos_annus_loomets_kitsing_node" output="screen" cwd="node"/>
     <node name="scitos_mapper" pkg="scitos_mapper" type="scitos_mapper_node" output="screen" cwd="node"/>
     <node pkg="tf2_ros" type="static_transform_publisher" name="link1_broadcaster" args="0 0 0 0 0 0 1 map odom" />
+    <node name="plotjuggler_with_layout"
+          pkg="plotjuggler"
+          type="plotjuggler"
+          args="-n --layout $(find scitos_annus_loomets_kitsing)/data/config/plotjuggler/ekf_error.xml"></node>
 </launch>
