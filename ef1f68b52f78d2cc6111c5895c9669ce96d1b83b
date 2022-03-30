@@ -1,0 +1,5 @@
+[ver:1,total:600,branch:queue_subscriber]
+scitos_annus_loomets_kitsing/src/mapper.cpp:285,1648620000:285,m
+scitos_common/include/scitos_common/odometry_subscriber.hpp:270,1648620000:270,r
+.git/COMMIT_EDITMSG:30,1648620000:30,r
+scitos_common/include/scitos_common/queue_subscriber.hpp:15,1648620000:15,r
