@@ -69,11 +69,15 @@ namespace scitos_common
       if(past_odometry.size() > 1)
       {
         v = odometryDiff(past_odometry[past_odometry.size()-1], past_odometry[past_odometry.size()-2]);
+        if (v.header.stamp.toNSec() == 0)
+          return o;
         v = odometryMultiply(v, 1.0 / static_cast<double>(v.header.stamp.toNSec()));
         if(past_odometry.size() > 2)
         {
           nav_msgs::Odometry v1 = odometryDiff(past_odometry[past_odometry.size()-2], past_odometry[past_odometry.size()-3]);
           if (v1.header.stamp.toNSec() != 0) {
+            if (v1.header.stamp.toNSec() == 0)
+              return o;
             v1 = odometryMultiply(v1, 1.0 / static_cast<double>(v1.header.stamp.toNSec()));
             a = odometryDiff(v1, v);
           }

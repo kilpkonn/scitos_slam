@@ -184,7 +184,7 @@ void Mapper::step(const ros::TimerEvent &event) {
 
 // TODO: DEcide if this should be used or cmd_vel
 void Mapper::odometryCallback(nav_msgs::Odometry msg) {
-  auto dt =
+  /* auto dt =
       std::chrono::nanoseconds((msg.header.stamp - odomStamp_).toNSec());
   odomStamp_ = msg.header.stamp;
   auto [m, sigma] =
@@ -198,27 +198,27 @@ void Mapper::odometryCallback(nav_msgs::Odometry msg) {
   worldToRobot_.setRotation(tf::createQuaternionFromRPY(0.f, 0.f, m(2)));
 
   publishEkf(m, sigma);
-  publishOdom();
+  publishOdom(); */
 }
 
 void Mapper::laserScanCallback(sensor_msgs::LaserScan msg) { laserScan_ = msg; }
 
 void Mapper::cmdVelCallback(geometry_msgs::Twist msg) {
-  // auto dt =
-  //     std::chrono::nanoseconds((ros::Time::now() - cmdVelStamp_).toNSec());
-  // cmdVelStamp_ = ros::Time::now();
-  // auto [m, sigma] =
-  //     ekf_.predict(msg.linear.x, msg.angular.z,
-  //                  std::chrono::duration_cast<std::chrono::milliseconds>(dt));
-  // worldToRobot_.child_frame_id_ = "base_footprint";
-  // worldToRobot_.frame_id_ = "map";
-  // worldToRobot_.stamp_ = cmdVelStamp_;
-  // worldToRobot_.setOrigin({m(0), m(1), 0.05f});
-  // // ROS_INFO("(%f, %f, %f)", m(0), m(1), m(2));
-  // worldToRobot_.setRotation(tf::createQuaternionFromRPY(0.f, 0.f, m(2)));
-  //
-  // publishEkf(m, sigma);
-  // publishOdom();
+  auto dt =
+      std::chrono::nanoseconds((ros::Time::now() - cmdVelStamp_).toNSec());
+  cmdVelStamp_ = ros::Time::now();
+  auto [m, sigma] =
+      ekf_.predict(msg.linear.x, msg.angular.z,
+                   std::chrono::duration_cast<std::chrono::milliseconds>(dt));
+  worldToRobot_.child_frame_id_ = "base_footprint";
+  worldToRobot_.frame_id_ = "map";
+  worldToRobot_.stamp_ = cmdVelStamp_;
+  worldToRobot_.setOrigin({m(0), m(1), 0.05f});
+  // ROS_INFO("(%f, %f, %f)", m(0), m(1), m(2));
+  worldToRobot_.setRotation(tf::createQuaternionFromRPY(0.f, 0.f, m(2)));
+
+  publishEkf(m, sigma);
+  publishOdom();
 }
 
 void Mapper::saveMapCallback(std_msgs::String msg) const {
