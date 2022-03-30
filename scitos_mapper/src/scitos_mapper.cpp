@@ -37,10 +37,9 @@
 #include "scitos_mapper/scitos_mapper.hpp"
 
 Mapper::Mapper(ros::NodeHandle nh) : nh_{nh} {
-  odometrySub_ = std::make_unique<scitos_common::OdometrySubscriber>(
-      &nh_, "/ekf_odom", 50,
-      std::bind(&Mapper::odometryCallback, this, std::placeholders::_1));
-  // nh_.subscribe("/ground_truth", 1, &Mapper::odometryCallback, this);
+  ekfOdometrySub_ = std::make_unique<scitos_common::OdometrySubscriber>(
+      &nh_, "/ekf_odom", 50);
+  odometrySub_ = nh_.subscribe("/odom", 1, &Mapper::odometryCallback, this);
   laserScanSub_ =
       nh_.subscribe("/laser_scan", 1, &Mapper::laserScanCallback, this);
   saveMapSub_ = nh_.subscribe("/save_map", 1, &Mapper::saveMapCallback, this);
@@ -180,39 +179,43 @@ void Mapper::step(const ros::TimerEvent &event) {
   publishMap();
 }
 
+// TODO: DEcide if this should be used or cmd_vel
 void Mapper::odometryCallback(nav_msgs::Odometry msg) {
-  // odometry_ = msg;
-  // worldToRobot_.child_frame_id_ = odometry_->child_frame_id;
-  // worldToRobot_.frame_id_ = odometry_->header.frame_id;
-  // worldToRobot_.stamp_ = odometry_->header.stamp;
-  // worldToRobot_.setOrigin({odometry_->pose.pose.position.x,
-  //                          odometry_->pose.pose.position.y,
-  //                          odometry_->pose.pose.position.z});
-  // worldToRobot_.setRotation(
-  //     {odometry_->pose.pose.orientation.x,
-  //     odometry_->pose.pose.orientation.y,
-  //      odometry_->pose.pose.orientation.z,
-  //      odometry_->pose.pose.orientation.w});
-}
-
-void Mapper::laserScanCallback(sensor_msgs::LaserScan msg) { laserScan_ = msg; }
-
-void Mapper::cmdVelCallback(geometry_msgs::Twist msg) {
   auto dt =
-      std::chrono::nanoseconds((ros::Time::now() - cmdVelStamp_).toNSec());
-  cmdVelStamp_ = ros::Time::now();
+      std::chrono::nanoseconds((msg.header.stamp - odomStamp_).toNSec());
+  odomStamp_ = msg.header.stamp;
   auto [m, sigma] =
-      ekf_.predict(msg.linear.x, msg.angular.z,
+      ekf_.predict(msg.twist.twist.linear.x, msg.twist.twist.angular.z,
                    std::chrono::duration_cast<std::chrono::milliseconds>(dt));
   worldToRobot_.child_frame_id_ = "base_footprint";
   worldToRobot_.frame_id_ = "map";
-  worldToRobot_.stamp_ = cmdVelStamp_;
+  worldToRobot_.stamp_ = odomStamp_;
   worldToRobot_.setOrigin({m(0), m(1), 0.05f});
   // ROS_INFO("(%f, %f, %f)", m(0), m(1), m(2));
   worldToRobot_.setRotation(tf::createQuaternionFromRPY(0.f, 0.f, m(2)));
 
   publishEkf(m, sigma);
   publishOdom();
+}
+
+void Mapper::laserScanCallback(sensor_msgs::LaserScan msg) { laserScan_ = msg; }
+
+void Mapper::cmdVelCallback(geometry_msgs::Twist msg) {
+  // auto dt =
+  //     std::chrono::nanoseconds((ros::Time::now() - cmdVelStamp_).toNSec());
+  // cmdVelStamp_ = ros::Time::now();
+  // auto [m, sigma] =
+  //     ekf_.predict(msg.linear.x, msg.angular.z,
+  //                  std::chrono::duration_cast<std::chrono::milliseconds>(dt));
+  // worldToRobot_.child_frame_id_ = "base_footprint";
+  // worldToRobot_.frame_id_ = "map";
+  // worldToRobot_.stamp_ = cmdVelStamp_;
+  // worldToRobot_.setOrigin({m(0), m(1), 0.05f});
+  // // ROS_INFO("(%f, %f, %f)", m(0), m(1), m(2));
+  // worldToRobot_.setRotation(tf::createQuaternionFromRPY(0.f, 0.f, m(2)));
+  //
+  // publishEkf(m, sigma);
+  // publishOdom();
 }
 
 void Mapper::saveMapCallback(std_msgs::String msg) const {
@@ -259,7 +262,7 @@ void Mapper::loadMap(std::string path) {
 }
 
 std::vector<Vec2<float>> Mapper::getLaserScanPoints() {
-  if (!laserScan_.header.stamp.isValid() || !odometrySub_->hasReceivedFirst) {
+  if (!laserScan_.header.stamp.isValid() || !ekfOdometrySub_->hasReceivedFirst) {
     return {};
   }
 
@@ -272,7 +275,7 @@ std::vector<Vec2<float>> Mapper::getLaserScanPoints() {
     ros::Duration(1.0).sleep();
   }
 
-  nav_msgs::Odometry odometry = odometrySub_->getNearestOrThrow(
+  nav_msgs::Odometry odometry = ekfOdometrySub_->getNearestOrThrow(
       std::chrono::nanoseconds(laserScan_.header.stamp.toNSec()),
       "MAPPER: No odometry received");
   const Vec2<float> loc(odometry.pose.pose.position.x,
@@ -496,7 +499,7 @@ void Mapper::publishOdom() const {
   msg.header.frame_id = "map";
   msg.child_frame_id = "base_footprint";
   msg.header.seq = odomFrameId++;
-  msg.header.stamp = cmdVelStamp_;
+  msg.header.stamp = odomStamp_; // cmdVelStamp_;
 
   auto pos = ekf_.getPos();
   auto rot = ekf_.getRotation();

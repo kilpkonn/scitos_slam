@@ -16,6 +16,12 @@ namespace scitos_common
     public:
     OdometrySubscriber(ros::NodeHandle * const nh
                         , const char * const topic
+                        , unsigned int queueSize)
+                    : QueueSubscriber<nav_msgs::Odometry>(nh, topic, queueSize)
+    {
+    }
+    OdometrySubscriber(ros::NodeHandle * const nh
+                        , const char * const topic
                         , unsigned int queueSize
                         , std::function<void (nav_msgs::Odometry)> cb)
                     : QueueSubscriber<nav_msgs::Odometry>(nh, topic, queueSize, cb)
@@ -31,14 +37,14 @@ namespace scitos_common
         return std::nullopt;
       nav_msgs::Odometry toReturn;
       // ROS_INFO("Time: %zu ? %zu .. %zu", timestamp.count(), messages[0].first.count(), messages[messages.size()-1].first.count());
-      if (lower == messages.end()){
+      if (lower == messages.end() || lower == messages.begin()){
         std::vector<nav_msgs::Odometry> recentOdometry;
         std::transform(messages.end() - std::min(3, static_cast<int>(messages.size())), messages.end(), std::back_inserter(recentOdometry),
                        [](std::pair<std::chrono::nanoseconds, nav_msgs::Odometry> e) -> nav_msgs::Odometry { return e.second; });
         toReturn = extrapolate(recentOdometry, timestamp);//(*(--lower)).second;
         ++extrapolationCount;
       }
-      else{
+      else {
         toReturn = interpolate((*(std::prev(lower))).second, (*(lower)).second, timestamp);//abs((*(std::prev(lower))).first - timestamp) < abs((*(lower)).first - timestamp)? (*(--lower)).second : (*(lower)).second;
         ++interpolationCount;
       }

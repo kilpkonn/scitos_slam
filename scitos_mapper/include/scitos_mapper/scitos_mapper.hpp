@@ -32,10 +32,12 @@ private:
   tf::StampedTransform worldToRobot_;
   sensor_msgs::LaserScan laserScan_;
 
-  std::unique_ptr<scitos_common::QueueSubscriber<nav_msgs::Odometry>> odometrySub_;
+  std::unique_ptr<scitos_common::QueueSubscriber<nav_msgs::Odometry>> ekfOdometrySub_;
   ros::Time cmdVelStamp_ = ros::Time::now();
+  ros::Time odomStamp_ = ros::Time::now();
 
   ros::Subscriber laserScanSub_;
+  ros::Subscriber odometrySub_;
   ros::Subscriber cmdVelSub_;
   ros::Subscriber saveMapSub_;
 
