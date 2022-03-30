@@ -42,6 +42,7 @@
 \section{The good}
 Our EKF performed significantly better than the naive odometry implementation, especially considering the intergrated error.
 For naive implementation the error keeps accumulating but EKF managed to keep it somewhat low as shown in the figure~\ref{fig:err_x} or~\ref{fig:ekf_good}.
+On our RViz visualization red is odometry, yellow is EKF and green is ground truth.
 
 \begin{figure}[h!]
   \begin{center}
@@ -99,6 +100,13 @@ Some of these jumps in yaw can be seen in the figure~\ref{fig:rmse}.
   \end{center}
   \caption{RMSE for EKF and odometry}
   \label{fig:rmse}
+\end{figure}
+\begin{figure}[h!]
+  \begin{center}
+    \includegraphics[width=0.95\textwidth]{./fig/ekf_ugly.png}
+  \end{center}
+  \caption{EKF drifting away while odometry is ok}
+  \label{fig:ekf_ugly}
 \end{figure}
 
 \newpage
