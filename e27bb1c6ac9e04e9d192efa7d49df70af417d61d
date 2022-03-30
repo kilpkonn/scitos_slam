@@ -1,0 +1,9 @@
+[ver:1,total:5640,branch:master]
+scitos_common/include/scitos_common/ekf.hpp:4167,1648659600:60,1648663200:2557,1648666800:1550,m
+scitos_annus_loomets_kitsing/data/config/mapper.yaml:460,1648659600:240,1648663200:130,1648666800:90,m
+scitos_mapper/src/scitos_mapper.cpp:318,1648659600:288,1648663200:30,r
+scitos_common/include/scitos_common/map/map.hpp:308,1648663200:308,r
+docs/localization_recap.tex:252,1648659600:252,r
+scitos_common/include/scitos_common/map/line.hpp:95,1648663200:95,r
+scitos_annus_loomets_kitsing/include/scitos_annus_loomets_kitsing/motion_controller.hpp:20,1648666800:20,r
+.git/COMMIT_EDITMSG:20,1648666800:20,r
