@@ -95,12 +95,11 @@ public:
             mp1 = mapLine.p2, mp2 = mapLine.p1;
           }
 
-          // NOTE: Check if this is needed
           if (!map.isVisible(mp1, pos))
             continue;
 
           auto p =
-              (line.p1 - mp1).length() < (line.p2 - mp1) ? line.p1 : line.p2;
+              (line.p1 - mp1).length() < (line.p2 - mp1).length() ? line.p1 : line.p2;
 
           // Too dangerous, likely incorrectly mapped
           if ((p - mp1).length() > 1.f)
@@ -136,7 +135,7 @@ public:
               std::exp(-0.5f * static_cast<float>(dz1_curr.transpose() *
                                                   S1curr.inverse() * dz1_curr));
           float likelyhood = likelyhood1; // * likelyhood2;
-          // ROS_INFO("likelyhood: %f", bestLikelyhood);
+          ROS_INFO("likelyhood: %f", bestLikelyhood);
           if (likelyhood > bestLikelyhood) {
             bestLikelyhood = likelyhood;
             H1 = H1curr;
