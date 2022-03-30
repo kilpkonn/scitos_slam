@@ -10,12 +10,21 @@ catkin build
 catkin build -DCMAKE_EXPORT_COMPILE_COMMANDS=1
 ```
 _Make sure to copy `compile_commands.json` from under build to project root!_
+```bash
+# Execute at catkin_ws
+jq -s 'map(.[])' build/**/compile_commands.json > ./src/scitos_slam_group_2/compile_commands.json
+```
 
 ## Running
 ```bash
 roslaunch scitos_annus_loomets_kitsing scitos_autonomous.launch
 
-rosrun scitos_annus_loomets_kitsing teleop_key.p  # To drive with keyboard
+rosrun scitos_annus_loomets_kitsing teleop_key.py  # To drive with keyboard
+```
+
+## Save map
+```bash
+rostopic pub /save_map std_msgs/String '{"data":"~/catkin_ws/map.yaml"}'
 ```
 
 ## Serve slides

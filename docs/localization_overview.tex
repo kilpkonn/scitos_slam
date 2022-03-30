@@ -41,50 +41,71 @@
 % Intro %
 \section{Introduction}
 
-Once a mobile robot has a well defined representation of it's environment the next essential step for autonomy is localization. Based on the world representation (for now assumed to be known) and sensor readings indicating information about the robot's odometry and environment, the robot can infer it's position within the world representation. The scope of this paper is to analyze different localization algorithms for mobile robots with special focus on 2D motion and using feature map as \emph{priory} map.
+Once a mobile robot has a well defined representation of it's environment the next essential step for autonomy is localization.
+Based on the world representation (for now assumed to be known) and sensor readings indicating information about the robot's odometry and environment, the robot can infer it's position within the world representation. 
+The scope of this raport is to analyze different localization algorithms for mobile robots with special focus on 2D motion and using feature map as \emph{priory} map.
 
 \section{Extended Kalman Filter}
 
-Many robotic systems require the system to be nonlinear - this gives rise to localization approach commonly known as the extended Kalman filter (EKF). EKF is the extension of Kalman filter to nonlinear systems. In comparison to KF, EKF performs significantly better in mobile robot position estimation \cite{Suliman2010}. \\
+Many robotic systems require the system to be nonlinear - this gives rise to localization approach commonly known as the extended Kalman filter (EKF)\cite{Overview2021}.
+EKF is the extension of Kalman filter to nonlinear systems -
+It uses First Order Taylor series expansion to linearize non-linear models\cite{Overview2021}.
+In comparison to KF, EKF performs significantly better in mobile robot position estimation\cite{Suliman2010}. \\
 
-The EKF has two phases, one is prediction phase and the other is update phase. In the prediction phase, the motion model is used to predict the current position of the mobile robot, based on not only the previous estimated position, but also the odometry information such as translational velocity and rotational velocity. \cite{featureEKF} \\
+The EKF has two phases, one is prediction phase and the other is update phase. 
+In the prediction phase, the motion model is used to predict the current position of the mobile robot, based on not only the previous estimated position, but also the odometry information such as translational velocity and rotational velocity. \cite{featureEKF} \\
 
-EKF localization can be used with a feature map as documented in this paper here \cite{featureEKF}. As an advantage the distance error between the estimated position calculated from EKF and the ground truth remains almost the same level. Still the EKF algorithm has to have a priory map before hand, this may not be always available. \cite{featureEKF}
+EKF localization can be used with a feature map as documented in this paper here \cite{featureEKF}. 
+As an advantage the distance error between the estimated position calculated from EKF and the ground truth remains almost the same level\cite{Overview2021}. 
+Still the EKF algorithm has to have a priory map before hand, this may not be always available. \cite{featureEKF}
+Another problem is that as we have obstacles then in reality not all positions are allowed for the robot so it cuts off part of the gaussian for the position.
+On the other hand our feature based map seems a better fit for EKF than regular grid map as it is likely easier to track features for us so there is some motivation to go with the algorithm due tu our previous decisions.
+We also found a paper that uses line based for EKF \cite{lineEKF}.
 
 \section{Monte Carlo localization}
 
-Monte Carlo Localization (MCL) is a method used to localize mobile sensor in the surrounding environment with Particle Filter based. MCL uses a representation of the Particle Filter to determine the position of the robot in a map that was previously made. In conducting exploration in a previously known environment, the mobile sensor navigation process is required from the initial position to the specified final position. \\
-
+Monte Carlo Localization (MCL) is a method used to localize mobile sensor in the surrounding environment with a Particle Filter\cite{Overview2021}. 
+MCL uses a representation of the Particle Filter to determine the position of the robot in a map that was previously made.
+In conducting exploration in a previously known environment, the mobile sensor navigation process is required from the initial position to the specified final position\cite{MCL99}. 
 One of the key advantages of the MCL over Kalman-filter based approaches is its ability to represent multi-modal probability distributions - This ability is a precondition for localizing a mobile robot without knowledge of its starting location \cite{MCL99}.
 
-Adaptive Monte Carlo Localization (AMCL) can be considered a better version of the Monte Carlo Localization pose estimation, which improves real-time performance by reducing execution time with fewer samples or particles. AMCl uses Kullback-Leibler Distance (KLD) Sampling as an additional parameter. \cite{AMCL19}
+Adaptive Monte Carlo Localization (AMCL) can be considered a better version of the Monte Carlo Localization pose estimation, which improves real-time performance by reducing execution time with fewer samples or particles. 
+AMCL uses Kullback-Leibler Distance (KLD) Sampling as an additional parameter. \cite{AMCL19}
 
 % Conclusion %
 \section{Localization Comparison}
 The comparison of different Localization algorithms can be found in Table~\ref{tab:slam_algorithms}.
 \begin{table}[h!]
   \begin{center}
-    \begin{tabular}[c]{|c | c c c |}
+    \begin{tabular}[c]{|c || c c |}
       \hline
-                       & MCL  & AMCL     & EKF                 \\
+       Category        &  AMCL          & EKF                 \\
       \hline
-      Impl. difficulty &       & More than MCL        & Medium - High       \\
+      Impl. difficulty &  Medium        & Medium - High       \\
       \hline
-      Memory complexity&       & less than MCL        & Low                 \\
+      Memory complexity&  Medium        & Low                 \\
       \hline
-      Time complexity  &        & less than MCL        & Small               \\
+      Time complexity  &  Medium        & Small               \\
       \hline
-      Robustness       &       &          & Medium              \\
+      Robustness       &  Good          & Medium              \\
+      \hline
+      Problems         & Time complexity & Non-gaussian distributions \\
+                       & Optimal sampling &  \\
       \hline
     \end{tabular}
   \end{center}
   \caption{Comparison of different SLAM algorithms}
   \label{tab:slam_algorithms}
 \end{table}
+The MCL algorithm can also be used directly for global localization whilst EKF would require some wrapper methods.
 
 \section{Conclusion}
 
-The selection of algorithm should be made in ...
+Both the MCL and EKF algorithms are applicable for our use case.
+MCL uses more computational capacity than the EKF but it is also more robust.
+We decided to go with the EKF algorithm due to the fact that we have already built up core of the features and functions that would be needed by it. 
+EKF would go better and more naturally with our map type because of that. 
+Furthermore we would like to use different approach than the standard grid map and to avoid using discrete localization methods - like grid MCL. 
 \newpage
 \begin{thebibliography}{9}
 
@@ -92,6 +113,8 @@ The selection of algorithm should be made in ...
 C. Suliman, C. Cruceru, F. Moldoveanu
 Mobile robot position estimation using the Kalman filter
 Sci. Bull. Petru Maior Univ. Tirgu Mures Inter-Eng., 6 (XXIII) (2010), pp. 75-78
+\bibitem{Overview2021}
+Panigrahi, Prabin, Bisoy, Sukant. (2021). Localization Strategies for Autonomous Mobile Robots: A review. Journal of King Saud University - Computer and Information Sciences. 10.1016/j.jksuci.2021.02.015. 
 \bibitem{featureEKF}
 L. Chen, H. Hu and K. McDonald-Maier, "EKF Based Mobile Robot Localization," 2012 Third International Conference on Emerging Security Technologies, 2012, pp. 149-154, doi: 10.1109/EST.2012.19.
 \bibitem{MCL99}
@@ -100,6 +123,8 @@ Monte Carlo localization for mobile robots
 Proceedings 1999 IEEE International Conference on Robotics and Automation (Cat. No.99CH36288C), Detroit, MI, USA (1999), pp. 1322-1328, 10.1109/ROBOT.1999.772544
 \bibitem{AMCL19}
 I. Wasisto, N. Istiqomah, I. K. N. Trisnawan and A. N. Jati, "Implementation of Mobile Sensor Navigation System Based on Adaptive Monte Carlo Localization," 2019 International Conference on Computer, Control, Informatics and its Applications (IC3INA), 2019, pp. 187-192, doi: 10.1109/IC3INA48034.2019.8949581.
+\bibitem{lineEKF}
+Jixin Lv1, Yukinori Kobayashi2, Ankit A. Ravankar1, and Takanori Emaru, "Straight Line Segments Extraction and EKF-SLAM in Indoor Environment" http://www.joace.org/uploadfile/2014/0113/20140113054354731.pdf
 \end{thebibliography}
 
 \end{document}

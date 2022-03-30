@@ -16,8 +16,9 @@ template <typename T> struct Line {
       : p1{s}, p2{e}, confidence{conf} {}
   float slope() const { return (p2.y - p1.y) / (p2.x - p1.x); }
   float heading() const { return atan2(p2.y - p1.y, p2.x - p1.x); }
+  float heading_nodir() const { return atan((p2.y - p1.y) / (p2.x - p1.x)); }
   float yIntersept() const { return p1.y - slope() * p1.x; }
-  bool overlaps(const Line<T> &line, float padding) {
+  bool overlaps(const Line<T> &line, float padding) const {
     Vec2<T> minSelf = Vec2(std::min(p1.x, p2.x), std::min(p1.y, p2.y));
     Vec2<T> maxSelf = Vec2(std::max(p1.x, p2.x), std::max(p1.y, p2.y));
     Vec2<T> minOther =
@@ -33,14 +34,27 @@ template <typename T> struct Line {
     return xOverlap && yOverlap;
   }
 
-  Vec2<T> toHoughSpace() { return {slope(), yIntersept()}; }
-  float perpendicularDistance(const Vec2<T> &p) {
-    Vec2<T> vec1(p.x - p1.x, p.y - p1.y);
-    Vec2<T> vec2(p2.x - p1.x, p2.y - p1.y);
+  bool overlaps2(const Line<T> &line, float padding) const {
+    Vec2<T> p = center();
+    float r = length() / 2.f + padding;
+    return (p - line.p1).length() < r || (p - line.p2).length() < r;
+  }
+
+  Vec2<T> center() const { return p1 + (p2 - p1) / 2.f; }
+  Vec2<T> toHoughSpace() const { return {slope(), yIntersept()}; }
+  float perpendicularDistance(const Vec2<T> &p) const {
+    Vec2<T> vec1 = p - p1;
+    Vec2<T> vec2 = p2 - p1;
     float d_vec2 = vec2.length();
-    float cross_product = vec1.x * vec2.y - vec2.x * vec1.y;
+    float cross_product = vec1.cross(vec2);
     float d = abs(cross_product / d_vec2);
     return d;
+  }
+
+  float perpendicularDistance(const Line<T> &l) const {
+    float d1 = perpendicularDistance(l.center());
+    float d2 = l.perpendicularDistance(center());
+    return (d1 + d2) / 2.f;
   }
 
   Vec2<T> projectInf(const Vec2<T> &p) const {
@@ -87,6 +101,11 @@ template <typename T> struct Line {
   }
 
   float length() const { return (p1 - p2).length(); }
+
+  Line<T> padded(T padding) const {
+    auto d = dir() * padding;
+    return {p1 - d, p2 + d, confidence};
+  }
 
   Line<T> merge(const Line<T> &o) const {
     // See which way to match

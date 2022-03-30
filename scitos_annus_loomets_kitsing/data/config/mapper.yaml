@@ -2,7 +2,7 @@ dbscan:
   r: 0.35
   n: 4
 corner_combination:
-  r: 0.1
+  r: 0.16
   n: 2
 kmeans:
   k: 30
@@ -12,3 +12,12 @@ iepf:
 map:
   padding: 0.1
   fade_power: 1.05 # [1, inf)
+  load: "data/maps/map.yaml"  # BUG: Needs to be absolute path
+  ekf:
+    a1: 0.1  # v effect to v noise
+    a2: 0.1  # w effect to v noise
+    a3: 0.2  # v effect to w noise
+    a4: 0.5  # w effect to w noise
+    s1: 1.5  # Sensord r noise
+    s2: 1.4  # Sensor angle noise
+    s3: 0.4  # 

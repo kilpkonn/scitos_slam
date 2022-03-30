@@ -34,6 +34,7 @@ template <typename T> struct Polar2 {
     r = new_r;
     return *this;
   }
+  Polar2<T> rotate(T dtheta) const { return {r, theta + dtheta}; }
   inline bool operator==(const Polar2<T>& o) const { return r == o.r && theta == o.theta; }
   auto operator<(float n) const { return length() < n; }
   auto operator<=(float n) const { return length() <= n; }
