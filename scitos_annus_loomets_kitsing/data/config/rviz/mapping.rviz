@@ -8,6 +8,7 @@ Panels:
         - /odom1/Shape1
         - /odom1/Covariance1
         - /odom1/Covariance1/Position1
+        - /odom_ekf1/Shape1
         - /EKF Prediction 21/Covariance1
       Splitter Ratio: 0.5739750266075134
     Tree Height: 1683
@@ -188,32 +189,32 @@ Visualization Manager:
           Color Style: Unique
           Frame: Local
           Offset: 1
-          Scale: 1
-          Value: true
+          Scale: 0.009999999776482582
+          Value: false
         Position:
           Alpha: 0.30000001192092896
           Color: 204; 51; 204
           Scale: 1
           Value: true
         Value: true
-      Enabled: false
+      Enabled: true
       Keep: 100
-      Name: diff_drive_odom
+      Name: odom_ekf
       Position Tolerance: 0.10000000149011612
       Queue Size: 10
       Shape:
         Alpha: 1
         Axes Length: 1
         Axes Radius: 0.10000000149011612
-        Color: 255; 25; 0
-        Head Length: 0.30000001192092896
-        Head Radius: 0.10000000149011612
+        Color: 255; 250; 0
+        Head Length: 0.05000000074505806
+        Head Radius: 0.05000000074505806
         Shaft Length: 0.5
         Shaft Radius: 0.05000000074505806
         Value: Arrow
-      Topic: /diff_drive/odom
+      Topic: /ekf_odom
       Unreliable: false
-      Value: false
+      Value: true
     - Alpha: 0.699999988079071
       Class: rviz/Map
       Color Scheme: map
@@ -459,7 +460,7 @@ Visualization Manager:
       Marker Topic: /debug/lines
       Name: IEPF
       Namespaces:
-        {}
+        "": true
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
@@ -467,7 +468,7 @@ Visualization Manager:
       Marker Topic: /debug/map
       Name: Map
       Namespaces:
-        {}
+        "": true
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
@@ -514,7 +515,7 @@ Visualization Manager:
           Scale: 1
           Value: true
         Value: true
-      Enabled: true
+      Enabled: false
       Head Length: 0.30000001192092896
       Head Radius: 0.10000000149011612
       Name: EKF Prediction 2
@@ -524,7 +525,7 @@ Visualization Manager:
       Shape: Arrow
       Topic: /debug/ekf_estimate
       Unreliable: false
-      Value: true
+      Value: false
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48

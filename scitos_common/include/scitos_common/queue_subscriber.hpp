@@ -23,7 +23,6 @@ namespace scitos_common
                     , unsigned int queueSize) : queueSize(queueSize)
     {
       *static_cast<ros::Subscriber *>(this) = nh->subscribe(topic, 1, &QueueSubscriber<T>::callback, this);
-      messages = std::deque<std::pair<std::chrono::nanoseconds, T>>(queueSize);
     }
 
     QueueSubscriber(ros::NodeHandle * const nh
@@ -33,7 +32,6 @@ namespace scitos_common
                      : cb(cb), queueSize(queueSize)
     {
       *static_cast<ros::Subscriber *>(this) = nh->subscribe(topic, 1, &QueueSubscriber<T>::callback, this);
-      messages = std::deque<std::pair<std::chrono::nanoseconds, T>>(queueSize);
     }
 
     void callback(const boost::shared_ptr<T const> & msg){
@@ -42,14 +40,8 @@ namespace scitos_common
         return;
       }
       hasReceivedFirst = true;
-      ros::Time stamp;
-      auto stampPointer = ros::message_traits::timeStamp(*msg);
-      if (stampPointer)
-      {
-        stamp = *stampPointer;
-      }
-      else
-        stamp = ros::Time::now();
+      // ROS_INFO("Header: %zu -> %b", msg->header.stamp.toNSec(), msg->header.stamp.isValid());
+      ros::Time stamp = msg->header.stamp.isValid() ? msg->header.stamp : ros::Time::now();
       auto p = std::make_pair(std::chrono::nanoseconds(stamp.toNSec()), *msg);
 
       messages.push_back(std::move(p));

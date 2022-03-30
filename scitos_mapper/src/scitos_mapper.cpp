@@ -2,6 +2,7 @@
 #include <chrono>
 #include <cmath>
 #include <cstddef>
+#include <cstdint>
 #include <fstream>
 #include <iterator>
 #include <string>
@@ -20,26 +21,26 @@
 
 #include "geometry_msgs/PoseStamped.h"
 #include "geometry_msgs/PoseWithCovarianceStamped.h"
+#include "nav_msgs/Odometry.h"
 #include "scitos_common/dbscan.hpp"
 #include "scitos_common/ekf.hpp"
 #include "scitos_common/grid/morphology.hpp"
 #include "scitos_common/iepf.hpp"
 #include "scitos_common/kmeans.hpp"
 #include "scitos_common/map/line.hpp"
+#include "scitos_common/odometry_subscriber.hpp"
 #include "scitos_common/polar2.hpp"
 #include "scitos_common/vec2.hpp"
-#include "scitos_common/odometry_subscriber.hpp"
 
 #include "scitos_common/Vec2Array.h"
 
 #include "scitos_mapper/scitos_mapper.hpp"
 
 Mapper::Mapper(ros::NodeHandle nh) : nh_{nh} {
-  odometrySub_ = std::make_unique<scitos_common::OdometrySubscriber>(&nh_
-                                                                    , "/odom"
-                                                                    , 50
-                                                                    , std::bind(&Mapper::odometryCallback, this, std::placeholders::_1));
-      //nh_.subscribe("/ground_truth", 1, &Mapper::odometryCallback, this);
+  odometrySub_ = std::make_unique<scitos_common::OdometrySubscriber>(
+      &nh_, "/ekf_odom", 50,
+      std::bind(&Mapper::odometryCallback, this, std::placeholders::_1));
+  // nh_.subscribe("/ground_truth", 1, &Mapper::odometryCallback, this);
   laserScanSub_ =
       nh_.subscribe("/laser_scan", 1, &Mapper::laserScanCallback, this);
   saveMapSub_ = nh_.subscribe("/save_map", 1, &Mapper::saveMapCallback, this);
@@ -59,6 +60,7 @@ Mapper::Mapper(ros::NodeHandle nh) : nh_{nh} {
   mapPub_ = nh_.advertise<visualization_msgs::MarkerArray>("/debug/map", 3);
   ekfPub_ = nh_.advertise<geometry_msgs::PoseWithCovarianceStamped>(
       "/debug/ekf_estimate", 3);
+  odomPub_ = nh_.advertise<nav_msgs::Odometry>("/ekf_odom", 3);
 
   dbscan_.r = nh_.param("/dbscan/r", 0.1f);
   dbscan_.n = nh_.param("/dbscan/n", 10);
@@ -92,9 +94,6 @@ Mapper::Mapper(ros::NodeHandle nh) : nh_{nh} {
 }
 
 void Mapper::step(const ros::TimerEvent &event) {
-  if (!odometrySub_->hasReceivedFirst) {
-    return;
-  }
   if (!laserScan_.header.stamp.isValid()) {
     return;
   }
@@ -201,18 +200,19 @@ void Mapper::laserScanCallback(sensor_msgs::LaserScan msg) { laserScan_ = msg; }
 void Mapper::cmdVelCallback(geometry_msgs::Twist msg) {
   auto dt =
       std::chrono::nanoseconds((ros::Time::now() - cmdVelStamp_).toNSec());
+  cmdVelStamp_ = ros::Time::now();
   auto [m, sigma] =
       ekf_.predict(msg.linear.x, msg.angular.z,
                    std::chrono::duration_cast<std::chrono::milliseconds>(dt));
   worldToRobot_.child_frame_id_ = "base_footprint";
   worldToRobot_.frame_id_ = "map";
-  worldToRobot_.stamp_ = ros::Time::now();
+  worldToRobot_.stamp_ = cmdVelStamp_;
   worldToRobot_.setOrigin({m(0), m(1), 0.05f});
-  ROS_INFO("(%f, %f, %f)", m(0), m(1), m(2));
+  // ROS_INFO("(%f, %f, %f)", m(0), m(1), m(2));
   worldToRobot_.setRotation(tf::createQuaternionFromRPY(0.f, 0.f, m(2)));
 
-  cmdVelStamp_ = ros::Time::now();
   publishEkf(m, sigma);
+  publishOdom();
 }
 
 void Mapper::saveMapCallback(std_msgs::String msg) const {
@@ -258,22 +258,23 @@ void Mapper::loadMap(std::string path) {
   ROS_INFO("MAP LOADED!");
 }
 
-std::vector<Vec2<float>>
-Mapper::getLaserScanPoints() {
+std::vector<Vec2<float>> Mapper::getLaserScanPoints() {
   if (!laserScan_.header.stamp.isValid() || !odometrySub_->hasReceivedFirst) {
     return {};
   }
 
   tf::StampedTransform lidarToRobot;
   try {
-    tfListener_.lookupTransform("/base_footprint", "/hokuyo_link", laserScan_.header.stamp,
-                                lidarToRobot);
+    tfListener_.lookupTransform("/base_footprint", "/hokuyo_link",
+                                laserScan_.header.stamp, lidarToRobot);
   } catch (tf::TransformException ex) {
     ROS_ERROR("%s", ex.what());
     ros::Duration(1.0).sleep();
   }
 
-  nav_msgs::Odometry odometry = odometrySub_->getNearestOrThrow(std::chrono::nanoseconds(laserScan_.header.stamp.toNSec()), "MAPPER: No odometry received");
+  nav_msgs::Odometry odometry = odometrySub_->getNearestOrThrow(
+      std::chrono::nanoseconds(laserScan_.header.stamp.toNSec()),
+      "MAPPER: No odometry received");
   const Vec2<float> loc(odometry.pose.pose.position.x,
                         odometry.pose.pose.position.y);
   double roll, pitch, yaw;
@@ -457,6 +458,7 @@ void Mapper::publishMap() const {
   mapPub_.publish(markers);
 }
 
+// Remove as publish Odom has all the data
 void Mapper::publishEkf(const Eigen::Vector3f &m,
                         const Eigen::Matrix3f &sigma) const {
   // geometry_msgs::PoseStamped msg;
@@ -486,4 +488,42 @@ void Mapper::publishEkf(const Eigen::Vector3f &m,
   msg.pose.pose.orientation.z = quat.getZ();
 
   ekfPub_.publish(msg);
+}
+
+void Mapper::publishOdom() const {
+  static uint64_t odomFrameId = 0;
+  nav_msgs::Odometry msg;
+  msg.header.frame_id = "map";
+  msg.child_frame_id = "base_footprint";
+  msg.header.seq = odomFrameId++;
+  msg.header.stamp = cmdVelStamp_;
+
+  auto pos = ekf_.getPos();
+  auto rot = ekf_.getRotation();
+  auto quat = tf::createQuaternionFromRPY(0.f, 0.f, rot);
+
+  msg.pose.pose.position.x = pos.x;
+  msg.pose.pose.position.y = pos.y;
+  msg.pose.pose.position.z = 0.05;
+
+  msg.pose.pose.orientation.w = quat.getW();
+  msg.pose.pose.orientation.x = quat.getX();
+  msg.pose.pose.orientation.y = quat.getY();
+  msg.pose.pose.orientation.z = quat.getZ();
+
+  auto sigma = ekf_.getCovarince();
+
+  msg.pose.covariance[0] = sigma(0, 0);
+  msg.pose.covariance[1] = sigma(0, 1);
+  msg.pose.covariance[5] = sigma(0, 2);
+  msg.pose.covariance[6] = sigma(1, 0);
+  msg.pose.covariance[7] = sigma(1, 1);
+  msg.pose.covariance[11] = sigma(1, 2);
+  msg.pose.covariance[31] = sigma(2, 0);
+  msg.pose.covariance[32] = sigma(2, 1);
+  msg.pose.covariance[35] = sigma(2, 2);
+
+  // TODO: Velocity
+
+  odomPub_.publish(msg);
 }

@@ -161,6 +161,7 @@ public:
   void setSensorVariances(Matrix3f covs) { sensorCovs_ = covs; }
   Vec2<float> getPos() const { return {m_(0), m_(1)}; }
   float getRotation() const { return m_(2); }
+  Matrix3f getCovarince() const { return sigma_; }
 
 private:
   float a1_;

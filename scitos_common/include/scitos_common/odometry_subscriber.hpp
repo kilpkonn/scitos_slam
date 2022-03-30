@@ -30,6 +30,7 @@ namespace scitos_common
       if (messages.empty())
         return std::nullopt;
       nav_msgs::Odometry toReturn;
+      // ROS_INFO("Time: %zu ? %zu .. %zu", timestamp.count(), messages[0].first.count(), messages[messages.size()-1].first.count());
       if (lower == messages.end()){
         std::vector<nav_msgs::Odometry> recentOdometry;
         std::transform(messages.end() - std::min(3, static_cast<int>(messages.size())), messages.end(), std::back_inserter(recentOdometry),
@@ -66,8 +67,10 @@ namespace scitos_common
         if(past_odometry.size() > 2)
         {
           nav_msgs::Odometry v1 = odometryDiff(past_odometry[past_odometry.size()-2], past_odometry[past_odometry.size()-3]);
-          v1 = odometryMultiply(v1, 1.0 / static_cast<double>(v1.header.stamp.toNSec()));
-          nav_msgs::Odometry a = odometryDiff(v1, v);
+          if (v1.header.stamp.toNSec() != 0) {
+            v1 = odometryMultiply(v1, 1.0 / static_cast<double>(v1.header.stamp.toNSec()));
+            a = odometryDiff(v1, v);
+          }
         }
       }
 

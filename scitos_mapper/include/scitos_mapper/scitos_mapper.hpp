@@ -47,6 +47,7 @@ private:
   ros::Publisher linesPub_;
   ros::Publisher mapPub_;
   ros::Publisher ekfPub_;
+  ros::Publisher odomPub_;
 
   tf::TransformListener tfListener_;
 
@@ -83,4 +84,5 @@ private:
   void publishEkf(const Eigen::Vector3f &m, const Eigen::Matrix3f &sigma) const;
   void publishLines() const;
   void publishMap() const;
+  void publishOdom() const;
 };
