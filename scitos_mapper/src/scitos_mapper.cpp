@@ -56,6 +56,7 @@ Mapper::Mapper(ros::NodeHandle nh) : nh_{nh} {
   cornerCombinationPub_ = nh_.advertise<visualization_msgs::MarkerArray>(
       "/debug/corner_combination", 3);
   linesPub_ = nh_.advertise<visualization_msgs::MarkerArray>("/debug/lines", 3);
+  matchedLinesPub_ = nh_.advertise<visualization_msgs::MarkerArray>("/debug/matched_lines", 3);
   mapPub_ = nh_.advertise<visualization_msgs::MarkerArray>("/debug/map", 3);
   ekfPub_ = nh_.advertise<geometry_msgs::PoseWithCovarianceStamped>(
       "/debug/ekf_estimate", 3);
@@ -140,7 +141,8 @@ void Mapper::step(const ros::TimerEvent &event) {
     mapLines.insert(mapLines.end(), line.begin(), line.end());
   }
 
-  ekf_.correct(map_, mapLines);
+  std::vector<std::pair<scitos_common::map::Line<float>, scitos_common::map::Line<float>>> matchedLines;
+  ekf_.correct(map_, mapLines, &matchedLines);
 
   // NOTE:mapLines should be updated to new pos and rot before accumulate
 
@@ -175,6 +177,7 @@ void Mapper::step(const ros::TimerEvent &event) {
   publishErosion(erodedPoints);
   publishDbscan(erodedPoints, labels);
   // publishCornerCombining(cornerVisualization);
+  publishMatchedLines(matchedLines);
   publishLines();
   publishMap();
 }
@@ -426,6 +429,39 @@ void Mapper::publishLines() const {
   }
 
   linesPub_.publish(markers);
+}
+
+void Mapper::publishMatchedLines(std::vector<std::pair<scitos_common::map::Line<float>, scitos_common::map::Line<float>>> matchedLines) const {
+  visualization_msgs::MarkerArray markers;
+  int i = 0;
+  for (auto match : matchedLines) {
+    visualization_msgs::Marker marker;
+    marker.header.frame_id = "odom";
+    marker.type = visualization_msgs::Marker::LINE_STRIP;
+    marker.action = visualization_msgs::Marker::ADD;
+    marker.scale.x = 0.1;
+    marker.scale.y = 0.1;
+    marker.scale.z = 0.1;
+    marker.color.a = 0.5;
+    marker.color.r = 0.5;
+    marker.color.g = 0.5;
+    marker.color.b = 0.0;
+    marker.pose.orientation.w = 1.0;
+
+    geometry_msgs::Point p;
+    p.z = 0.05;
+    p.x = match.first.center().x;
+    p.y = match.first.center().y;
+    marker.points.push_back(p);
+    p.x = match.second.center().x;
+    p.y = match.second.center().y;
+    marker.points.push_back(p);
+
+    marker.id = i++;
+    markers.markers.push_back(marker);
+  }
+
+  matchedLinesPub_.publish(markers);
 }
 
 void Mapper::publishMap() const {

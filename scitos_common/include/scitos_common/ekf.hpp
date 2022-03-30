@@ -65,7 +65,8 @@ public:
 
   std::tuple<Vector3f, Matrix3f>
   correct(const map::Map<float> &map,
-          const std::vector<map::Line<float>> &lines) {
+          const std::vector<map::Line<float>> &lines,
+          std::vector<std::pair<map::Line<float>, map::Line<float>>>* matchedLines=nullptr) {
 
     Vec2<float> pos(m_(0), m_(1));
     ::Polar2<float> rot(1.f, m_(2)); // Unit vector
@@ -83,6 +84,7 @@ public:
       bool matchFound = false;
 
       // auto mapLine = findMatchingLine(line, mapLines);
+      map::Line<float>* bestMapLine;
       for (const auto &mapLine : mapLines) {
         if (line.perpendicularDistance(mapLine) > 1.f)
           continue;
@@ -137,6 +139,7 @@ public:
           float likelyhood = likelyhood1; // * likelyhood2;
           ROS_INFO("likelyhood: %f", bestLikelyhood);
           if (likelyhood > bestLikelyhood) {
+            bestMapLine = const_cast<map::Line<float>*>(&mapLine);
             bestLikelyhood = likelyhood;
             H1 = H1curr;
             S1 = S1curr;
@@ -149,6 +152,9 @@ public:
         auto K1 = sigma_ * H1.transpose() * S1.inverse();
         m_ = m_ + K1 * dz1;
         sigma_ = (Matrix3f::Identity() - K1 * H1) * sigma_;
+        if(matchedLines){
+          matchedLines->push_back(std::make_pair(line, *bestMapLine));
+        }
       }
     }
 

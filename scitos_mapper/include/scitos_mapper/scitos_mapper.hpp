@@ -47,6 +47,7 @@ private:
   ros::Publisher erosionPub_;
   ros::Publisher dbscanPub_;
   ros::Publisher linesPub_;
+  ros::Publisher matchedLinesPub_;
   ros::Publisher mapPub_;
   ros::Publisher ekfPub_;
   ros::Publisher odomPub_;
@@ -84,6 +85,7 @@ private:
           &cornerVisualization) const;
   void publishErosion(const std::vector<Vec2<float>> &centroids) const;
   void publishEkf(const Eigen::Vector3f &m, const Eigen::Matrix3f &sigma) const;
+  void publishMatchedLines(std::vector<std::pair<scitos_common::map::Line<float>, scitos_common::map::Line<float>>> matchedLines) const;
   void publishLines() const;
   void publishMap() const;
   void publishOdom() const;
