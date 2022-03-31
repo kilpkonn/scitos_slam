@@ -535,7 +535,7 @@ void Mapper::publishOdom() const {
   msg.header.frame_id = "map";
   msg.child_frame_id = "base_footprint";
   msg.header.seq = odomFrameId++;
-  msg.header.stamp = odomStamp_; // cmdVelStamp_;
+  msg.header.stamp = cmdVelStamp_;
 
   auto pos = ekf_.getPos();
   auto rot = ekf_.getRotation();
