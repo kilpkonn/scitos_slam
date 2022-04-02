@@ -1,6 +1,6 @@
 \author{Tavo Annus, Timo Loomets, Mattias Kitsing}
 \title{%
-   Overview of localization algorithms \\
+   Overview of path planning and obstacle avoidance algorithms \\
   \large Team SCITOS-02}
 \date{\today}
 
@@ -41,38 +41,80 @@
 % Intro %
 \section{Introduction}
 
-Once ...
+The third essential ingredient for robot autonomy deals with higher level decision making regarding the movement of the robot in its environment. Given a starting configuration (pose in our case), an end configuration, a representation of the environment surrounding the robot (assumed to be known for this assignment) and information about the environment from on-board sensors, the task is to define a feasible path through the environment to reach the end configuration from the start configuration without violating given constraints of the robot and its environment. The environment may be static or dynamic and the planning may exhibit different layers of abstraction. 
 
-\section{Section 1}
+Aside from the global planning task for the complete path, the robot needs to react to obstacles on a local level, which is especially important for dynamic environments. This reaction is usually defined as obstacle or collision avoidance and usually employs a more accurate local planner.
 
+\section{A* algorithm}
+
+The A* Algorithm is a popular graph traversal path planning algorithm. It is widely used in static environments, but there are still examples where it is used in dynamic environments. This algorithm works based on the lowest cost path tree from the initial point to the final target point. \cite{Karur21}
+
+It is simpler and less computationally-heavy than many other path planning algorithms, with its efficiency lending itself to operation on constrained and embedded systems. \cite{Karur21}
+
+\section{D* algorithm}
+
+\section{Global path algorithm for feature map}
 
 
 % Conclusion %
 \section{Path Planning Comparison}
-The comparison of different Localization algorithms can be found in Table~\ref{tab:slam_algorithms}.
+The comparison of different ...
+Table~\ref{tab:path_algorithms}.
 \begin{table}[h!]
   \begin{center}
-    \begin{tabular}[c]{|c || c c |}
+    \begin{tabular}[c]{|c || c c c |}
       \hline
-       Category        &  AMCL          & EKF                 \\
+       Category        &  A*            & D*            & Global     \\
       \hline
-      Impl. difficulty &  Medium        & Medium - High       \\
+      Impl. difficulty &         &  &      \\
       \hline
-      Memory complexity&  Medium        & Low                 \\
+      Memory complexity&          &           &      \\
       \hline
-      Time complexity  &  Medium        & Small               \\
+      Time complexity  &          &         &      \\
       \hline
-      Robustness       &  Good          & Medium              \\
+      Robustness       &           &         &      \\
       \hline
-      Problems         & Time complexity & Non-gaussian distributions \\
-                       & Optimal sampling &  \\
+      Problems         &  &  & \\
+                       &  &  & \\
       \hline
     \end{tabular}
   \end{center}
   \caption{Comparison of different SLAM algorithms}
-  \label{tab:slam_algorithms}
+  \label{tab:path_algorithms}
 \end{table}
-The MCL algorithm can also be used directly for global localization whilst EKF would require some wrapper methods.
+The X algorithm can also be used ...
+
+\section{Obstacle algorithm No1}
+
+\section{Obstacle algorithm No2}
+
+% Conclusion %
+\section{Path Planning Comparison}
+The comparison of different ...
+Table~\ref{tab:obs_algorithms}.
+\begin{table}[h!]
+  \begin{center}
+    \begin{tabular}[c]{|c || c c c |}
+      \hline
+       Category        &  A*            & D*            & Global     \\
+      \hline
+      Impl. difficulty &  Medium        & Medium - High &      \\
+      \hline
+      Memory complexity&  Medium        & Low           &      \\
+      \hline
+      Time complexity  &  Medium        & Small         &      \\
+      \hline
+      Robustness       &  Good          & Medium        &      \\
+      \hline
+      Problems         & Time complexity & Non-gaussian distributions & \\
+                       & Optimal sampling &  & \\
+      \hline
+    \end{tabular}
+  \end{center}
+  \caption{Comparison of different SLAM algorithms}
+  \label{tab:obs_algorithms}
+\end{table}
+The X algorithm can also be used ...
 
 \section{Conclusion}
 
@@ -81,10 +123,16 @@ Both ...
 \begin{thebibliography}{9}
 
 % example citation %
-\bibitem{Suliman2010}
-C. Suliman, C. Cruceru, F. Moldoveanu
-Mobile robot position estimation using the Kalman filter
-Sci. Bull. Petru Maior Univ. Tirgu Mures Inter-Eng., 6 (XXIII) (2010), pp. 75-78
+\bibitem{Karur21}
+Karur, K.; Sharma, N.;
+Dharmatti, C.; Siegel, J. A Survey of
+Path Planning Algorithms for Mobile
+Robots. Vehicles 2021, 3, 448–468.
+https://doi.org/10.3390/
+vehicles3030027
+
+
+https://www.mdpi.com/2624-8921/3/3/27/pdf
 
 \end{thebibliography}
 
