@@ -49,12 +49,53 @@ Aside from the global planning task for the complete path, the robot needs to re
 
 The A* Algorithm is a popular graph traversal path planning algorithm. It is widely used in static environments, but there are still examples where it is used in dynamic environments. This algorithm works based on the lowest cost path tree from the initial point to the final target point. \cite{Karur21}
 
-It is simpler and less computationally-heavy than many other path planning algorithms, with its efficiency lending itself to operation on constrained and embedded systems. \cite{Karur21}
+It is simpler and less computationally-heavy than many other path planning algorithms, with its efficiency lending itself to operation on constrained and embedded systems. It is
+suitable for applications deployed in static environments. \cite{Karur21}
 
 \section{D* algorithm}
 
+D* algorithm or Dynamic A* algorithm is used to generate a collision-free path amidst moving obstacles.
+D* is an informed incremental search algorithm that repairs the cost map partially and the previously calculated cost map. \cite{Karur21}
+
 \section{Global path algorithm for feature map}
 
+In this \cite{Ren22} paper a global path planning algorithm based on the feature map is proposed using on the direction of line segment features. They state that simulation experiments demonstrate
+that the proposed algorithm is superior to A* algorithm in terms of computation time
+and path length, especially of the computation efficiency \cite{Ren22}
+
+TODO: how the algo works
+
+% Conclusion %
+\section{Path Planning Comparison}
+The comparison of different ...
+Table~\ref{tab:path_algorithms}.
+\begin{table}[h!]
+  \begin{center}
+    \begin{tabular}[c]{|c || c c c |}
+      \hline
+       Category        &  A*            & D*            & Global     \\
+      \hline
+      Impl. difficulty & low-medium     &  &      \\
+      \hline
+      Memory complexity & medium         &           &      \\
+      \hline
+      Time complexity  & medium         &         & low     \\
+      \hline
+      Robustness       & high          &         &      \\
+      \hline
+      Problems         &  &  & \\
+                       &  &  & \\
+      \hline
+    \end{tabular}
+  \end{center}
+  \caption{Comparison of different SLAM algorithms}
+  \label{tab:path_algorithms}
+\end{table}
+The X algorithm can also be used ...
+
+\section{Obstacle algorithm No1}
+
+\section{Obstacle algorithm No2}
 
 % Conclusion %
 \section{Path Planning Comparison}
@@ -84,38 +125,6 @@ Table~\ref{tab:path_algorithms}.
 \end{table}
 The X algorithm can also be used ...
 
-\section{Obstacle algorithm No1}
-
-\section{Obstacle algorithm No2}
-
-% Conclusion %
-\section{Path Planning Comparison}
-The comparison of different ...
-Table~\ref{tab:obs_algorithms}.
-\begin{table}[h!]
-  \begin{center}
-    \begin{tabular}[c]{|c || c c c |}
-      \hline
-       Category        &  A*            & D*            & Global     \\
-      \hline
-      Impl. difficulty &  Medium        & Medium - High &      \\
-      \hline
-      Memory complexity&  Medium        & Low           &      \\
-      \hline
-      Time complexity  &  Medium        & Small         &      \\
-      \hline
-      Robustness       &  Good          & Medium        &      \\
-      \hline
-      Problems         & Time complexity & Non-gaussian distributions & \\
-                       & Optimal sampling &  & \\
-      \hline
-    \end{tabular}
-  \end{center}
-  \caption{Comparison of different SLAM algorithms}
-  \label{tab:obs_algorithms}
-\end{table}
-The X algorithm can also be used ...
-
 \section{Conclusion}
 
 Both ... 
@@ -131,8 +140,12 @@ Robots. Vehicles 2021, 3, 448–468.
 https://doi.org/10.3390/
 vehicles3030027
 
+\bibitem[]{Ren22}
+Ren, G., Liu, P., He, Z.: A
+global path planning algorithm based on the feature
+map. IET Cyber‐Syst. Robot. 4(1), 15–24 (2022).
+https://doi.org/10.1049/csy2.12040
 
-https://www.mdpi.com/2624-8921/3/3/27/pdf
 
 \end{thebibliography}
 
