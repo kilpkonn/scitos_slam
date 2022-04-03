@@ -41,13 +41,18 @@
 % Intro %
 \section{Introduction}
 
-The third essential ingredient for robot autonomy deals with higher level decision making regarding the movement of the robot in its environment. Given a starting configuration (pose in our case), an end configuration, a representation of the environment surrounding the robot (assumed to be known for this assignment) and information about the environment from on-board sensors, the task is to define a feasible path through the environment to reach the end configuration from the start configuration without violating given constraints of the robot and its environment. The environment may be static or dynamic and the planning may exhibit different layers of abstraction. 
+The third essential ingredient for robot autonomy deals with higher level decision making regarding the movement of the robot in its environment. 
+Given a starting configuration (pose in our case), an end configuration, a representation of the environment surrounding the robot (assumed to be known for this assignment) and information about the environment from on-board sensors, the task is to define a feasible path through the environment to reach the end configuration from the start configuration without violating given constraints of the robot and its environment.
+The environment may be static or dynamic and the planning may exhibit different layers of abstraction. 
 
-Aside from the global planning task for the complete path, the robot needs to react to obstacles on a local level, which is especially important for dynamic environments. This reaction is usually defined as obstacle or collision avoidance and usually employs a more accurate local planner.
+Aside from the global planning task for the complete path, the robot needs to react to obstacles on a local level, which is especially important for dynamic environments.
+This reaction is usually defined as obstacle or collision avoidance and usually employs a more accurate local planner.
 
 \section{A* algorithm}
 
-The A* Algorithm is a popular graph traversal path planning algorithm. It is widely used in static environments, but there are still examples where it is used in dynamic environments. This algorithm works based on the lowest cost path tree from the initial point to the final target point. \cite{Karur21}
+The A* Algorithm is a popular graph traversal path planning algorithm that improves on Dijsktra's algorithm with some heuristics.
+It is widely used in static environments, but there are still examples where it is used in dynamic environments.
+This algorithm works based on the lowest cost path tree from the initial point to the final target point. \cite{Karur21}
 
 It is simpler and less computationally-heavy than many other path planning algorithms, with its efficiency lending itself to operation on constrained and embedded systems. It is
 suitable for applications deployed in static environments. \cite{Karur21}
@@ -56,6 +61,8 @@ suitable for applications deployed in static environments. \cite{Karur21}
 
 D* algorithm or Dynamic A* algorithm is used to generate a collision-free path amidst moving obstacles.
 D* is an informed incremental search algorithm that repairs the cost map partially and the previously calculated cost map. \cite{Karur21}
+Opposed to A*, D* calculates path from goal to start to make recalculation of the path more efficient. \cite{DstarWiki}
+D* star has also many derivatives out of which D* Lite seems the most appealing due to it's efficiency and it being easier to implement than most other D* derivatives.
 
 \section{Global path algorithm for feature map}
 
@@ -63,7 +70,9 @@ In this \cite{Ren22} paper a global path planning algorithm based on the feature
 that the proposed algorithm is superior to A* algorithm in terms of computation time
 and path length, especially of the computation efficiency \cite{Ren22}
 
-TODO: how the algo works
+The algorithm tries to draw a straight line from start to goal and upon facing obstacle the path is divided into two, one going left from there and another going right till the end of the obstacle.
+From there it performs the same loop recursively to find all the paths to end goal.
+After that optimization is done to cut out unnecessary corners. \cite{Ren22} % This cite should be for whole paragraph
 
 % Conclusion %
 \section{Path Planning Comparison}
@@ -73,25 +82,27 @@ Table~\ref{tab:path_algorithms}.
   \begin{center}
     \begin{tabular}[c]{|c || c c c |}
       \hline
-       Category        &  A*            & D*            & Global     \\
+       Category        &  A*            & D*      & Global     \\
       \hline
-      Impl. difficulty & low-medium     &  &      \\
+      Impl. difficulty & low-medium     & medium  & high \\
       \hline
-      Memory complexity & medium         &           &      \\
+      Memory complexity & medium        & medium  & low* \\
       \hline
-      Time complexity  & medium         &         & low     \\
+      Time complexity  & medium         & low     & low* \\
       \hline
-      Robustness       & high          &         &      \\
-      \hline
-      Problems         &  &  & \\
-                       &  &  & \\
+      Robustness       & high           & high    & low  \\
       \hline
     \end{tabular}
   \end{center}
   \caption{Comparison of different SLAM algorithms}
   \label{tab:path_algorithms}
 \end{table}
-The X algorithm can also be used ...
+\textit{*The complexity is low mainly due to lack of features rather than having good complecity in $O$ notation.}
+
+Whilst the feature based global plath planning algorithm results seem appealing it's effectiveness is highly dependent on the actual map.
+The worst case time and memory complexity is exponential which means it is not very robust and can halt in unfavourable conditions.
+However some ideas from the algorithm can be used, namely how to pick nodes and neighbours for feature maps.
+In the end we are leaning torwards D* Lite as it should give a good performance and it doesn't seem too hard to implement.
 
 \section{Obstacle algorithm No1}
 
@@ -114,9 +125,6 @@ Table~\ref{tab:path_algorithms}.
       Time complexity  &          &         &      \\
       \hline
       Robustness       &           &         &      \\
-      \hline
-      Problems         &  &  & \\
-                       &  &  & \\
       \hline
     \end{tabular}
   \end{center}
@@ -145,6 +153,10 @@ Ren, G., Liu, P., He, Z.: A
 global path planning algorithm based on the feature
 map. IET Cyber‐Syst. Robot. 4(1), 15–24 (2022).
 https://doi.org/10.1049/csy2.12040
+
+\bibitem{DstarWiki}
+D*
+https://en.wikipedia.org/wiki/D*
 
 
 \end{thebibliography}
