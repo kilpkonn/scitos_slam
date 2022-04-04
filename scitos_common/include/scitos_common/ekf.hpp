@@ -66,7 +66,8 @@ public:
   std::tuple<Vector3f, Matrix3f>
   correct(const map::Map<float> &map,
           const std::vector<map::Line<float>> &lines,
-          std::vector<std::pair<Vec2<float>, Vec2<float>>>* matchedLines=nullptr) {
+          std::vector<std::pair<Vec2<float>, Vec2<float>>> *matchedLines =
+              nullptr) {
 
     Vec2<float> pos(m_(0), m_(1));
     ::Polar2<float> rot(1.f, m_(2)); // Unit vector
@@ -100,8 +101,9 @@ public:
           if (!map.isVisible(mp1, pos))
             continue;
 
-          auto p =
-              (line.p1 - mp1).length() < (line.p2 - mp1).length() ? line.p1 : line.p2;
+          auto p = (line.p1 - mp1).length() < (line.p2 - mp1).length()
+                       ? line.p1
+                       : line.p2;
 
           // Too dangerous, likely incorrectly mapped
           if ((p - mp1).length() > 2.f)
@@ -133,11 +135,10 @@ public:
           // ROS_INFO("S1: %f", S1curr.determinant());
           // ROS_INFO("dz: (%f, %f)", dz1_curr(0), dz1_curr(1));
           float likelyhood1 =
-              1 / std::sqrt(2.f * M_PIf32 * S1curr.determinant()) *
+              1 / std::sqrt((2.f * M_PIf32 * S1curr).determinant()) *
               std::exp(-0.5f * static_cast<float>(dz1_curr.transpose() *
                                                   S1curr.inverse() * dz1_curr));
           float likelyhood = likelyhood1; // * likelyhood2;
-          ROS_INFO("likelyhood: %f", bestLikelyhood);
           if (likelyhood > bestLikelyhood) {
             bestLikelyhood = likelyhood;
             H1 = H1curr;
@@ -153,7 +154,7 @@ public:
         auto K1 = sigma_ * H1.transpose() * S1.inverse();
         m_ = m_ + K1 * dz1;
         sigma_ = (Matrix3f::Identity() - K1 * H1) * sigma_;
-        if(matchedLines){
+        if (matchedLines) {
           matchedLines->push_back(std::make_pair(matchP1, matchP2));
         }
       }
