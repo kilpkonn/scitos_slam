@@ -141,7 +141,7 @@ void Mapper::step(const ros::TimerEvent &event) {
     mapLines.insert(mapLines.end(), line.begin(), line.end());
   }
 
-  std::vector<std::pair<scitos_common::map::Line<float>, scitos_common::map::Line<float>>> matchedLines;
+  std::vector<std::pair<Vec2<float>, Vec2<float>>> matchedLines;
   ekf_.correct(map_, mapLines, &matchedLines);
 
   // NOTE:mapLines should be updated to new pos and rot before accumulate
@@ -431,7 +431,7 @@ void Mapper::publishLines() const {
   linesPub_.publish(markers);
 }
 
-void Mapper::publishMatchedLines(std::vector<std::pair<scitos_common::map::Line<float>, scitos_common::map::Line<float>>> matchedLines) const {
+void Mapper::publishMatchedLines(std::vector<std::pair<Vec2<float>, Vec2<float>>> matchedLines) const {
   visualization_msgs::MarkerArray markers;
   int i = 0;
   for (auto match : matchedLines) {
@@ -450,11 +450,11 @@ void Mapper::publishMatchedLines(std::vector<std::pair<scitos_common::map::Line<
 
     geometry_msgs::Point p;
     p.z = 0.05;
-    p.x = match.first.center().x;
-    p.y = match.first.center().y;
+    p.x = match.first.x;
+    p.y = match.first.y;
     marker.points.push_back(p);
-    p.x = match.second.center().x;
-    p.y = match.second.center().y;
+    p.x = match.second.x;
+    p.y = match.second.y;
     marker.points.push_back(p);
 
     marker.id = i++;
