@@ -39,11 +39,11 @@
 Mapper::Mapper(ros::NodeHandle nh) : nh_{nh} {
   ekfOdometrySub_ = std::make_unique<scitos_common::OdometrySubscriber>(
       &nh_, "/ekf_odom", 50);
-  // odometrySub_ = nh_.subscribe("/odom", 1, &Mapper::odometryCallback, this);
+  odometrySub_ = nh_.subscribe("/odom", 1, &Mapper::odometryCallback, this);
   laserScanSub_ =
       nh_.subscribe("/laser_scan", 1, &Mapper::laserScanCallback, this);
   saveMapSub_ = nh_.subscribe("/save_map", 1, &Mapper::saveMapCallback, this);
-  cmdVelSub_ = nh_.subscribe("/cmd_vel", 1, &Mapper::cmdVelCallback, this);
+  // cmdVelSub_ = nh_.subscribe("/cmd_vel", 1, &Mapper::cmdVelCallback, this);
 
   mapLineHoughPub_ =
       nh_.advertise<scitos_common::Vec2Array>("/debug/map_line_hough", 3);

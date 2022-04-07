@@ -71,7 +71,7 @@ public:
    * @param theta - Measured angle
    */
   std::tuple<Vector3f, Matrix3f> predictOdom(float x, float y, float theta) {
-    float rot1 = std::atan2(y - yPrev_, x - xPrev_) - m_(2);
+    float rot1 = std::atan2(y - yPrev_, x - xPrev_) - thetaPrev_ - (thetaPrev_ - m_(2));
     float trans =
         std::sqrt(std::pow(x - xPrev_, 2.f) + std::pow(y - yPrev_, 2.f));
     float rot2 = theta - thetaPrev_ - rot1;
