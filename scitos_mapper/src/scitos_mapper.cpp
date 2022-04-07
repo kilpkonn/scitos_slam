@@ -39,7 +39,7 @@
 Mapper::Mapper(ros::NodeHandle nh) : nh_{nh} {
   ekfOdometrySub_ = std::make_unique<scitos_common::OdometrySubscriber>(
       &nh_, "/ekf_odom", 50);
-  odometrySub_ = nh_.subscribe("/odom", 1, &Mapper::odometryCallback, this);
+  // odometrySub_ = nh_.subscribe("/odom", 1, &Mapper::odometryCallback, this);
   laserScanSub_ =
       nh_.subscribe("/laser_scan", 1, &Mapper::laserScanCallback, this);
   saveMapSub_ = nh_.subscribe("/save_map", 1, &Mapper::saveMapCallback, this);
@@ -56,7 +56,8 @@ Mapper::Mapper(ros::NodeHandle nh) : nh_{nh} {
   cornerCombinationPub_ = nh_.advertise<visualization_msgs::MarkerArray>(
       "/debug/corner_combination", 3);
   linesPub_ = nh_.advertise<visualization_msgs::MarkerArray>("/debug/lines", 3);
-  matchedLinesPub_ = nh_.advertise<visualization_msgs::MarkerArray>("/debug/matched_lines", 3);
+  matchedLinesPub_ =
+      nh_.advertise<visualization_msgs::MarkerArray>("/debug/matched_lines", 3);
   mapPub_ = nh_.advertise<visualization_msgs::MarkerArray>("/debug/map", 3);
   ekfPub_ = nh_.advertise<geometry_msgs::PoseWithCovarianceStamped>(
       "/debug/ekf_estimate", 3);
@@ -182,23 +183,22 @@ void Mapper::step(const ros::TimerEvent &event) {
   publishMap();
 }
 
-// TODO: DEcide if this should be used or cmd_vel
 void Mapper::odometryCallback(nav_msgs::Odometry msg) {
-  /* auto dt =
-      std::chrono::nanoseconds((msg.header.stamp - odomStamp_).toNSec());
-  odomStamp_ = msg.header.stamp;
+  double roll, pitch, yaw;
+  tf::Quaternion quat;
+  tf::quaternionMsgToTF(msg.pose.pose.orientation, quat);
+  tf::Matrix3x3(quat).getRPY(roll, pitch, yaw);
+
   auto [m, sigma] =
-      ekf_.predict(msg.twist.twist.linear.x, msg.twist.twist.angular.z,
-                   std::chrono::duration_cast<std::chrono::milliseconds>(dt));
+      ekf_.predictOdom(msg.pose.pose.position.x, msg.pose.pose.position.y, yaw);
   worldToRobot_.child_frame_id_ = "base_footprint";
   worldToRobot_.frame_id_ = "map";
   worldToRobot_.stamp_ = odomStamp_;
   worldToRobot_.setOrigin({m(0), m(1), 0.05f});
-  // ROS_INFO("(%f, %f, %f)", m(0), m(1), m(2));
   worldToRobot_.setRotation(tf::createQuaternionFromRPY(0.f, 0.f, m(2)));
 
   publishEkf(m, sigma);
-  publishOdom(); */
+  publishOdom();
 }
 
 void Mapper::laserScanCallback(sensor_msgs::LaserScan msg) { laserScan_ = msg; }
@@ -208,7 +208,7 @@ void Mapper::cmdVelCallback(geometry_msgs::Twist msg) {
       std::chrono::nanoseconds((ros::Time::now() - cmdVelStamp_).toNSec());
   cmdVelStamp_ = ros::Time::now();
   auto [m, sigma] =
-      ekf_.predict(msg.linear.x, msg.angular.z,
+      ekf_.predictVelCmd(msg.linear.x, msg.angular.z,
                    std::chrono::duration_cast<std::chrono::milliseconds>(dt));
   worldToRobot_.child_frame_id_ = "base_footprint";
   worldToRobot_.frame_id_ = "map";
@@ -265,7 +265,8 @@ void Mapper::loadMap(std::string path) {
 }
 
 std::vector<Vec2<float>> Mapper::getLaserScanPoints() {
-  if (!laserScan_.header.stamp.isValid() || !ekfOdometrySub_->hasReceivedFirst) {
+  if (!laserScan_.header.stamp.isValid() ||
+      !ekfOdometrySub_->hasReceivedFirst) {
     return {};
   }
 
@@ -431,7 +432,8 @@ void Mapper::publishLines() const {
   linesPub_.publish(markers);
 }
 
-void Mapper::publishMatchedLines(std::vector<std::pair<Vec2<float>, Vec2<float>>> matchedLines) const {
+void Mapper::publishMatchedLines(
+    std::vector<std::pair<Vec2<float>, Vec2<float>>> matchedLines) const {
   visualization_msgs::MarkerArray markers;
   int i = 0;
   for (auto match : matchedLines) {

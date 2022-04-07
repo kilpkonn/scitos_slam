@@ -49,8 +49,8 @@ namespace scitos_common
         ++interpolationCount;
       }
 
-      std::cout << "extrapolation " << extrapolationCount / (extrapolationCount + interpolationCount) * 100 
-                << "% interpolation " << interpolationCount / (extrapolationCount + interpolationCount) * 100 << "%\n";
+      // std::cout << "extrapolation " << extrapolationCount / (extrapolationCount + interpolationCount) * 100 
+      //           << "% interpolation " << interpolationCount / (extrapolationCount + interpolationCount) * 100 << "%\n";
 
       if (cb)
         cb(toReturn);

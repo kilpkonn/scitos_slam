@@ -30,14 +30,14 @@ public:
       : a1_{a1}, a2_{a2}, a3_{a3}, a4_{a4} {}
 
   /*!
-   * EKF for differential drive robots
+   * EKF prediction step based on velocity command
    *
    * @param v - linear velocity
    * @param w - angular velocity
    * @param t - time since last update
    */
-  std::tuple<Vector3f, Matrix3f> predict(float v, float w,
-                                         std::chrono::milliseconds t) {
+  std::tuple<Vector3f, Matrix3f> predictVelCmd(float v, float w,
+                                               std::chrono::milliseconds t) {
     float dt = static_cast<float>(t.count()) / 1000.f;
     // Motion update
     Vector3f m{m_(0) + v * dt * std::cos(m_(2) + w * dt / 2.f),
@@ -50,9 +50,9 @@ public:
                {0.f, 0.f, 1.f}};
 
     Matrix<float, 3, 2> V{{dt * std::cos(m_(2) + w * dt / 2.f),
-                           -0.5f * dt * dt * std::sin(m_(2) + w * dt / 2.f)},
+                           -0.5f * v * dt * dt * std::sin(m_(2) + w * dt / 2.f)},
                           {dt * std::sin(m_(2) + w * dt / 2.f),
-                           0.5f * dt * dt * std::cos(m_(2) + w * dt / 2.f)},
+                           0.5f * v * dt * dt * std::cos(m_(2) + w * dt / 2.f)},
                           {0.f, dt}};
 
     Matrix3f sigma = G * sigma_ * G.transpose() + V * M * V.transpose();
@@ -61,6 +61,40 @@ public:
     sigma_ = sigma;
 
     return std::make_tuple(m, sigma);
+  }
+
+  /*!
+   * EKF prediction step based on odometry readings
+   *
+   * @param x - Measured x coordinate
+   * @param y - Measured y coordinate
+   * @param theta - Measured angle
+   */
+  std::tuple<Vector3f, Matrix3f> predictOdom(float x, float y, float theta) {
+    float rot1 = std::atan2(y - yPrev_, x - xPrev_) - m_(2);
+    float trans =
+        std::sqrt(std::pow(x - xPrev_, 2.f) + std::pow(y - yPrev_, 2.f));
+    float rot2 = theta - thetaPrev_ - rot1;
+    Matrix3f G{{1.f, 0.f, -trans * std::sin(m_(2) + rot1)},
+               {0.f, 1.f, trans * std::cos(m_(2) + rot1)},
+               {0.f, 0.f, 1.f}};
+
+    Matrix3f V{{-trans * std::sin(m_(2) + rot1), std::cos(m_(2) + rot1), 0.f},
+               {trans * std::cos(m_(2) + rot1), std::sin(m_(2) + rot1), 0.f},
+               {1.f, 0.f, 1.f}};
+
+    Matrix3f M{
+        {a1_ * rot1 * rot1 + a2_ * trans * trans, 0.f, 0.f},
+        {0.f, a3_ * trans * trans + a4_ * (rot1 * rot1 + rot2 * rot2), 0.f},
+        {0.f, 0.f, a1_ * rot1 * rot1 + a2_ * trans * trans}};
+
+    sigma_ = G * sigma_ * G.transpose() + V * M * V.transpose();
+    m_ = m_ + Vector3f(trans * std::cos(m_(2) + rot1),
+                       trans * std::sin(m_(2) + rot1), rot1 + rot2);
+    xPrev_ = x;
+    yPrev_ = y;
+    thetaPrev_ = theta;
+    return std::make_tuple(m_, sigma_);
   }
 
   std::tuple<Vector3f, Matrix3f>
@@ -87,8 +121,8 @@ public:
 
       // auto mapLine = findMatchingLine(line, mapLines);
       for (const auto &mapLine : mapLines) {
-        if (line.perpendicularDistance(mapLine) > 1.f)
-          continue;
+        // if (line.perpendicularDistance(mapLine) > 1.f)
+        //   continue;
 
         for (int i = 0; i < 2; i++) {
           Vec2<float> mp1, mp2;
@@ -106,18 +140,18 @@ public:
                        : line.p2;
 
           // Too dangerous, likely incorrectly mapped
-          if ((p - mp1).length() > 2.f)
-            continue;
+          // if ((p - mp1).length() > 2.f)
+          //   continue;
 
-          float rq1 = (mp1 - pos).length();
-          float q1 = rq1 * rq1;
-          Vector3f zHat1 = {(mp1 - pos).length(),
+          float rq = (mp1 - pos).length();
+          float q = rq * rq;
+          Vector3f zHat = {(mp1 - pos).length(),
                             ::Polar2<float>(mp1 - pos).theta - rot.theta,
-                            line.heading_nodir()};
+                            line.heading_nodir() - rot.theta};
 
-          Matrix3f H1curr{{(mp1.x - pos.x) / -rq1, (mp1.y - pos.y) / -rq1, 0.f},
-                          {(mp1.y - pos.y) / q1, (mp1.x - pos.x) / q1, -1.f},
-                          {0.f, 0.f, 0.f}};
+          Matrix3f Hcurr{{(mp1.x - pos.x) / -rq, (mp1.y - pos.y) / -rq, 0.f},
+                          {(mp1.y - pos.y) / -q, (mp1.x - pos.x) / q, -1.f},
+                          {0.f, 0.f, -1.f}};
 
           // ROS_INFO("H: %f, %f, %f\n   %f, %f, %f", H1curr(0, 0), H1curr(0,
           // 1),
@@ -125,25 +159,24 @@ public:
           // ROS_INFO("Sig: % f, % f, % f\n % f, % f, % f ", sigma_(0, 0),
           //          sigma_(0, 1), sigma_(0, 2), sigma_(1, 0), sigma_(1, 1),
           //          sigma_(1, 2));
-          Matrix3f S1curr = H1curr * sigma_ * H1curr.transpose() + sensorCovs_;
+          Matrix3f Scurr = Hcurr * sigma_ * Hcurr.transpose() + sensorCovs_;
 
-          Vector3f z1 = {(p - pos).length(),
+          Vector3f z = {(p - pos).length(),
                          ::Polar2<float>(p - pos).theta - rot.theta,
-                         line.heading_nodir()};
-          auto dz1_curr = z1 - zHat1;
+                         line.heading_nodir() - rot.theta};
+          auto dz_curr = z - zHat;
 
           // ROS_INFO("S1: %f", S1curr.determinant());
           // ROS_INFO("dz: (%f, %f)", dz1_curr(0), dz1_curr(1));
-          float likelyhood1 =
-              1 / std::sqrt((2.f * M_PIf32 * S1curr).determinant()) *
-              std::exp(-0.5f * static_cast<float>(dz1_curr.transpose() *
-                                                  S1curr.inverse() * dz1_curr));
-          float likelyhood = likelyhood1; // * likelyhood2;
-          if (likelyhood > bestLikelyhood) {
+          float likelyhood =
+              1 / std::sqrt((2.f * M_PIf32 * Scurr).determinant()) *
+              std::exp(-0.5f * static_cast<float>(dz_curr.transpose() *
+                                                  Scurr.inverse() * dz_curr));
+          if (likelyhood > bestLikelyhood && likelyhood > 0.3f) {
             bestLikelyhood = likelyhood;
-            H1 = H1curr;
-            S1 = S1curr;
-            dz1 = dz1_curr;
+            H1 = Hcurr;
+            S1 = Scurr;
+            dz1 = dz_curr;
             matchP1 = p;
             matchP2 = mp1;
             matchFound = true;
@@ -179,6 +212,10 @@ private:
   Vector3f m_;
   Matrix3f sigma_;
   Matrix3f sensorCovs_;
+
+  float xPrev_ = 0.f;
+  float yPrev_ = 0.f;
+  float thetaPrev_ = 0.f;
 
   // Needs at least 1 line to exist in map
   map::Line<float>

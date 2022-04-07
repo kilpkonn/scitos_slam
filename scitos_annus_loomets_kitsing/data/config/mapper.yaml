@@ -14,10 +14,14 @@ map:
   fade_power: 1.05 # [1, inf)
   load: "data/maps/map.yaml"
   ekf:
-    a1: 0.05  # v effect to v noise
-    a2: 0.1  # w effect to v noise
+    a1: 0.09  # v effect to v noise
+    a2: 0.2  # w effect to v noise
     a3: 0.2  # v effect to w noise
     a4: 0.5  # w effect to w noise
-    s1: 1.5  # Sensord r noise
-    s2: 1.4  # Sensor angle noise
-    s3: 0.01  # 
+    # a1: 0.09  # rot effect to rot noise
+    # a2: 0.05  # trans effect to rot noise
+    # a3: 0.07  # trans effect to trans noise
+    # a4: 0.012  # rot effect to trans noise
+    s1: 0.6  # Sensord r noise
+    s2: 0.4  # Sensor angle noise
+    s3: 0.01 # 
