@@ -1,0 +1,4 @@
+[ver:1,total:2640,branch:interpolation]
+scitos_mapper/src/scitos_mapper.cpp:2205,1649696400:350,1649700000:1855,m
+scitos_mapper/include/scitos_mapper/scitos_mapper.hpp:355,1649696400:10,1649700000:345,r
+.git/COMMIT_EDITMSG:80,1649700000:80,r
