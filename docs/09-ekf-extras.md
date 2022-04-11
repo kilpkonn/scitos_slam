@@ -40,6 +40,5 @@ Mattias Kitsing
 - A* vs D* vs RRT* vs 'algorithm for feature map'
 - TODO: Wrap up the overview and choose the algorithm
 
-
 ---
 
