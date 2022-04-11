@@ -36,7 +36,10 @@ Mattias Kitsing
 ---
 
 # Path planning
-- Added RRT...
+- Added RRT* algorithm, have to analyse implementation complexity
+- A* vs D* vs RRT* vs 'algorithm for feature map'
+- TODO: Wrap up the overview and choose the algorithm
+
 
 ---
 
