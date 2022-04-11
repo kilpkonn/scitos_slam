@@ -18,10 +18,10 @@ map:
     # a2: 0.2  # w effect to v noise
     # a3: 0.2  # v effect to w noise
     # a4: 0.5  # w effect to w noise
-    a1: 0.09  # rot effect to rot noise
-    a2: 0.05  # trans effect to rot noise
-    a3: 0.07  # trans effect to trans noise
-    a4: 0.012  # rot effect to trans noise
+    a1: 0.02  # rot effect to rot noise
+    a2: 0.01  # trans effect to rot noise
+    a3: 0.02  # trans effect to trans noise
+    a4: 0.007  # rot effect to trans noise
     s1: 0.6  # Sensord r noise
     s2: 0.4  # Sensor angle noise
     s3: 0.01 # 
