@@ -443,8 +443,8 @@ void Mapper::publishMatchedLines(
     marker.action = visualization_msgs::Marker::ADD;
     marker.scale.x = 0.1;
     marker.scale.y = 0.1;
-    marker.scale.z = 0.1;
-    marker.color.a = 0.5;
+    marker.scale.z = 0.05;
+    marker.color.a = 0.75;
     marker.color.r = 0.5;
     marker.color.g = 0.5;
     marker.color.b = 0.0;

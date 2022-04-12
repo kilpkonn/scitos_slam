@@ -86,11 +86,11 @@ void MotionController::step(const ros::TimerEvent &event) {
                       odometry_->pose.pose.position.y);
   Vec2<float> target = waypoints_.at(waypointIndex_);
   Polar2<float> error = target - current;
-  error.theta -= yaw;
+  error.theta = Util::normalize_angle(error.theta - yaw);
 
   scitos_common::Polar2 errorMsg = error.toMsg();
   errorMsg.header.stamp = event.current_real;
-  errorPub_.publish(error.toMsg());
+  errorPub_.publish(errorMsg);
 
   if (error < pointMargin_) {
     ++waypointIndex_;
@@ -105,7 +105,7 @@ void MotionController::step(const ros::TimerEvent &event) {
 
   geometry_msgs::Twist control;
   control.linear.x = pidOutLinear;
-  control.angular.z = pidOutAngular;
+  control.angular.z = std::max(std::min(pidOutAngular, 0.1f), -0.1f);
   controlPub_.publish(control);
   publishWaypoints();
 }

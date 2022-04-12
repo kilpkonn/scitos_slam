@@ -3,12 +3,11 @@
     
     <arg name="world_name" value="$(find scitos_annus_loomets_kitsing)/data/worlds/test_world.sdf"/>
     <include file="$(find scitos_annus_loomets_kitsing)/launch/scitos.launch">
-        <arg name="gui" value="false" />
+        <arg name="gui" value="true" />
         <arg name="world_name" value="$(arg world_name)" />
     </include>
 
     <rosparam command="load" file="$(find scitos_annus_loomets_kitsing)/data/config/mapper.yaml" />
-    <rosparam command="load" file="$(find scitos_annus_loomets_kitsing)/data/config/mapper_mission.yaml" />
 
     <node name="rviz" pkg="rviz" type="rviz"  args="-d $(find scitos_annus_loomets_kitsing)/data/config/rviz/mapping.rviz" />
     <node name="scitos_annus_loomets_kitsing" pkg="scitos_annus_loomets_kitsing" type="scitos_annus_loomets_kitsing_node" output="screen" cwd="node"/>
