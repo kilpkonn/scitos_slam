@@ -1,6 +1,6 @@
 \author{Tavo Annus, Timo Loomets, Mattias Kitsing}
 \title{%
-   Overview of path planning and obstacle avoidance algorithms \\
+   Overview of localization algorithms \\
   \large Team SCITOS-02}
 \date{\today}
 
@@ -41,136 +41,91 @@
 % Intro %
 \section{Introduction}
 
-The third essential ingredient for robot autonomy deals with higher level decision making regarding the movement of the robot in its environment. 
-Given a starting configuration (pose in our case), an end configuration, a representation of the environment surrounding the robot (assumed to be known for this assignment) and information about the environment from on-board sensors, the task is to define a feasible path through the environment to reach the end configuration from the start configuration without violating given constraints of the robot and its environment.
-The environment may be static or dynamic and the planning may exhibit different layers of abstraction. 
+Once a mobile robot has a well defined representation of it's environment the next essential step for autonomy is localization.
+Based on the world representation (for now assumed to be known) and sensor readings indicating information about the robot's odometry and environment, the robot can infer it's position within the world representation. 
+The scope of this raport is to analyze different localization algorithms for mobile robots with special focus on 2D motion and using feature map as \emph{priory} map.
 
-Aside from the global planning task for the complete path, the robot needs to react to obstacles on a local level, which is especially important for dynamic environments.
-This reaction is usually defined as obstacle or collision avoidance and usually employs a more accurate local planner.
+\section{Extended Kalman Filter}
 
-\section{A* algorithm}
+Many robotic systems require the system to be nonlinear - this gives rise to localization approach commonly known as the extended Kalman filter (EKF)\cite{Overview2021}.
+EKF is the extension of Kalman filter to nonlinear systems -
+It uses First Order Taylor series expansion to linearize non-linear models\cite{Overview2021}.
+In comparison to KF, EKF performs significantly better in mobile robot position estimation\cite{Suliman2010}. \\
 
-The A* Algorithm is a popular graph traversal path planning algorithm that improves on Dijsktra's algorithm with some heuristics.
-It is widely used in static environments, but there are still examples where it is used in dynamic environments.
-This algorithm works based on the lowest cost path tree from the initial point to the final target point. \cite{Karur21}
+The EKF has two phases, one is prediction phase and the other is update phase. 
+In the prediction phase, the motion model is used to predict the current position of the mobile robot, based on not only the previous estimated position, but also the odometry information such as translational velocity and rotational velocity. \cite{featureEKF} \\
 
-It is simpler and less computationally-heavy than many other path planning algorithms, with its efficiency lending itself to operation on constrained and embedded systems. It is
-suitable for applications deployed in static environments. \cite{Karur21}
+EKF localization can be used with a feature map as documented in this paper here \cite{featureEKF}. 
+As an advantage the distance error between the estimated position calculated from EKF and the ground truth remains almost the same level\cite{Overview2021}. 
+Still the EKF algorithm has to have a priory map before hand, this may not be always available. \cite{featureEKF}
+Another problem is that as we have obstacles then in reality not all positions are allowed for the robot so it cuts off part of the gaussian for the position.
+On the other hand our feature based map seems a better fit for EKF than regular grid map as it is likely easier to track features for us so there is some motivation to go with the algorithm due tu our previous decisions.
+We also found a paper that uses line based for EKF \cite{lineEKF}.
 
-\section{D* algorithm}
+\section{Monte Carlo localization}
 
-D* algorithm or Dynamic A* algorithm is used to generate a collision-free path amidst moving obstacles.
-D* is an informed incremental search algorithm that repairs the cost map partially and the previously calculated cost map. \cite{Karur21}
-Opposed to A*, D* calculates path from goal to start to make recalculation of the path more efficient. \cite{DstarWiki}
-It also recalculates only part of path that is required opposed to recalculating whole path as A* does.
-D* star has also many derivatives out of which D* Lite seems the most appealing due to it's efficiency and it being easier to implement than most other D* derivatives.
+Monte Carlo Localization (MCL) is a method used to localize mobile sensor in the surrounding environment with a Particle Filter\cite{Overview2021}. 
+MCL uses a representation of the Particle Filter to determine the position of the robot in a map that was previously made.
+In conducting exploration in a previously known environment, the mobile sensor navigation process is required from the initial position to the specified final position\cite{MCL99}. 
+One of the key advantages of the MCL over Kalman-filter based approaches is its ability to represent multi-modal probability distributions - This ability is a precondition for localizing a mobile robot without knowledge of its starting location \cite{MCL99}.
 
-\section{Global path algorithm for feature map}
-
-In this \cite{Ren22} paper a global path planning algorithm based on the feature map is proposed using on the direction of line segment features. They state that simulation experiments demonstrate
-that the proposed algorithm is superior to A* algorithm in terms of computation time
-and path length, especially of the computation efficiency. \cite{Ren22}
-
-The algorithm tries to draw a straight line from start to goal and upon facing obstacle the path is divided into two, one going left from there and another going right till the end of the obstacle.
-From there it performs the same loop recursively to find all the paths to end goal.
-After that optimization is done to cut out unnecessary corners. \cite{Ren22} % This cite should be for whole paragraph
-
-\section{Optimized Rapidly-exploring Random Tree algorithm}
-
-Optimized Rapidly-exploring random tree (RRT*) \cite{Karaman11} is a path planning algorithm that uses Sampling-based methods for optimal motion planning. 
-The improvements from a regular RRT algorithm are that the algorithm records the distance each vertex has traveled relative to its parent vertex \cite{RRT19}.
-After the closest node is found in the graph, a neighborhood of vertices in a fixed radius from the new node are examined \cite{RRT19}.
-Also after a vertex has been connected to the cheapest neighbor, the neighbors are again examined \cite{RRT19}.
-These improvements help to make straighter and very reliable paths .
-
-RRT* also has a obstacle avoiding functionality, where this is checked against every time a node is placed, connected to a neighbour or a node is rewired.
-These checks uses a lot of the computational resources. \cite{RRT19}
+Adaptive Monte Carlo Localization (AMCL) can be considered a better version of the Monte Carlo Localization pose estimation, which improves real-time performance by reducing execution time with fewer samples or particles. 
+AMCL uses Kullback-Leibler Distance (KLD) Sampling as an additional parameter. \cite{AMCL19}
 
 % Conclusion %
-\section{Path Planning Comparison}
-The comparison of different path planning algorithms are done in 
-Table~\ref{tab:path_algorithms}.
+\section{Localization Comparison}
+The comparison of different Localization algorithms can be found in Table~\ref{tab:slam_algorithms}.
 \begin{table}[h!]
   \begin{center}
-    \begin{tabular}[c]{|c || c c c c |}
+    \begin{tabular}[c]{|c || c c |}
       \hline
-       Category        &  A*            & D*      & Global & RRT*    \\
+       Category        &  AMCL          & EKF                 \\
       \hline
-      Impl. difficulty & low-medium     & medium  & high   & low-medium \\
+      Impl. difficulty &  Medium        & Medium - High       \\
       \hline
-      Memory complexity & medium        & medium  & low**  & medium*** \\
+      Memory complexity&  Medium        & Low                 \\
       \hline
-      Time complexity  & medium         & low     & low**  & high*** \\
+      Time complexity  &  Medium        & Small               \\
       \hline
-      Robustness       & high           & high    & low    & high \\
+      Robustness       &  Good          & Medium              \\
+      \hline
+      Problems         & Time complexity & Non-gaussian distributions \\
+                       & Optimal sampling &  \\
       \hline
     \end{tabular}
   \end{center}
-  \textit{\small{***As the algorithm has random component the worst case is very bad, but generally it should perform well}}\\
-  \textit{\small{**The complexity is low mainly due to lack of features rather than having good complicity in $O$ notation.}}
   \caption{Comparison of different SLAM algorithms}
-  \label{tab:path_algorithms}
-\end{table} 
-
-
-Whilst the feature based global path planning algorithm results seem appealing it's effectiveness is highly dependent on the actual map.
-The worst case time and memory complexity is exponential which means it is not very robust and can halt in unfavourable conditions.
-However some ideas from the algorithm can be used, namely how to pick nodes and neighbours for feature maps.
-In the end we are leaning towards D* Lite as it should give a good performance and it doesn't seem too hard to implement.
-
-\section{Obstacle Avoidance }
-
-The environment where the robot functions is not dynamic. For obstacle avoidance we will plan relying on the path planning functionalities and on rerunning the path planning algorithm if there should be new features introduced or an obstacle detected. Depending on the chosen algorithm there are some obstacle avoiding features introduced already in them. 
-
-Also we are panning to implement a simple threshold stop. If the robots LIDAR values decrease beyond the threshold and the robot is on a collision course, then the robot will stop, take needed actions and re-plan its route.  
-
-There is an need for more complex algorithms if the environment is dynamic or if we are working with unknown environments. In that case different Obstacle avoidance algorithms can be used, like Artificial Potential Field Method \cite{Rostami19} or a simplified bubble band algorithm\cite{OA09} ,  \cite{OA15}. But for this project a simpler solution shall be used.
+  \label{tab:slam_algorithms}
+\end{table}
+The MCL algorithm can also be used directly for global localization whilst EKF would require some wrapper methods.
 
 \section{Conclusion}
 
-Both the RTT* and D* lite algorithms are applicable for our use case.
-RTT* uses more computational capacity than the D*. Both of them are very robust and have some obstacle avoidance functionalities already in them. 
-We decided to go with the D* lite algorithm because it can be implemented in a week and because the algorithm's time complexity is lower than RTT*'s. This would be more suitable for our case, where the robot has limited computational resources. 
-
+Both the MCL and EKF algorithms are applicable for our use case.
+MCL uses more computational capacity than the EKF but it is also more robust.
+We decided to go with the EKF algorithm due to the fact that we have already built up core of the features and functions that would be needed by it. 
+EKF would go better and more naturally with our map type because of that. 
+Furthermore we would like to use different approach than the standard grid map and to avoid using discrete localization methods - like grid MCL. 
 \newpage
 \begin{thebibliography}{9}
 
-% example citation %
-\bibitem{Karur21}
-Karur, K.; Sharma, N.;
-Dharmatti, C.; Siegel, J. A Survey of
-Path Planning Algorithms for Mobile
-Robots. Vehicles 2021, 3, 448–468.
-https://doi.org/10.3390/
-vehicles3030027
-
-\bibitem[]{Ren22}
-Ren, G., Liu, P., He, Z.: A
-global path planning algorithm based on the feature
-map. IET Cyber‐Syst. Robot. 4(1), 15–24 (2022).
-https://doi.org/10.1049/csy2.12040
-
-\bibitem{DstarWiki}
-D*
-https://en.wikipedia.org/wiki/D*
-
-\bibitem[]{Rostami19}
-Rostami, S.M.H., Sangaiah, A.K., Wang, J. et al. Obstacle avoidance of mobile robots using modified artificial potential field algorithm. J Wireless Com Network 2019, 70 (2019). https://doi.org/10.1186/s13638-019-1396-2
-
-\bibitem{OA15}
-Bhavesh, Vayeda Anshav. "Comparison of various obstacle avoidance algorithms." Int. J. Eng. Res. Technol 4 (2015): 629-632.
-
-\bibitem{OA09}
-Susnea, Ioan, Mînzu, Viorel, Vasiliu, G.. (2009). Simple, real-time obstacle avoidance algorithm for mobile robots. 
-
-\bibitem{Karaman11}
-Karaman, Sertac, and Emilio Frazzoli. "Sampling-based algorithms for optimal motion planning." The international journal of robotics research 30.7 (2011): 846-894.
-
-\bibitem[]{RRT19}
-Robotic Path Planning: RRT and RRT*, Tim Chinenov (14.02.2019) site: https://theclassytim.medium.com/robotic-path-planning-rrt-and-rrt-212319121378
-
+\bibitem{Suliman2010}
+C. Suliman, C. Cruceru, F. Moldoveanu
+Mobile robot position estimation using the Kalman filter
+Sci. Bull. Petru Maior Univ. Tirgu Mures Inter-Eng., 6 (XXIII) (2010), pp. 75-78
+\bibitem{Overview2021}
+Panigrahi, Prabin, Bisoy, Sukant. (2021). Localization Strategies for Autonomous Mobile Robots: A review. Journal of King Saud University - Computer and Information Sciences. 10.1016/j.jksuci.2021.02.015. 
+\bibitem{featureEKF}
+L. Chen, H. Hu and K. McDonald-Maier, "EKF Based Mobile Robot Localization," 2012 Third International Conference on Emerging Security Technologies, 2012, pp. 149-154, doi: 10.1109/EST.2012.19.
+\bibitem{MCL99}
+F. Dellaert, D. Fox, W. Burgard, S. Thrun
+Monte Carlo localization for mobile robots
+Proceedings 1999 IEEE International Conference on Robotics and Automation (Cat. No.99CH36288C), Detroit, MI, USA (1999), pp. 1322-1328, 10.1109/ROBOT.1999.772544
+\bibitem{AMCL19}
+I. Wasisto, N. Istiqomah, I. K. N. Trisnawan and A. N. Jati, "Implementation of Mobile Sensor Navigation System Based on Adaptive Monte Carlo Localization," 2019 International Conference on Computer, Control, Informatics and its Applications (IC3INA), 2019, pp. 187-192, doi: 10.1109/IC3INA48034.2019.8949581.
+\bibitem{lineEKF}
+Jixin Lv1, Yukinori Kobayashi2, Ankit A. Ravankar1, and Takanori Emaru, "Straight Line Segments Extraction and EKF-SLAM in Indoor Environment" http://www.joace.org/uploadfile/2014/0113/20140113054354731.pdf
 \end{thebibliography}
 
 \end{document}
-
 
