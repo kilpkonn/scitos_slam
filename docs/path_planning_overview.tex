@@ -98,19 +98,19 @@ Table~\ref{tab:path_algorithms}.
       \hline
       Impl. difficulty & low-medium     & medium  & high   & low-medium \\
       \hline
-      Memory complexity & medium        & medium  & low**  & medium* \\
+      Memory complexity & medium        & medium  & low**  & medium*** \\
       \hline
-      Time complexity  & medium         & low     & low**  & high* \\
+      Time complexity  & medium         & low     & low**  & high*** \\
       \hline
       Robustness       & high           & high    & low    & high \\
       \hline
     \end{tabular}
   \end{center}
-  \textit{\small{*As the algorith has random component the worst case is very bad, but generally it should perform well}}\\
+  \textit{\small{***As the algorithm has random component the worst case is very bad, but generally it should perform well}}\\
   \textit{\small{**The complexity is low mainly due to lack of features rather than having good complicity in $O$ notation.}}
   \caption{Comparison of different SLAM algorithms}
   \label{tab:path_algorithms}
-\end{table} \\
+\end{table} 
 
 
 Whilst the feature based global path planning algorithm results seem appealing it's effectiveness is highly dependent on the actual map.
@@ -128,7 +128,10 @@ There is an need for more complex algorithms if the environment is dynamic or if
 
 \section{Conclusion}
 
-Both ... 
+Both the RTT* and D* lite algorithms are applicable for our use case.
+RTT* uses more computational capacity than the D*. Both of them are very robust and have some obstacle avoidance functionalities already in them. 
+We decided to go with the D* lite algorithm because it can be implemented in a week and because the algorithm's time complexity is lower than RTT*'s. This would be more suitable for our case, where the robot has limited computational resources. 
+
 \newpage
 \begin{thebibliography}{9}
 
