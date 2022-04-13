@@ -22,6 +22,6 @@ map:
     # a2: 0.01  # trans effect to rot noise
     # a3: 0.02  # trans effect to trans noise
     # a4: 0.007  # rot effect to trans noise
-    s1: 0.2  # Sensord r noise
-    s2: 0.2  # Sensor angle noise
+    s1: 0.1  # Sensord r noise
+    s2: 0.15  # Sensor angle noise
     s3: 0.15 # 
