@@ -1,0 +1,5 @@
+[ver:1,total:780,branch:master]
+scitos_common/include/scitos_common/odometry_subscriber.hpp:360,1649700000:360,r
+scitos_mapper/src/scitos_mapper.cpp:180,1649829600:180,r
+scitos_annus_loomets_kitsing/data/config/mapper.yaml:120,1649829600:120,m
+.git/COMMIT_EDITMSG:120,1649829600:120,r
