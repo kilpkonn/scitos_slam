@@ -62,6 +62,7 @@ suitable for applications deployed in static environments. \cite{Karur21}
 D* algorithm or Dynamic A* algorithm is used to generate a collision-free path amidst moving obstacles.
 D* is an informed incremental search algorithm that repairs the cost map partially and the previously calculated cost map. \cite{Karur21}
 Opposed to A*, D* calculates path from goal to start to make recalculation of the path more efficient. \cite{DstarWiki}
+It also recalculates only part of path that is required opposed to recalculating whole path as A* does.
 D* star has also many derivatives out of which D* Lite seems the most appealing due to it's efficiency and it being easier to implement than most other D* derivatives.
 
 \section{Global path algorithm for feature map}
@@ -76,9 +77,14 @@ After that optimization is done to cut out unnecessary corners. \cite{Ren22} % T
 
 \section{Optimized Rapidly-exploring Random Tree algorithm}
 
-Optimized Rapidly-exploring random tree (RRT*) \cite{Karaman11} is a path planning algorithm that uses Sampling-based methods for optimal motion planning. The improvements from a regular RRT algorithm are that the algorithm records the distance each vertex has traveled relative to its parent vertex \cite{RRT19}. After the closest node is found in the graph, a neighborhood of vertices in a fixed radius from the new node are examined \cite{RRT19}. Also after a vertex has been connected to the cheapest neighbor, the neighbors are again examined \cite{RRT19}. These improvements help to make straighter and very reliable paths .
+Optimized Rapidly-exploring random tree (RRT*) \cite{Karaman11} is a path planning algorithm that uses Sampling-based methods for optimal motion planning. 
+The improvements from a regular RRT algorithm are that the algorithm records the distance each vertex has traveled relative to its parent vertex \cite{RRT19}.
+After the closest node is found in the graph, a neighborhood of vertices in a fixed radius from the new node are examined \cite{RRT19}.
+Also after a vertex has been connected to the cheapest neighbor, the neighbors are again examined \cite{RRT19}.
+These improvements help to make straighter and very reliable paths .
 
-RRT* also has a obstacle avoiding functionality, where this is checked against every time a node is placed, connected to a neighbour or a node is rewired. These checks uses a lot of the computational resources. \cite{RRT19}
+RRT* also has a obstacle avoiding functionality, where this is checked against every time a node is placed, connected to a neighbour or a node is rewired.
+These checks uses a lot of the computational resources. \cite{RRT19}
 
 % Conclusion %
 \section{Path Planning Comparison}
@@ -90,17 +96,18 @@ Table~\ref{tab:path_algorithms}.
       \hline
        Category        &  A*            & D*      & Global & RRT*    \\
       \hline
-      Impl. difficulty & low-medium     & medium  & high &\\
+      Impl. difficulty & low-medium     & medium  & high   & low-medium \\
       \hline
-      Memory complexity & medium        & medium  & low** &\\
+      Memory complexity & medium        & medium  & low**  & medium* \\
       \hline
-      Time complexity  & medium         & low     & low** &\\
+      Time complexity  & medium         & low     & low**  & high* \\
       \hline
-      Robustness       & high           & high    & low  &\\
+      Robustness       & high           & high    & low    & high \\
       \hline
     \end{tabular}
   \end{center}
-  \textit{**The complexity is low mainly due to lack of features rather than having good complicity in $O$ notation.}
+  \textit{\small{*As the algorith has random component the worst case is very bad, but generally it should perform well}}\\
+  \textit{\small{**The complexity is low mainly due to lack of features rather than having good complicity in $O$ notation.}}
   \caption{Comparison of different SLAM algorithms}
   \label{tab:path_algorithms}
 \end{table} \\
