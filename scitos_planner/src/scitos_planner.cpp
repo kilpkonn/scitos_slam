@@ -18,21 +18,26 @@ Planner::Planner(ros::NodeHandle nh) : nh_{nh} {
 
 void Planner::step(const ros::TimerEvent &event) {
   uint32_t m = 0;
-  std::vector<Vec2<float>> vertices;
+  struct Node {
+    Vec2<float> loc;
+    Node* from;
+    float cost;
+  };
+  std::vector<Node> nodes;
   const auto [min, max] = map_.findBounds();
   static std::default_random_engine e;
   static std::uniform_real_distribution<float> disX(min.x, max.x);
   static std::uniform_real_distribution<float> disY(min.y, max.y);
   while (m < n_) {
     Vec2<float> qRand{disX(e), disY(e)};
-    Vec2<float> qNear; // TODO: Find nearest vertex from vertices
-    Vec2<float> qNew = (qRand - qNear) * d_;
-    vertices.push_back(qNew);
-    // Add from?
+    Node qNear; // TODO: Find nearest vertex from vertices and also update costs if needed
+    Vec2<float> qNew = (qRand - qNear.loc) * d_;
+    nodes.push_back({qNew, &qNear, qNear.cost + d_});
     
     if ((qNew - goal_).length() < endThreshold_) {
       break;
     }
+    m++;
   }
 }
 
