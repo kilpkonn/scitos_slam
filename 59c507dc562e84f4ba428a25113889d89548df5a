@@ -1,0 +1,9 @@
+[ver:1,total:840,branch:master]
+scitos_planner/src/scitos_planner.cpp:388,1650099600:138,1650103200:250,m
+scitos_planner/include/scitos_planner/scitos_planner.hpp:195,1650099600:195,m
+scitos_common/include/scitos_common/map/map.hpp:130,1650103200:130,r
+.git/COMMIT_EDITMSG:60,1650103200:60,r
+scitos_common/include/scitos_common/map/line.hpp:30,1650103200:30,r
+scitos_mapper/src/scitos_mapper.cpp:15,1650099600:15,r
+scitos_mapper/include/scitos_mapper/scitos_mapper.hpp:12,1650099600:12,r
+README.md:10,1650103200:10,r
