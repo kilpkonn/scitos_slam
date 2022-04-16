@@ -1,0 +1,6 @@
+[ver:1,total:1320,branch:master]
+scitos_planner/src/scitos_planner.cpp:832,1650128400:150,1650132000:682,m
+scitos_common/include/scitos_common/map/map.hpp:360,1650128400:120,1650132000:240,m
+scitos_planner/include/scitos_planner/scitos_planner.hpp:78,1650132000:78,m
+scitos_planner/CMakeLists.txt:30,1650128400:30,r
+.git/COMMIT_EDITMSG:20,1650132000:20,r
