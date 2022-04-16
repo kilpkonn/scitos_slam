@@ -30,8 +30,22 @@ void Planner::step(const ros::TimerEvent &event) {
   static std::uniform_real_distribution<float> disY(min.y, max.y);
   while (m < n_) {
     Vec2<float> qRand{disX(e), disY(e)};
-    Node qNear; // TODO: Find nearest vertex from vertices and also update costs if needed
+    Node qNear;
+    float dis = 0;
+
+    // look for nearest node
+    for (size_t i = 0; i < nodes.size; i++)
+    {
+      if (i == 0 || (nodes[i].loc - qRand).lenghth() < dis)
+      {
+        qNear = nodes[i];
+        dis = (nodes[i].loc - qRand).lenghth();
+      }
+    }
+    
+
     Vec2<float> qNew = (qRand - qNear.loc) * d_;
+    // TODO check obstcle - if obstacle between then no go?
     nodes.push_back({qNew, &qNear, qNear.cost + d_});
     
     if ((qNew - goal_).length() < endThreshold_) {
