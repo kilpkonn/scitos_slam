@@ -1,0 +1,12 @@
+[ver:1,total:1320,branch:master]
+scitos_planner/CMakeLists.txt:330,1650088800:60,1650092400:270,m
+scitos_planner/src/scitos_planner.cpp:215,1650088800:200,1650092400:15,m
+scitos_common/include/scitos_common/map/map.hpp:180,1650088800:180,r
+scitos_planner/package.xml:150,1650088800:120,1650092400:30,m
+scitos_annus_loomets_kitsing/launch/scitos_autonomous_mapping.launch:120,1650092400:120,m
+scitos_planner/src/scitos_planner_node.cpp:80,1650088800:50,1650092400:30,m
+scitos_mapper/include/scitos_mapper/scitos_mapper.hpp:75,1650092400:75,r
+scitos_planner/include/scitos_planner/scitos_planner.hpp:65,1650088800:50,1650092400:15,m
+.git/COMMIT_EDITMSG:60,1650092400:60,r
+scitos_mapper/src/scitos_mapper_node.cpp:30,1650092400:30,r
+scitos_mapper/src/scitos_mapper.cpp:15,1650092400:15,r
