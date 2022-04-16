@@ -19,6 +19,9 @@ private:
 
   ros::Subscriber mapSub_;
 
+
+  uint32_t n_ = 500;
+  float d_ = 0.1f;
   scitos_common::map::Map<float> map_;
 
   void mapCallback(scitos_common::LineArray msg);
