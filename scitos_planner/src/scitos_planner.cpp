@@ -2,6 +2,7 @@
 #include <ros/package.h>
 #include <utility>
 #include <vector>
+#include <random>
 
 #include "scitos_common/LineArray.h"
 #include "scitos_common/map/line.hpp"
@@ -18,13 +19,20 @@ Planner::Planner(ros::NodeHandle nh) : nh_{nh} {
 void Planner::step(const ros::TimerEvent &event) {
   uint32_t m = 0;
   std::vector<Vec2<float>> vertices;
+  const auto [min, max] = map_.findBounds();
+  static std::default_random_engine e;
+  static std::uniform_real_distribution<float> disX(min.x, max.x);
+  static std::uniform_real_distribution<float> disY(min.y, max.y);
   while (m < n_) {
-    Vec2<float> qRand; // TODO: Random withing map
+    Vec2<float> qRand{disX(e), disY(e)};
     Vec2<float> qNear; // TODO: Find nearest vertex from vertices
-    Vec2<float> qNew;  // TODO: Find point at most d_ away from qNear (pretty much clamp)
-    // TODO: Add to graph
+    Vec2<float> qNew = (qRand - qNear) * d_;
+    vertices.push_back(qNew);
+    // Add from?
     
-    // TODO: Check if close enough to goal (or maybe if straight line to goal can be used)
+    if ((qNew - goal_).length() < endThreshold_) {
+      break;
+    }
   }
 }
 

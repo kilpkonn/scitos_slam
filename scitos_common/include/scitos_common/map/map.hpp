@@ -6,6 +6,7 @@
 #include <iterator>
 #include <optional>
 #include <tuple>
+#include <utility>
 #include <vector>
 
 #include "scitos_common/LineArray.h"
@@ -287,6 +288,23 @@ public:
     }
     return msg;
   }
+
+  std::pair<Vec2<T>, Vec2<T>> findBounds() const {
+    Vec2<T> min;
+    Vec2<T> max;
+    for (const auto &l : lines_) {
+      min.x = std::min(min.x, l.p1.x);
+      min.y = std::min(min.y, l.p1.y);
+      min.x = std::min(min.x, l.p2.x);
+      min.y = std::min(min.y, l.p2.y);
+      max.x = std::max(max.x, l.p1.x);
+      max.y = std::max(max.y, l.p1.y);
+      max.x = std::max(max.x, l.p2.x);
+      max.y = std::max(max.y, l.p2.y);
+    }
+    return std::make_tuple(min, max);
+  }
+
   
   std::vector<Line<T>> getLines() const { return lines_; }
   void loadFromLines(std::vector<Line<T>> lines) { lines_ = lines; }
