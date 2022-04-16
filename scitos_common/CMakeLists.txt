@@ -26,6 +26,8 @@ add_message_files(
   FILES
   Polar2.msg
   Vec2Array.msg
+  Line.msg
+  LineArray.msg
 )
 
 generate_messages(

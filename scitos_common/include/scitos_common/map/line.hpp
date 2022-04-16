@@ -6,6 +6,8 @@
 #include <optional>
 #include <vector>
 
+#include "scitos_common/Line.h"
+
 #include "scitos_common/vec2.hpp"
 
 namespace scitos_common::map {
@@ -122,6 +124,15 @@ template <typename T> struct Line {
   Vec2<T> dir() const { return v().normalize(); }
   Vec2<T> v() const { return p2 - p1; }
   Vec2<T> u() const { return p1 - p2; }
+  
+  scitos_common::Line toMsg() const {
+    scitos_common::Line msg;
+    msg.x1 = p1.x;
+    msg.y1 = p1.y;
+    msg.x2 = p2.x;
+    msg.y2 = p2.x;
+    return msg;
+  }
 
   Vec2<T> p1;
   Vec2<T> p2;

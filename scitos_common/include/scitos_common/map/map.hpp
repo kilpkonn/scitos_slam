@@ -8,6 +8,8 @@
 #include <tuple>
 #include <vector>
 
+#include "scitos_common/LineArray.h"
+
 #include "scitos_common/dbscan.hpp"
 #include "scitos_common/map/line.hpp"
 #include "scitos_common/polar2.hpp"
@@ -277,7 +279,15 @@ public:
     }
     return true;
   }
-
+  scitos_common::LineArray toMsg() const {
+    scitos_common::LineArray msg;
+    msg.lines.reserve(lines_.size());
+    for (const auto l: lines_) {
+      msg.lines.push_back(l.toMsg());
+    }
+    return msg;
+  }
+  
   std::vector<Line<T>> getLines() const { return lines_; }
   void loadFromLines(std::vector<Line<T>> lines) { lines_ = lines; }
 
