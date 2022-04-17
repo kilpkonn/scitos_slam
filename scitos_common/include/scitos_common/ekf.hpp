@@ -215,24 +215,6 @@ private:
   float xPrev_ = 0.f;
   float yPrev_ = 0.f;
   float thetaPrev_ = 0.f;
-
-  // Needs at least 1 line to exist in map
-  map::Line<float>
-  findMatchingLine(const map::Line<float> &line,
-                   const std::vector<map::Line<float>> &mapLines) {
-    // NOTE: Somefancy stuff could be used such as max likelyhood.
-    // This however, would need more complect evaluation as all of the line
-    // is not always visible.
-    // Line end points can be used but the one that is in the middle of nowhere
-    // would likely be mapped wrongly.
-    //
-    // Currenlty this is approximation of Mahalanobis distance
-    return *std::min_element(mapLines.begin(), mapLines.end(),
-                             [&](const auto &lhs, const auto &rhs) {
-                               return line.perpendicularDistance(lhs) <
-                                      line.perpendicularDistance(rhs);
-                             });
-  }
 };
 
 } // namespace scitos_common

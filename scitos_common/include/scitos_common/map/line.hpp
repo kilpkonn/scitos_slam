@@ -44,7 +44,7 @@ template <typename T> struct Line {
 
   Vec2<T> center() const { return p1 + (p2 - p1) / 2.f; }
   Vec2<T> toHoughSpace() const { return {slope(), yIntersept()}; }
-  float mahalanobisDistance(const Vec2<T> &p) const {
+  float perpendicularDistance(const Vec2<T> &p) const {
     Vec2<T> vec1 = p - p1;
     Vec2<T> vec2 = p2 - p1;
     float d_vec2 = vec2.length();
@@ -63,9 +63,9 @@ template <typename T> struct Line {
     return std::min(min1, min2);
   }
 
-  float perpendicularDistance(const Line<T> &l) const {
-    float d1 = mahalanobisDistance(l.center());
-    float d2 = l.mahalanobisDistance(center());
+  float mahalanobisDistance(const Line<T> &l) const {
+    float d1 = perpendicularDistance(l.center());
+    float d2 = l.perpendicularDistance(center());
     return (d1 + d2) / 2.f;
   }
 

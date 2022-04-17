@@ -302,12 +302,21 @@ public:
       max.x = std::max(max.x, l.p2.x);
       max.y = std::max(max.y, l.p2.y);
     }
-    return std::make_tuple(min, max);
+    return std::make_pair(min, max);
   }
 
   
   std::vector<Line<T>> getLines() const { return lines_; }
   void loadFromLines(std::vector<Line<T>> lines) { lines_ = lines; }
+
+  bool isClearPath(const Line<T> &l, T padding) const {
+    for (const auto &line : lines_) {
+      if (l.minDistance(line) < padding) {
+        return false;
+      }
+    }
+    return true;
+  }
 
 private:
   float padding_;
