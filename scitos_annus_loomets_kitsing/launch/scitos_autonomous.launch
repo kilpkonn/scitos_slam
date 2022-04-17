@@ -4,7 +4,7 @@
     <remap from="/controller_diffdrive/cmd_vel" to="/cmd_vel"/>
 
     <include file="$(find scitos_annus_loomets_kitsing)/launch/scitos.launch">
-        <arg name="gui" value="true" />
+        <arg name="gui" value="false" />
     </include>
 
     <rosparam command="load" file="$(find scitos_annus_loomets_kitsing)/data/config/mission.yaml" />

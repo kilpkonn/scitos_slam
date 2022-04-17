@@ -104,8 +104,8 @@ void MotionController::step(const ros::TimerEvent &event) {
       error.r, std::chrono::duration_cast<std::chrono::milliseconds>(dt));
 
   geometry_msgs::Twist control;
-  control.linear.x = pidOutLinear;
-  control.angular.z = std::max(std::min(pidOutAngular, 0.1f), -0.1f);
+  control.linear.x = std::max(std::min(pidOutLinear, 0.7f), -0.7f);
+  control.angular.z = pidOutAngular;
   controlPub_.publish(control);
   publishWaypoints();
 }
