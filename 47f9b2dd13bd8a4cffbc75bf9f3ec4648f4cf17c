@@ -1,0 +1,7 @@
+[ver:1,total:2520,branch:master]
+scitos_planner/src/scitos_planner.cpp:2250,1650204000:680,1650207600:1570,m
+scitos_planner/include/scitos_planner/scitos_planner.hpp:95,1650204000:50,1650207600:45,m
+.git/COMMIT_EDITMSG:60,1650207600:60,r
+scitos_mapper/src/scitos_mapper.cpp:50,1650204000:50,r
+scitos_common/include/scitos_common/map/map.hpp:45,1650207600:45,m
+scitos_planner/src/scitos_planner_node.cpp:20,1650207600:20,m
