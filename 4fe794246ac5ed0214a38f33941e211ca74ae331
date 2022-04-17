@@ -1,0 +1,9 @@
+[ver:1,total:3900,branch:master]
+scitos_planner/src/scitos_planner.cpp:1933,1650211200:866,1650214800:1067,m
+scitos_common/include/scitos_common/map/map.hpp:851,1650211200:669,1650214800:182,m
+scitos_common/include/scitos_common/map/line.hpp:573,1650211200:210,1650214800:363,m
+scitos_planner/include/scitos_planner/scitos_planner.hpp:308,1650214800:308,m
+scitos_mapper/data/maps/map.yaml:120,1650211200:120,r
+.git/COMMIT_EDITMSG:60,1650214800:60,r
+scitos_mapper/src/scitos_mapper.cpp:45,1650211200:45,r
+scitos_common/include/scitos_common/vec2.hpp:10,1650211200:10,r
