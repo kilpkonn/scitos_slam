@@ -290,8 +290,8 @@ public:
   }
 
   std::pair<Vec2<T>, Vec2<T>> findBounds() const {
-    Vec2<T> min;
-    Vec2<T> max;
+    Vec2<T> min{0.f, 0.f};
+    Vec2<T> max{0.f, 0.f};
     for (const auto &l : lines_) {
       min.x = std::min(min.x, l.p1.x);
       min.y = std::min(min.y, l.p1.y);
