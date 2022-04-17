@@ -540,8 +540,8 @@ Visualization Manager:
       Marker Topic: /debug/rrt
       Name: RRT
       Namespaces:
-        {}
-      Queue Size: 100
+        "": true
+      Queue Size: 1
       Value: true
   Enabled: true
   Global Options:
@@ -580,7 +580,7 @@ Visualization Manager:
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Scale: 56.84651565551758
+      Scale: 56.02792739868164
       Target Frame: base_link
       X: -0.42477789521217346
       Y: 9.596195220947266

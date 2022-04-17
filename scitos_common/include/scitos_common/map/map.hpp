@@ -309,9 +309,12 @@ public:
   std::vector<Line<T>> getLines() const { return lines_; }
   void loadFromLines(std::vector<Line<T>> lines) { lines_ = lines; }
 
-  bool isClearPath(const Line<T> &l, T padding) const {
+  bool isClearPath(const Line<T> &l, float padding) const {
+      // ROS_INFO("(%.2f, %.2f) -> (%.2f, %.2f)", l.p1.x, l.p1.y, l.p2.x, l.p2.y);
     for (const auto &line : lines_) {
       if (l.minDistance(line) < padding) {
+      // ROS_INFO("(%.2f, %.2f) -> (%.2f, %.2f)", line.p1.x, line.p1.y, line.p2.x, line.p2.y);
+      // ROS_INFO("Dist %f", l.minDistance(line));
         return false;
       }
     }

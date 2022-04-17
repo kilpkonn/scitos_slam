@@ -21,9 +21,14 @@ Planner::Planner(ros::NodeHandle nh) : nh_{nh} {
 }
 
 void Planner::step(const ros::TimerEvent &event) {
+  if (!needsUpdate_) {
+    publishRRT();
+    return;
+  }
   ROS_INFO("Step");
   ROS_INFO("Goal: (%f, %f)", goal_.x, goal_.y);
   nodes_.clear();
+  nodes_.reserve(n_);
   nodes_.push_back({{static_cast<float>(odometry_.pose.pose.position.x),
                      static_cast<float>(odometry_.pose.pose.position.y)},
                     nullptr,
@@ -31,24 +36,25 @@ void Planner::step(const ros::TimerEvent &event) {
   uint32_t m = 0;
   const auto [min, max] = map_.findBounds();
   static std::default_random_engine e;
-  static std::uniform_real_distribution<float> disX(min.x, max.x);
-  static std::uniform_real_distribution<float> disY(min.y, max.y);
+  std::uniform_real_distribution<float> disX(min.x, max.x);
+  std::uniform_real_distribution<float> disY(min.y, max.y);
   while (m < n_) {
     Vec2<float> qRand{disX(e), disY(e)};
     float dist = std::numeric_limits<float>::max();
 
-    Node *qNear;
-    // look for nearest node
+    Node *qNear = nullptr;
+    // look for nenum classrest node
     for (size_t i = 0; i < nodes_.size(); i++) {
       Vec2<float> qNew = nodes_[i].loc + (qRand - nodes_[i].loc).normalize() * d_;
-      if ((nodes_[i].loc - qRand).length() < dist &&
-          (true || map_.isClearPath({nodes_[i].loc, qNew}, padding_))) {
+      if ((nodes_[i].loc - qRand).dot() < dist &&
+          map_.isClearPath({nodes_[i].loc, qNew}, padding_)) {
+        // BUG: Is clear seems broken
         qNear = &nodes_[i];
-        dist = (nodes_[i].loc - qRand).length();
+        dist = (nodes_[i].loc - qRand).dot();
       }
     }
 
-    if (qNear) {
+    if (qNear != nullptr) {
       Vec2<float> qNew = qNear->loc + (qRand - qNear->loc).normalize() * d_;
       nodes_.push_back({qNew, qNear, qNear->cost + d_});
       if ((qNew - goal_).length() < endThreshold_) {
@@ -58,6 +64,7 @@ void Planner::step(const ros::TimerEvent &event) {
     }
   }
   ROS_INFO("Step Done");
+  needsUpdate_ = false;
   publishRRT();
 }
 
@@ -75,6 +82,7 @@ void Planner::odomCallback(nav_msgs::Odometry msg) { odometry_ = msg; }
 void Planner::goalCallback(geometry_msgs::PoseStamped msg) {
   goal_ = {static_cast<float>(msg.pose.position.x),
            static_cast<float>(msg.pose.position.y)};
+  needsUpdate_ = true;
 }
 
 void Planner::publishRRT() {
@@ -92,9 +100,9 @@ void Planner::publishRRT() {
     marker.scale.y = 0.01;
     marker.scale.z = 0.01;
     marker.color.a = 1.0;
-    marker.color.r = 0.6;
-    marker.color.g = 0.2;
-    marker.color.b = 1.0;
+    marker.color.r = 1.0;
+    marker.color.g = 0.8;
+    marker.color.b = 0.1;
     marker.pose.orientation.w = 1.0;
 
     geometry_msgs::Point p;

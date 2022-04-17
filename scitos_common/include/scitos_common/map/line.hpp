@@ -54,13 +54,11 @@ template <typename T> struct Line {
   }
 
   float minDistance(const Line<T> &l) const {
-    const Vec2<T> v1 = project(l.p1);
-    const Vec2<T> v2 = project(l.p2);
-    const Vec2<T> v3 = l.project(p1);
-    const Vec2<T> v4 = l.project(p2);
-    const float min1 = std::min((l.p1 - v1).length(), (l.p2 - v2.length()));
-    const float min2 = std::min((p1 - v3).length(), (p2 - v4.length()));
-    return std::min(min1, min2);
+    const float min1 =
+        std::min((l.p1 - project(l.p1)).dot(), (l.p2 - project(l.p2)).dot());
+    const float min2 =
+        std::min((p1 - l.project(p1)).dot(), (p2 - l.project(p2)).dot());
+    return std::sqrt(std::min(min1, min2));
   }
 
   float mahalanobisDistance(const Line<T> &l) const {
@@ -134,13 +132,13 @@ template <typename T> struct Line {
   Vec2<T> dir() const { return v().normalize(); }
   Vec2<T> v() const { return p2 - p1; }
   Vec2<T> u() const { return p1 - p2; }
-  
+
   scitos_common::Line toMsg() const {
     scitos_common::Line msg;
     msg.x1 = p1.x;
     msg.y1 = p1.y;
     msg.x2 = p2.x;
-    msg.y2 = p2.x;
+    msg.y2 = p2.y;
     return msg;
   }
 
