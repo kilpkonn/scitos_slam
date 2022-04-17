@@ -11,31 +11,70 @@
 
 class MotionController {
 public:
+  enum PathEndReason {UNKNOWN, SUCCESS, FINISH, WALL};
+
   explicit MotionController(ros::NodeHandle nh);
   void step(const ros::TimerEvent& event);
 
 
 private:
+  class ControlCalculator {
+    public:
+    std::vector<Vec2<float>> waypoints_;
+    uint32_t waypointIndex_ = 0;
+    float pointMargin_ = 0.1f;
+
+    PID<float> trajectoryPidDist_;
+    PID<float> trajectoryPidAng_;
+
+    bool isFinished() const {
+      return waypointIndex_ >= waypoints_.size();
+    }
+
+    Polar2<float> calculateControl(Vec2<float> robotLocation, float heading, std::chrono::milliseconds timeStep, ::scitos_common::Polar2* errorMsg = nullptr){
+      if (isFinished()) {
+        return {0.0f, 0.0f};
+      }
+
+      const Vec2<float> target = waypoints_.at(waypointIndex_);
+      Polar2<float> error = target - robotLocation;
+      error.theta = Util::normalize_angle(error.theta - heading);
+
+      std::cout << "ERROR: " << error.r << " " << error.theta << "\n";
+      std::cout << "STEP: " << static_cast<float>(timeStep.count()) / 1000.f << "\n";
+
+      if (error < pointMargin_) {
+        ++waypointIndex_;
+        return calculateControl(robotLocation, heading, timeStep, errorMsg);
+      }
+
+      if (errorMsg) {
+        *errorMsg = error.toMsg();
+      }
+
+      float pidOutAngular = trajectoryPidAng_.accumulate(error.theta, timeStep);
+      float pidOutLinear = std::max(std::min(trajectoryPidDist_.accumulate(error.r, timeStep), 0.7f), -0.7f);
+      return {pidOutLinear, pidOutAngular};
+    }
+  };
+
   ros::NodeHandle nh_;
+
+  ControlCalculator controlCalculator_;
 
   ros::Subscriber odometrySub_;
 
   ros::Publisher waypointsPub_;
   ros::Publisher controlPub_;
   ros::Publisher errorPub_;
+  ros::Publisher pathPub_;
 
   ros::Timer mainTimer_;
 
   nav_msgs::OdometryPtr odometry_;
 
-  std::vector<Vec2<float>> waypoints_;
-  float pointMargin_ = 0.1;
-  uint32_t waypointIndex_ = 0;
-
-  PID<float> trajectoryPidDist_;
-  PID<float> trajectoryPidAng_;
-
   void odometryCallback(nav_msgs::OdometryPtr msg);
   void publishWaypoints() const;
-
+  void publishPath(const std::vector<Vec2<float>>& path, const std::vector<float>& headings) const;
+  PathEndReason simulateFuturePath(const int steps, std::vector<Vec2<float>>* path=nullptr, std::vector<float>* headings=nullptr) const;
 };

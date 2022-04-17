@@ -14,7 +14,7 @@ template <typename T> struct Polar2 {
   T r, theta;
 
   Polar2() : r{T()}, theta{T()} {}
-  Polar2(T r, T theta) : r{r}, theta{Util::normalize_angle(theta)} {}
+  Polar2(T r, T theta) : r{r}, theta{theta} {}
   Polar2(Vec2<T> v) : r{v.length()}, theta{atan2(v.y, v.x)} {}
 
   Polar2<T> operator+(const Polar2<T> &o) const { return {sqrt(r * r + o.r * o.r + 2 * r * o.r * cos(theta - o.theta))

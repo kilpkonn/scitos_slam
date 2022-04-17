@@ -2,6 +2,8 @@
 #include <cstddef>
 #include <vector>
 
+#include <tf2/LinearMath/Quaternion.h>
+#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 #include <XmlRpcValue.h>
 #include <geometry_msgs/Twist.h>
 #include <tf/LinearMath/Matrix3x3.h>
@@ -21,7 +23,7 @@ MotionController::MotionController(ros::NodeHandle nh) : nh_{nh} {
   XmlRpc::XmlRpcValue waypoints;
   if (nh_.getParam("/mission/waypoints", waypoints)) {
     if (waypoints.getType() == XmlRpc::XmlRpcValue::TypeArray) {
-      waypoints_.reserve(waypoints_.size());
+      controlCalculator_.waypoints_.reserve(waypoints.size());
       for (int i = 0; i < waypoints.size(); i++) {
         XmlRpc::XmlRpcValue trajectoryObject = waypoints[i];
 
@@ -31,12 +33,12 @@ MotionController::MotionController(ros::NodeHandle nh) : nh_{nh} {
             trajectoryObject[1].getType() == XmlRpc::XmlRpcValue::TypeDouble) {
           double x = trajectoryObject[0];
           double y = trajectoryObject[1];
-          waypoints_.push_back({static_cast<float>(x), static_cast<float>(y)});
+          controlCalculator_.waypoints_.push_back({static_cast<float>(x), static_cast<float>(y)});
         }
       }
     }
   }
-  pointMargin_ = nh_.param("/mission/distance_margin", 0.1f);
+  controlCalculator_.pointMargin_ = nh_.param("/mission/distance_margin", 0.1f);
 
   // PID for distance
   float kpDist = nh_.param("/mission/dist_pid_values/kp", 1.0f);
@@ -44,7 +46,7 @@ MotionController::MotionController(ros::NodeHandle nh) : nh_{nh} {
   float kdDist = nh_.param("/mission/dist_pid_values/kd", 0.0f);
   float diffErrAlphaDist = nh_.param("/mission/dist_pid_values/diff_err_alpha", 5.0f);
   float maxErrDist = nh_.param("/mission/dist_pid_values/max_err", 0.8f);
-  trajectoryPidDist_ =
+  controlCalculator_.trajectoryPidDist_ =
       PID<float>(kpDist, kiDist, kdDist, maxErrDist, diffErrAlphaDist);
 
   // PID for angular
@@ -53,7 +55,7 @@ MotionController::MotionController(ros::NodeHandle nh) : nh_{nh} {
   float kdAng = nh_.param("/mission/ang_pid_values/kd", 0.0f);
   float diffErrAlphaAng = nh_.param("/mission/ang_pid_values/diff_err_alpha", 5.0f);
   float maxErrAng = nh_.param("/mission/ang_pid_values/max_err", 0.8f);
-  trajectoryPidAng_ =
+  controlCalculator_.trajectoryPidAng_ =
       PID<float>(kpAng, kiAng, kdAng, maxErrAng, diffErrAlphaAng);
 
   odometrySub_ = nh_.subscribe("/controller_diffdrive/odom", 1,
@@ -61,6 +63,8 @@ MotionController::MotionController(ros::NodeHandle nh) : nh_{nh} {
 
   waypointsPub_ = nh_.advertise<visualization_msgs::MarkerArray>(
       "/mission_control/waypoints", 10);
+  pathPub_ = nh_.advertise<visualization_msgs::MarkerArray>(
+      "/debug/path", 10);
   errorPub_ = nh_.advertise<scitos_common::Polar2>("/debug/PID_error", 10);
   controlPub_ =
       nh_.advertise<geometry_msgs::Twist>("/controller_diffdrive/cmd_vel", 3);
@@ -69,10 +73,6 @@ MotionController::MotionController(ros::NodeHandle nh) : nh_{nh} {
 }
 
 void MotionController::step(const ros::TimerEvent &event) {
-  if (waypointIndex_ >= waypoints_.size()) {
-    return;
-  }
-
   if (odometry_ == nullptr) {
     return;
   }
@@ -82,32 +82,69 @@ void MotionController::step(const ros::TimerEvent &event) {
   tf::quaternionMsgToTF(odometry_->pose.pose.orientation, quat);
   tf::Matrix3x3(quat).getRPY(roll, pitch, yaw);
 
-  Vec2<float> current(odometry_->pose.pose.position.x,
-                      odometry_->pose.pose.position.y);
-  Vec2<float> target = waypoints_.at(waypointIndex_);
-  Polar2<float> error = target - current;
-  error.theta = Util::normalize_angle(error.theta - yaw);
+  const Vec2<float> current(odometry_->pose.pose.position.x,
+                            odometry_->pose.pose.position.y);
 
-  scitos_common::Polar2 errorMsg = error.toMsg();
+  std::vector<Vec2<float>> simulatedPath;
+  std::vector<float> simulatedHeadings;
+  simulateFuturePath(10, &simulatedPath, &simulatedHeadings);
+  publishPath(simulatedPath, simulatedHeadings);
+
+  scitos_common::Polar2 errorMsg;
+
+  std::chrono::milliseconds dt(static_cast<long int>((event.current_real - event.last_real).toNSec() * 1e-6f));
+  Polar2<float> control = controlCalculator_.calculateControl(current, yaw, dt, &errorMsg);
   errorMsg.header.stamp = event.current_real;
   errorPub_.publish(errorMsg);
 
-  if (error < pointMargin_) {
-    ++waypointIndex_;
-    return;
-  }
-
-  std::chrono::nanoseconds dt(event.profile.last_duration.toNSec());
-  auto pidOutAngular = trajectoryPidAng_.accumulate(
-      error.theta, std::chrono::duration_cast<std::chrono::milliseconds>(dt));
-  auto pidOutLinear = trajectoryPidDist_.accumulate(
-      error.r, std::chrono::duration_cast<std::chrono::milliseconds>(dt));
-
-  geometry_msgs::Twist control;
-  control.linear.x = std::max(std::min(pidOutLinear, 0.7f), -0.7f);
-  control.angular.z = pidOutAngular;
-  controlPub_.publish(control);
+  geometry_msgs::Twist controlMsg;
+  controlMsg.linear.x = control.r;
+  controlMsg.angular.z = control.theta;
+  controlPub_.publish(controlMsg);
   publishWaypoints();
+}
+
+MotionController::PathEndReason MotionController::simulateFuturePath(const int steps, std::vector<Vec2<float>>* path, std::vector<float>* headings) const {
+  Vec2<float> robotLocation(odometry_->pose.pose.position.x,
+                            odometry_->pose.pose.position.y);
+  double roll, pitch, yaw;
+  tf::Quaternion quat;
+  tf::quaternionMsgToTF(odometry_->pose.pose.orientation, quat);
+  tf::Matrix3x3(quat).getRPY(roll, pitch, yaw);
+  float robotHeading = yaw;
+
+  MotionController::ControlCalculator calculator = controlCalculator_;
+  std::chrono::milliseconds timeStep(10);
+
+  if (path)
+    path->reserve(steps);
+  if (headings)
+    headings->reserve(steps);
+
+  for (int i=0; i<steps; i++) {
+    const Polar2<float> control = calculator.calculateControl(robotLocation, robotHeading, timeStep);
+    std::cout << "CONTROL: " << control.r << " " << control.theta << "\n";
+    const float turn = control.theta * timeStep.count() / 1e3f;
+    robotHeading += turn / 2;
+    const float distance = control.r * timeStep.count() / 1e3f;
+    robotLocation.x += cos(robotHeading) * distance;
+    robotLocation.y += sin(robotHeading) * distance;
+    robotHeading += turn / 2;
+    std::cout << "DISTANCE: " << distance << " TURN: " << turn << "\n";
+    std::cout << "HEADING: " << robotHeading << "\n";
+
+    if (path)
+      path->push_back(robotLocation);
+
+    if (headings)
+      headings->push_back(robotHeading);
+
+    if (calculator.isFinished())
+      return MotionController::PathEndReason::FINISH;
+  }
+  std::cout << "\n";
+
+  return MotionController::PathEndReason::SUCCESS;
 }
 
 void MotionController::odometryCallback(nav_msgs::OdometryPtr msg) {
@@ -117,8 +154,8 @@ void MotionController::odometryCallback(nav_msgs::OdometryPtr msg) {
 void MotionController::publishWaypoints() const {
   visualization_msgs::MarkerArray markers;
 
-  for (size_t i = 0; i < waypoints_.size(); i++) {
-    auto p = waypoints_.at(i);
+  for (size_t i = 0; i < controlCalculator_.waypoints_.size(); i++) {
+    auto p = controlCalculator_.waypoints_.at(i);
     visualization_msgs::Marker marker;
     marker.header.frame_id = "odom";
     marker.type = visualization_msgs::Marker::SPHERE;
@@ -127,8 +164,8 @@ void MotionController::publishWaypoints() const {
     marker.scale.y = 0.3;
     marker.scale.z = 0.3;
     marker.color.a = 1.0;
-    marker.color.r = i >= waypointIndex_ ? 1.0 : 0.0;
-    marker.color.g = i <= waypointIndex_ ? 1.0 : 0.0;
+    marker.color.r = i >= controlCalculator_.waypointIndex_ ? 1.0 : 0.0;
+    marker.color.g = i <= controlCalculator_.waypointIndex_ ? 1.0 : 0.0;
     marker.color.b = 0.0;
     marker.pose.orientation.w = 1.0;
     marker.pose.position.x = p.x;
@@ -139,4 +176,34 @@ void MotionController::publishWaypoints() const {
   }
 
   waypointsPub_.publish(markers);
+}
+
+void MotionController::publishPath(const std::vector<Vec2<float>>& path, const std::vector<float>& headings) const {
+  visualization_msgs::MarkerArray markers;
+
+  for (size_t i = 0; i < path.size(); i++) {
+    auto p = path.at(i);
+    tf2::Quaternion heading;
+    heading.setRPY(0, 0, headings.at(i));
+
+    visualization_msgs::Marker marker;
+    marker.header.frame_id = "odom";
+    marker.type = visualization_msgs::Marker::ARROW;
+    marker.action = visualization_msgs::Marker::ADD;
+    marker.scale.x = 0.1;
+    marker.scale.y = 0.05;
+    marker.scale.z = 0.05;
+    marker.color.a = 1.0;
+    marker.color.r = 0.0;
+    marker.color.g = 0.0;
+    marker.color.b = 1.0;
+    marker.pose.orientation = tf2::toMsg(heading);
+    marker.pose.position.x = p.x;
+    marker.pose.position.y = p.y;
+    marker.pose.position.z = 0.05;
+    marker.id = i;
+    markers.markers.push_back(marker);
+  }
+
+  pathPub_.publish(markers);
 }
