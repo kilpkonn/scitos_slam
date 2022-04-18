@@ -29,12 +29,29 @@ Mattias Kitsing
 ---
 
 # Implementation
-- TODO
+- Basics done
+- Wall checks broken
+- Pieces are not put together
+
+---
+# RRT
+
+![bg right 70%](./fig/rrt_base.png)
+
+---
+
+# Path estimation
+
+- Something works
+- Still bugs
+
+![bg right 70%](./fig/path_estimate.png)
 
 ---
 
 # Problems
 - Gazebo went crazy on our PID output
+- Something wrong with wall checks
 
 ---
 
