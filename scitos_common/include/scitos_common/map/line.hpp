@@ -74,7 +74,7 @@ template <typename T> struct Line {
   }
 
   Vec2<T> project(const Vec2<T> &p) const {
-    Vec2<T> r = projectInf(p);
+    Vec2<T> r = projectInf(p) - p1;
     float magMax = (p2 - p1).length();
     return p1 + (p2 - p1).normalize() * std::clamp(r.length(), 0.f, magMax);
   }

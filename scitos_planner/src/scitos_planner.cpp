@@ -17,7 +17,11 @@ Planner::Planner(ros::NodeHandle nh) : nh_{nh} {
   goalSub_ =
       nh_.subscribe("/move_base_simple/goal", 1, &Planner::goalCallback, this);
   rrtPub_ = nh_.advertise<visualization_msgs::MarkerArray>("/debug/rrt", 3);
-  // TODO: Params for n and d (amount of vertices and edge length)
+
+  n_ = nh_.param("/planner/n", 1000);
+  d_ = nh_.param("/planner/d", 0.1);
+  endThreshold_ = nh_.param("/planner/end_threshold", 0.5);
+  padding_ = nh_.param("/planner/padding", 0.5);
 }
 
 void Planner::step(const ros::TimerEvent &event) {
@@ -45,10 +49,7 @@ void Planner::step(const ros::TimerEvent &event) {
     Node *qNear = nullptr;
     // look for nenum classrest node
     for (size_t i = 0; i < nodes_.size(); i++) {
-      Vec2<float> qNew = nodes_[i].loc + (qRand - nodes_[i].loc).normalize() * d_;
-      if ((nodes_[i].loc - qRand).dot() < dist &&
-          map_.isClearPath({nodes_[i].loc, qNew}, padding_)) {
-        // BUG: Is clear seems broken
+      if ((nodes_[i].loc - qRand).dot() < dist) {
         qNear = &nodes_[i];
         dist = (nodes_[i].loc - qRand).dot();
       }
@@ -56,15 +57,18 @@ void Planner::step(const ros::TimerEvent &event) {
 
     if (qNear != nullptr) {
       Vec2<float> qNew = qNear->loc + (qRand - qNear->loc).normalize() * d_;
+      if (!map_.isClearPath({qNear->loc, qNew}, padding_)) {
+        continue;
+      }
       nodes_.push_back({qNew, qNear, qNear->cost + d_});
       if ((qNew - goal_).length() < endThreshold_) {
+        needsUpdate_ = false;
         break;
       }
       m++;
     }
   }
   ROS_INFO("Step Done");
-  needsUpdate_ = false;
   publishRRT();
 }
 

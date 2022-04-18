@@ -27,8 +27,8 @@ private:
   ros::Publisher rrtPub_;
 
 
-  uint32_t n_ = 3000;
-  float d_ = 0.3f;
+  uint32_t n_ = 2000;
+  float d_ = 0.4f;
   float endThreshold_ = 0.5f;
   float padding_ = 0.5f;
   Vec2<float> goal_{0.f, 0.f};
