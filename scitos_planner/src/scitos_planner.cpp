@@ -11,6 +11,8 @@
 #include "scitos_common/vec2.hpp"
 #include "scitos_planner/scitos_planner.hpp"
 #include "visualization_msgs/MarkerArray.h"
+#include "geometry_msgs/PoseArray.h"
+#include "geometry_msgs/Pose.h"
 
 Planner::Planner(ros::NodeHandle nh) : nh_{nh} {
   mapSub_ = nh_.subscribe("/map", 1, &Planner::mapCallback, this);
@@ -20,6 +22,8 @@ Planner::Planner(ros::NodeHandle nh) : nh_{nh} {
   rrtPub_ = nh_.advertise<visualization_msgs::MarkerArray>("/debug/rrt", 3);
   waypointsPub_ = nh_.advertise<visualization_msgs::MarkerArray>(
       "/mission_control/waypoints", 10);
+  drivingWaypointsPub_ = nh_.advertise<geometry_msgs::PoseArray>(
+      "/waypoints", 10);
 
   n_ = nh_.param("/planner/n", 1000);
   d_ = nh_.param("/planner/d", 0.1);
@@ -156,6 +160,7 @@ void Planner::publishRRT() const {
 
 void Planner::publishWaypoints() const {
   visualization_msgs::MarkerArray markers;
+  geometry_msgs::PoseArray waypoints;
 
   for (size_t i = 0; i < waypoints_.size(); i++) {
     auto p = waypoints_.at(i);
@@ -170,13 +175,20 @@ void Planner::publishWaypoints() const {
     marker.color.r = 1.0;
     marker.color.g = i == 0 ? 1.0 : 0.0;
     marker.color.b = 0.0;
-    marker.pose.orientation.w = 1.0;
-    marker.pose.position.x = p.x;
-    marker.pose.position.y = p.y;
-    marker.pose.position.z = 0.05;
+
+    geometry_msgs::Pose pose;
+    pose.orientation.w = 1.0;
+    pose.position.x = p.x;
+    pose.position.y = p.y;
+    pose.position.z = 0.05;
+
+    marker.pose = pose;
     marker.id = i;
     markers.markers.push_back(marker);
+
+    waypoints.poses.push_back(pose);
   }
 
   waypointsPub_.publish(markers);
+  drivingWaypointsPub_.publish(waypoints);
 }

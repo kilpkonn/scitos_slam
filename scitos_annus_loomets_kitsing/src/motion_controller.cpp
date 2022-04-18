@@ -58,8 +58,10 @@ MotionController::MotionController(ros::NodeHandle nh) : nh_{nh} {
   controlCalculator_.trajectoryPidAng_ =
       PID<float>(kpAng, kiAng, kdAng, maxErrAng, diffErrAlphaAng);
 
-  odometrySub_ = nh_.subscribe("/controller_diffdrive/odom", 1,
+  odometrySub_ = nh_.subscribe("/odom", 1,
                                &MotionController::odometryCallback, this);
+  waypointsSub_ = nh_.subscribe("/waypoints", 1,
+                               &MotionController::waypointsCallback, this);
 
   waypointsPub_ = nh_.advertise<visualization_msgs::MarkerArray>(
       "/mission_control/waypoints", 10);
@@ -67,7 +69,7 @@ MotionController::MotionController(ros::NodeHandle nh) : nh_{nh} {
       "/debug/path", 10);
   errorPub_ = nh_.advertise<scitos_common::Polar2>("/debug/PID_error", 10);
   controlPub_ =
-      nh_.advertise<geometry_msgs::Twist>("/controller_diffdrive/cmd_vel", 3);
+      nh_.advertise<geometry_msgs::Twist>("/cmd_vel", 3);
 
   // mainTimer_ = nh_.createTimer(rate_, &MotionController::step, this);
 }
@@ -147,6 +149,15 @@ MotionController::PathEndReason MotionController::simulateFuturePath(const int s
 
 void MotionController::odometryCallback(nav_msgs::OdometryPtr msg) {
   odometry_ = msg;
+}
+
+void MotionController::waypointsCallback(geometry_msgs::PoseArray msg) {
+  controlCalculator_.waypoints_.clear();
+
+  controlCalculator_.waypoints_.reserve(msg.poses.size());
+  for (auto pose : msg.poses) {
+    controlCalculator_.waypoints_.push_back({pose.position.x, pose.position.y});
+  }
 }
 
 void MotionController::publishWaypoints() const {

@@ -26,6 +26,7 @@ private:
 
   ros::Publisher rrtPub_;
   ros::Publisher waypointsPub_;
+  ros::Publisher drivingWaypointsPub_;
 
 
   uint32_t n_ = 2000;
