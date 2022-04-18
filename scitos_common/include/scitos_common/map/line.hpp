@@ -6,6 +6,8 @@
 #include <optional>
 #include <vector>
 
+#include "scitos_common/Line.h"
+
 #include "scitos_common/vec2.hpp"
 
 namespace scitos_common::map {
@@ -51,7 +53,15 @@ template <typename T> struct Line {
     return d;
   }
 
-  float perpendicularDistance(const Line<T> &l) const {
+  float minDistance(const Line<T> &l) const {
+    const float min1 =
+        std::min((l.p1 - project(l.p1)).dot(), (l.p2 - project(l.p2)).dot());
+    const float min2 =
+        std::min((p1 - l.project(p1)).dot(), (p2 - l.project(p2)).dot());
+    return std::sqrt(std::min(min1, min2));
+  }
+
+  float mahalanobisDistance(const Line<T> &l) const {
     float d1 = perpendicularDistance(l.center());
     float d2 = l.perpendicularDistance(center());
     return (d1 + d2) / 2.f;
@@ -64,7 +74,7 @@ template <typename T> struct Line {
   }
 
   Vec2<T> project(const Vec2<T> &p) const {
-    Vec2<T> r = projectInf(p);
+    Vec2<T> r = projectInf(p) - p1;
     float magMax = (p2 - p1).length();
     return p1 + (p2 - p1).normalize() * std::clamp(r.length(), 0.f, magMax);
   }
@@ -122,6 +132,15 @@ template <typename T> struct Line {
   Vec2<T> dir() const { return v().normalize(); }
   Vec2<T> v() const { return p2 - p1; }
   Vec2<T> u() const { return p1 - p2; }
+
+  scitos_common::Line toMsg() const {
+    scitos_common::Line msg;
+    msg.x1 = p1.x;
+    msg.y1 = p1.y;
+    msg.x2 = p2.x;
+    msg.y2 = p2.y;
+    return msg;
+  }
 
   Vec2<T> p1;
   Vec2<T> p2;

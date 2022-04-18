@@ -48,6 +48,7 @@ private:
   ros::Publisher dbscanPub_;
   ros::Publisher linesPub_;
   ros::Publisher matchedLinesPub_;
+  ros::Publisher mapVizPub_;
   ros::Publisher mapPub_;
   ros::Publisher ekfPub_;
   ros::Publisher odomPub_;

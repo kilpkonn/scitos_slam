@@ -16,6 +16,7 @@
 
 namespace scitos_common {
 
+using Eigen::Array3f;
 using Eigen::Matrix;
 using Eigen::Matrix2f;
 using Eigen::Matrix3f;
@@ -49,11 +50,12 @@ public:
                {0.f, 1.f, v * dt * std::cos(m_(2) + w * dt / 2.f)},
                {0.f, 0.f, 1.f}};
 
-    Matrix<float, 3, 2> V{{dt * std::cos(m_(2) + w * dt / 2.f),
-                           -0.5f * v * dt * dt * std::sin(m_(2) + w * dt / 2.f)},
-                          {dt * std::sin(m_(2) + w * dt / 2.f),
-                           0.5f * v * dt * dt * std::cos(m_(2) + w * dt / 2.f)},
-                          {0.f, dt}};
+    Matrix<float, 3, 2> V{
+        {dt * std::cos(m_(2) + w * dt / 2.f),
+         -0.5f * v * dt * dt * std::sin(m_(2) + w * dt / 2.f)},
+        {dt * std::sin(m_(2) + w * dt / 2.f),
+         0.5f * v * dt * dt * std::cos(m_(2) + w * dt / 2.f)},
+        {0.f, dt}};
 
     Matrix3f sigma = G * sigma_ * G.transpose() + V * M * V.transpose();
 
@@ -71,7 +73,8 @@ public:
    * @param theta - Measured angle
    */
   std::tuple<Vector3f, Matrix3f> predictOdom(float x, float y, float theta) {
-    float rot1 = std::atan2(y - yPrev_, x - xPrev_) - thetaPrev_ - (thetaPrev_ - m_(2));
+    float rot1 =
+        std::atan2(y - yPrev_, x - xPrev_) - thetaPrev_ - (thetaPrev_ - m_(2));
     float trans =
         std::sqrt(std::pow(x - xPrev_, 2.f) + std::pow(y - yPrev_, 2.f));
     float rot2 = theta - thetaPrev_ - rot1;
@@ -112,18 +115,15 @@ public:
     }
 
     for (const auto &line : lines) {
-      float bestLikelyhood = -1.f;
+      float bestLikelyhood = -1.f, secondLikelyhood = -1.f;
       Matrix3f H1;
       Matrix3f S1;
-      Vector3f dz1;
+      Vector3f dz1, dz2;
       bool matchFound = false;
       Vec2<float> matchP1, matchP2;
 
       // auto mapLine = findMatchingLine(line, mapLines);
       for (const auto &mapLine : mapLines) {
-        // if (line.perpendicularDistance(mapLine) > 1.f)
-        //   continue;
-
         for (int i = 0; i < 2; i++) {
           Vec2<float> mp1, mp2;
           if (i == 1) {
@@ -139,54 +139,53 @@ public:
                        ? line.p1
                        : line.p2;
 
-          // Too dangerous, likely incorrectly mapped
-          // if ((p - mp1).length() > 2.f)
-          //   continue;
-
           float rq = (mp1 - pos).length();
           float q = rq * rq;
           Vector3f zHat = {(mp1 - pos).length(),
-                            ::Polar2<float>(mp1 - pos).theta - rot.theta,
-                            line.heading_nodir() - rot.theta};
+                           ::Polar2<float>(mp1 - pos).theta - rot.theta,
+                           mapLine.heading_nodir() - rot.theta};
 
           Matrix3f Hcurr{{(mp1.x - pos.x) / -rq, (mp1.y - pos.y) / -rq, 0.f},
-                          {(mp1.y - pos.y) / -q, (mp1.x - pos.x) / q, -1.f},
-                          {0.f, 0.f, -1.f}};
+                         {(mp1.y - pos.y) / -q, (mp1.x - pos.x) / q, -1.f},
+                         {0.f, 0.f, -1.f}};
 
-          // ROS_INFO("H: %f, %f, %f\n   %f, %f, %f", H1curr(0, 0), H1curr(0,
-          // 1),
-          //          H1curr(0, 2), H1curr(1, 0), H1curr(1, 1), H1curr(1, 2));
-          // ROS_INFO("Sig: % f, % f, % f\n % f, % f, % f ", sigma_(0, 0),
-          //          sigma_(0, 1), sigma_(0, 2), sigma_(1, 0), sigma_(1, 1),
-          //          sigma_(1, 2));
           Matrix3f Scurr = Hcurr * sigma_ * Hcurr.transpose() + sensorCovs_;
 
           Vector3f z = {(p - pos).length(),
-                         ::Polar2<float>(p - pos).theta - rot.theta,
-                         line.heading_nodir() - rot.theta};
+                        ::Polar2<float>(p - pos).theta - rot.theta,
+                        line.heading_nodir() - rot.theta};
           auto dz_curr = z - zHat;
 
-          // ROS_INFO("S1: %f", S1curr.determinant());
-          // ROS_INFO("dz: (%f, %f)", dz1_curr(0), dz1_curr(1));
           float likelyhood =
               1 / std::sqrt((2.f * M_PIf32 * Scurr).determinant()) *
               std::exp(-0.5f * static_cast<float>(dz_curr.transpose() *
                                                   Scurr.inverse() * dz_curr));
           if (likelyhood > bestLikelyhood && likelyhood > 0.3f) {
+            secondLikelyhood = bestLikelyhood;
             bestLikelyhood = likelyhood;
             H1 = Hcurr;
             S1 = Scurr;
+            dz2 = dz1;
             dz1 = dz_curr;
             matchP1 = p;
             matchP2 = mp1;
             matchFound = true;
+          } else if (likelyhood > secondLikelyhood) {
+            secondLikelyhood = likelyhood;
+            dz2 = dz_curr;
           }
         }
       }
       if (matchFound) {
         auto K1 = sigma_ * H1.transpose() * S1.inverse();
-        m_ = m_ + K1 * dz1;
-        sigma_ = (Matrix3f::Identity() - K1 * H1) * sigma_;
+        Array3f a1 = dz1.array().abs(), a2 = dz2.array().abs();
+        auto lowesRatio = Array3f(1.f, 1.f, 1.f) - (a1.min(a2) / a1.max(a2));
+        Vector3f lowes = lowesRatio;
+        // ROS_INFO("Lowe's ratio: (%.2f, %.2f, %2.f)", lowesRatio(0),
+        // lowesRatio(1), lowesRatio(2));
+        Vector3f dz = dz1.array() * lowesRatio;
+        m_ = m_ + K1 * dz;
+        sigma_ = (Matrix3f::Identity() - K1 * H1 * lowes.asDiagonal()) * sigma_;
         if (matchedLines) {
           matchedLines->push_back(std::make_pair(matchP1, matchP2));
         }
@@ -216,24 +215,6 @@ private:
   float xPrev_ = 0.f;
   float yPrev_ = 0.f;
   float thetaPrev_ = 0.f;
-
-  // Needs at least 1 line to exist in map
-  map::Line<float>
-  findMatchingLine(const map::Line<float> &line,
-                   const std::vector<map::Line<float>> &mapLines) {
-    // NOTE: Somefancy stuff could be used such as max likelyhood.
-    // This however, would need more complect evaluation as all of the line
-    // is not always visible.
-    // Line end points can be used but the one that is in the middle of nowhere
-    // would likely be mapped wrongly.
-    //
-    // Currenlty this is approximation of Mahalanobis distance
-    return *std::min_element(mapLines.begin(), mapLines.end(),
-                             [&](const auto &lhs, const auto &rhs) {
-                               return line.perpendicularDistance(lhs) <
-                                      line.perpendicularDistance(rhs);
-                             });
-  }
 };
 
 } // namespace scitos_common

@@ -39,11 +39,11 @@
 Mapper::Mapper(ros::NodeHandle nh) : nh_{nh} {
   ekfOdometrySub_ = std::make_unique<scitos_common::OdometrySubscriber>(
       &nh_, "/ekf_odom", 50);
-  odometrySub_ = nh_.subscribe("/odom", 1, &Mapper::odometryCallback, this);
+  // odometrySub_ = nh_.subscribe("/odom", 1, &Mapper::odometryCallback, this);
   laserScanSub_ =
       nh_.subscribe("/laser_scan", 1, &Mapper::laserScanCallback, this);
   saveMapSub_ = nh_.subscribe("/save_map", 1, &Mapper::saveMapCallback, this);
-  // cmdVelSub_ = nh_.subscribe("/cmd_vel", 1, &Mapper::cmdVelCallback, this);
+  cmdVelSub_ = nh_.subscribe("/cmd_vel", 1, &Mapper::cmdVelCallback, this);
 
   mapLineHoughPub_ =
       nh_.advertise<scitos_common::Vec2Array>("/debug/map_line_hough", 3);
@@ -58,7 +58,8 @@ Mapper::Mapper(ros::NodeHandle nh) : nh_{nh} {
   linesPub_ = nh_.advertise<visualization_msgs::MarkerArray>("/debug/lines", 3);
   matchedLinesPub_ =
       nh_.advertise<visualization_msgs::MarkerArray>("/debug/matched_lines", 3);
-  mapPub_ = nh_.advertise<visualization_msgs::MarkerArray>("/debug/map", 3);
+  mapVizPub_ = nh_.advertise<visualization_msgs::MarkerArray>("/debug/map", 3);
+  mapPub_ = nh_.advertise<scitos_common::LineArray>("/map", 3);
   ekfPub_ = nh_.advertise<geometry_msgs::PoseWithCovarianceStamped>(
       "/debug/ekf_estimate", 3);
   odomPub_ = nh_.advertise<nav_msgs::Odometry>("/ekf_odom", 3);
@@ -496,7 +497,8 @@ void Mapper::publishMap() const {
     markers.markers.push_back(marker);
   }
 
-  mapPub_.publish(markers);
+  mapVizPub_.publish(markers);
+  mapPub_.publish(map_.toMsg());
 }
 
 // Remove as publish Odom has all the data
