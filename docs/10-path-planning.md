@@ -24,7 +24,7 @@ Mattias Kitsing
 
 # Our choice: RRT
 - Easy to implement
-- Cumptutationally faster than RRT*
+- Comptutationally faster than RRT*
 
 ---
 
@@ -42,10 +42,12 @@ Mattias Kitsing
 
 # Path estimation
 
-- Something works
-- Still bugs
+- 5 seconds of future
+- tracks waypoints
+- uses PID
 
-![bg right 70%](./fig/path_estimate.png)
+![bg right](./fig/path_simulation.png)
+
 
 ---
 
