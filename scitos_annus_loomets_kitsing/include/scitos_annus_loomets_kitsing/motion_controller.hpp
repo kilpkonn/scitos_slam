@@ -40,9 +40,6 @@ private:
       Polar2<float> error = target - robotLocation;
       error.theta = Util::normalize_angle(error.theta - heading);
 
-      std::cout << "ERROR: " << error.r << " " << error.theta << "\n";
-      std::cout << "STEP: " << static_cast<float>(timeStep.count()) / 1000.f << "\n";
-
       if (error < pointMargin_) {
         ++waypointIndex_;
         return calculateControl(robotLocation, heading, timeStep, errorMsg);

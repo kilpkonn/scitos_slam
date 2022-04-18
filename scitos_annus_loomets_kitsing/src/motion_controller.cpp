@@ -87,7 +87,7 @@ void MotionController::step(const ros::TimerEvent &event) {
 
   std::vector<Vec2<float>> simulatedPath;
   std::vector<float> simulatedHeadings;
-  simulateFuturePath(10, &simulatedPath, &simulatedHeadings);
+  simulateFuturePath(500, &simulatedPath, &simulatedHeadings);
   publishPath(simulatedPath, simulatedHeadings);
 
   scitos_common::Polar2 errorMsg;
@@ -112,9 +112,10 @@ MotionController::PathEndReason MotionController::simulateFuturePath(const int s
   tf::quaternionMsgToTF(odometry_->pose.pose.orientation, quat);
   tf::Matrix3x3(quat).getRPY(roll, pitch, yaw);
   float robotHeading = yaw;
+  float angularSpeed = odometry_->twist.twist.angular.z;
 
   MotionController::ControlCalculator calculator = controlCalculator_;
-  std::chrono::milliseconds timeStep(10);
+  const std::chrono::milliseconds timeStep(10);
 
   if (path)
     path->reserve(steps);
@@ -123,15 +124,13 @@ MotionController::PathEndReason MotionController::simulateFuturePath(const int s
 
   for (int i=0; i<steps; i++) {
     const Polar2<float> control = calculator.calculateControl(robotLocation, robotHeading, timeStep);
-    std::cout << "CONTROL: " << control.r << " " << control.theta << "\n";
-    const float turn = control.theta * timeStep.count() / 1e3f;
+    angularSpeed = std::min(std::max(angularSpeed * 0.5 + std::max(std::min(control.theta, 20.0f), -20.0f) * 0.5, -M_PI_2), M_PI_2);
+    const float turn = angularSpeed * timeStep.count() / 1e3f;
     robotHeading += turn / 2;
     const float distance = control.r * timeStep.count() / 1e3f;
     robotLocation.x += cos(robotHeading) * distance;
     robotLocation.y += sin(robotHeading) * distance;
     robotHeading += turn / 2;
-    std::cout << "DISTANCE: " << distance << " TURN: " << turn << "\n";
-    std::cout << "HEADING: " << robotHeading << "\n";
 
     if (path)
       path->push_back(robotLocation);
@@ -142,7 +141,6 @@ MotionController::PathEndReason MotionController::simulateFuturePath(const int s
     if (calculator.isFinished())
       return MotionController::PathEndReason::FINISH;
   }
-  std::cout << "\n";
 
   return MotionController::PathEndReason::SUCCESS;
 }
