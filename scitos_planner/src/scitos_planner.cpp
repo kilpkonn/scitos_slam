@@ -1,4 +1,5 @@
 
+#include <algorithm>
 #include <limits>
 #include <random>
 #include <ros/package.h>
@@ -17,6 +18,8 @@ Planner::Planner(ros::NodeHandle nh) : nh_{nh} {
   goalSub_ =
       nh_.subscribe("/move_base_simple/goal", 1, &Planner::goalCallback, this);
   rrtPub_ = nh_.advertise<visualization_msgs::MarkerArray>("/debug/rrt", 3);
+  waypointsPub_ = nh_.advertise<visualization_msgs::MarkerArray>(
+      "/mission_control/waypoints", 10);
 
   n_ = nh_.param("/planner/n", 1000);
   d_ = nh_.param("/planner/d", 0.1);
@@ -27,16 +30,18 @@ Planner::Planner(ros::NodeHandle nh) : nh_{nh} {
 void Planner::step(const ros::TimerEvent &event) {
   if (!needsUpdate_) {
     publishRRT();
+    refreshWaypoints();
+    publishWaypoints();
     return;
   }
   ROS_INFO("Step");
   ROS_INFO("Goal: (%f, %f)", goal_.x, goal_.y);
   nodes_.clear();
   nodes_.reserve(n_);
+  lastNode_ = nullptr;
   nodes_.push_back({{static_cast<float>(odometry_.pose.pose.position.x),
                      static_cast<float>(odometry_.pose.pose.position.y)},
-                    nullptr,
-                    0.0});
+                    nullptr});
   uint32_t m = 0;
   const auto [min, max] = map_.findBounds();
   static std::default_random_engine e;
@@ -60,16 +65,41 @@ void Planner::step(const ros::TimerEvent &event) {
       if (!map_.isClearPath({qNear->loc, qNew}, padding_)) {
         continue;
       }
-      nodes_.push_back({qNew, qNear, qNear->cost + d_});
+      nodes_.push_back({qNew, qNear});
       if ((qNew - goal_).length() < endThreshold_) {
+        nodes_.push_back({goal_, &nodes_[nodes_.size() - 1]});
+        lastNode_ = &nodes_[nodes_.size() - 1];
         needsUpdate_ = false;
         break;
       }
       m++;
     }
   }
+  refreshWaypoints();
+
   ROS_INFO("Step Done");
+
   publishRRT();
+  publishWaypoints();
+}
+
+void Planner::refreshWaypoints() {
+  if (lastNode_ == nullptr)
+    return;
+
+  Vec2<float> loc{static_cast<float>(odometry_.pose.pose.position.x),
+                  static_cast<float>(odometry_.pose.pose.position.y)};
+
+  waypoints_.clear();
+  Node *node = lastNode_;
+  while (node->from != nullptr) {
+    waypoints_.push_back(node->loc);
+    if (map_.isClearPath({loc, node->loc}, padding_)) {
+      break;
+    }
+    node = node->from;
+  }
+  std::reverse(waypoints_.begin(), waypoints_.end());
 }
 
 void Planner::mapCallback(scitos_common::LineArray msg) {
@@ -89,7 +119,7 @@ void Planner::goalCallback(geometry_msgs::PoseStamped msg) {
   needsUpdate_ = true;
 }
 
-void Planner::publishRRT() {
+void Planner::publishRRT() const {
   visualization_msgs::MarkerArray markers;
   int i = 0;
   for (auto node : nodes_) {
@@ -122,4 +152,31 @@ void Planner::publishRRT() {
     markers.markers.push_back(marker);
   }
   rrtPub_.publish(markers);
+}
+
+void Planner::publishWaypoints() const {
+  visualization_msgs::MarkerArray markers;
+
+  for (size_t i = 0; i < waypoints_.size(); i++) {
+    auto p = waypoints_.at(i);
+    visualization_msgs::Marker marker;
+    marker.header.frame_id = "odom";
+    marker.type = visualization_msgs::Marker::SPHERE;
+    marker.action = visualization_msgs::Marker::ADD;
+    marker.scale.x = 0.3;
+    marker.scale.y = 0.3;
+    marker.scale.z = 0.3;
+    marker.color.a = 1.0;
+    marker.color.r = 1.0;
+    marker.color.g = i == 0 ? 1.0 : 0.0;
+    marker.color.b = 0.0;
+    marker.pose.orientation.w = 1.0;
+    marker.pose.position.x = p.x;
+    marker.pose.position.y = p.y;
+    marker.pose.position.z = 0.05;
+    marker.id = i;
+    markers.markers.push_back(marker);
+  }
+
+  waypointsPub_.publish(markers);
 }

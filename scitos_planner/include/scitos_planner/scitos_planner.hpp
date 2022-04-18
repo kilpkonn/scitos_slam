@@ -25,6 +25,7 @@ private:
   ros::Subscriber goalSub_;
 
   ros::Publisher rrtPub_;
+  ros::Publisher waypointsPub_;
 
 
   uint32_t n_ = 2000;
@@ -38,14 +39,17 @@ private:
   struct Node {
     Vec2<float> loc;
     Node *from;
-    float cost;
   };
   std::vector<Node> nodes_;
+  std::vector<Vec2<float>> waypoints_;
+  Node* lastNode_;
   bool needsUpdate_ = true;
 
   void mapCallback(scitos_common::LineArray msg);
   void odomCallback(nav_msgs::Odometry msg);
   void goalCallback(geometry_msgs::PoseStamped msg);
+  void refreshWaypoints();
 
-  void publishRRT();
+  void publishRRT() const;
+  void publishWaypoints() const;
 };
