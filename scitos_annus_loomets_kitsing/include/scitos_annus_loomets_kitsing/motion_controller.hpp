@@ -2,23 +2,24 @@
 #include <chrono>
 #include <vector>
 
-#include <ros/ros.h>
 #include <nav_msgs/Odometry.h>
+#include <ros/ros.h>
 
+#include "scitos_common/Vec2Array.h"
 #include "scitos_common/pid.hpp"
-#include "scitos_common/vec2.hpp"
 #include "scitos_common/polar2.hpp"
+#include "scitos_common/vec2.hpp"
 
 class MotionController {
 public:
   explicit MotionController(ros::NodeHandle nh);
-  void step(const ros::TimerEvent& event);
-
+  void step(const ros::TimerEvent &event);
 
 private:
   ros::NodeHandle nh_;
 
   ros::Subscriber odometrySub_;
+  ros::Subscriber waypointsSub_;
 
   ros::Publisher waypointsPub_;
   ros::Publisher controlPub_;
@@ -36,6 +37,6 @@ private:
   PID<float> trajectoryPidAng_;
 
   void odometryCallback(nav_msgs::OdometryPtr msg);
+  void waypointsCallback(scitos_common::Vec2Array msg);
   void publishWaypoints() const;
-
 };

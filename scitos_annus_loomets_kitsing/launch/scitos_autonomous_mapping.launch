@@ -8,6 +8,7 @@
     </include>
 
     <rosparam command="load" file="$(find scitos_annus_loomets_kitsing)/data/config/mapper.yaml" />
+    <rosparam command="load" file="$(find scitos_annus_loomets_kitsing)/data/config/mission.yaml" />
 
     <node name="rviz" pkg="rviz" type="rviz"  args="-d $(find scitos_annus_loomets_kitsing)/data/config/rviz/mapping.rviz" />
     <node name="scitos_annus_loomets_kitsing" pkg="scitos_annus_loomets_kitsing" type="scitos_annus_loomets_kitsing_node" output="screen" cwd="node"/>

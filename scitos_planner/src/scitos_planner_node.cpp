@@ -10,7 +10,7 @@ int main(int argc, char *argv[]) {
 
   Planner planner(n);
   ros::Timer mapperTimer =
-      n.createTimer(ros::Duration(1.0), &Planner::step, &planner);
+      n.createTimer(ros::Duration(0.5), &Planner::step, &planner);
 
   ros::spin();
 
