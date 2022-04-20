@@ -1,0 +1,15 @@
+[ver:1,total:5220,branch:master]
+scitos_annus_loomets_kitsing/src/motion_controller.cpp:1972,1650474000:616,1650477600:1356,m
+scitos_planner/src/scitos_planner.cpp:1279,1650474000:428,1650477600:821,1650481200:30,m
+scitos_annus_loomets_kitsing/data/config/mission.yaml:745,1650477600:715,1650481200:30,m
+scitos_mapper/src/scitos_mapper.cpp:611,1650477600:491,1650481200:120,m
+scitos_annus_loomets_kitsing/launch/scitos_autonomous_mapping.launch:150,1650474000:150,m
+scitos_annus_loomets_kitsing/include/scitos_annus_loomets_kitsing/motion_controller.hpp:99,1650474000:99,m
+scitos_annus_loomets_kitsing/src/scitos_annus_loomets_kitsing_node.cpp:60,1650474000:60,m
+scitos_planner/include/scitos_planner/scitos_planner.hpp:60,1650474000:60,r
+scitos_annus_loomets_kitsing/data/config/mapper.yaml:60,1650477600:60,r
+.git/COMMIT_EDITMSG:60,1650481200:60,r
+scitos_annus_loomets_kitsing/scripts/teleop_key.py:57,1650477600:57,r
+scitos_planner/src/scitos_planner_node.cpp:40,1650477600:40,m
+scitos_annus_loomets_kitsing/launch/scitos_autonomous.launch:15,1650474000:15,r
+scitos_common/msg/Vec2Array.msg:12,1650474000:12,r
