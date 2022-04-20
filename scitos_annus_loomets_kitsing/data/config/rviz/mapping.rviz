@@ -4,6 +4,7 @@ Panels:
     Name: Displays
     Property Tree Widget:
       Expanded:
+        - /Waypoints1
         - /ground_truth1/Shape1
         - /odom1/Shape1
         - /odom1/Covariance1
@@ -108,8 +109,8 @@ Visualization Manager:
       Marker Topic: /mission_control/waypoints
       Name: Waypoints
       Namespaces:
-        {}
-      Queue Size: 100
+        "": true
+      Queue Size: 1
       Value: true
     - Angle Tolerance: 0.10000000149011612
       Class: rviz/Odometry
@@ -461,7 +462,7 @@ Visualization Manager:
       Marker Topic: /debug/lines
       Name: IEPF
       Namespaces:
-        {}
+        "": true
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
@@ -532,7 +533,7 @@ Visualization Manager:
       Marker Topic: /debug/matched_lines
       Name: LineMatches
       Namespaces:
-        {}
+        "": true
       Queue Size: 1
       Value: true
     - Class: rviz/MarkerArray

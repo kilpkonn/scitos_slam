@@ -5,14 +5,14 @@ mission:
   #             [7.0, 7.0], [7.0, 11.0]]
   distance_margin: 0.5  # [m]
   ang_pid_values: # K_P, K_I, K_D, diffErrAlpha, maxErr
-    kp: 2.5
-    ki: 0.2
+    kp: 3.0
+    ki: 0.0
     kd: 0.0
     diff_err_alpha: 0.5  # [0, 1]
-    max_err: 1.0
+    max_err: 0.3
   dist_pid_values: # K_P, K_I, K_D, diffErrAlpha, maxErr
-    kp: 1.0 # was 1.1
-    ki: 0.6 # was 1.2
-    kd: 0.1 # was 6.0
+    kp: 0.5 # was 1.1
+    ki: 0.05 # was 1.2
+    kd: 0.01 # was 6.0
     diff_err_alpha: 0.5  # [0, 1]
-    max_err: 0.8
+    max_err: 1.0
