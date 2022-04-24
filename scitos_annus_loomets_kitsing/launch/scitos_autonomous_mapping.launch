@@ -3,9 +3,9 @@
     
     <arg name="world_name" value="$(find scitos_annus_loomets_kitsing)/data/worlds/test_world.sdf"/>
     <include file="$(find scitos_annus_loomets_kitsing)/launch/scitos.launch">
-        <arg name="gui" value="true" />
+        <arg name="gui" value="false" />
         <arg name="world_name" value="$(arg world_name)" />
-        <arg name="paused" value="true" />
+        <arg name="paused" value="false" />
     </include>
 
     <rosparam command="load" file="$(find scitos_annus_loomets_kitsing)/data/config/mapper.yaml" />

@@ -153,6 +153,7 @@ void MotionController::odometryCallback(nav_msgs::OdometryPtr msg) {
 
 void MotionController::waypointsCallback(geometry_msgs::PoseArray msg) {
   controlCalculator_.waypoints_.clear();
+  controlCalculator_.waypointIndex_ = 0;
 
   controlCalculator_.waypoints_.reserve(msg.poses.size());
   for (auto pose : msg.poses) {

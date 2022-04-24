@@ -35,7 +35,7 @@ void Planner::step(const ros::TimerEvent &event) {
   if (!needsUpdate_) {
     publishRRT();
     refreshWaypoints();
-    publishWaypoints();
+    //publishWaypoints();
     return;
   }
   ROS_INFO("Step");
@@ -189,6 +189,6 @@ void Planner::publishWaypoints() const {
     waypoints.poses.push_back(pose);
   }
 
-  waypointsPub_.publish(markers);
+  //waypointsPub_.publish(markers);
   drivingWaypointsPub_.publish(waypoints);
 }
