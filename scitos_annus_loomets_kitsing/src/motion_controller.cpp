@@ -44,7 +44,8 @@ MotionController::MotionController(ros::NodeHandle nh) : nh_{nh} {
   float kpDist = nh_.param("/mission/dist_pid_values/kp", 1.0f);
   float kiDist = nh_.param("/mission/dist_pid_values/ki", 0.0f);
   float kdDist = nh_.param("/mission/dist_pid_values/kd", 0.0f);
-  float diffErrAlphaDist = nh_.param("/mission/dist_pid_values/diff_err_alpha", 5.0f);
+  float diffErrAlphaDist =
+      nh_.param("/mission/dist_pid_values/diff_err_alpha", 5.0f);
   float maxErrDist = nh_.param("/mission/dist_pid_values/max_err", 0.8f);
   controlCalculator_.trajectoryPidDist_ =
       PID<float>(kpDist, kiDist, kdDist, maxErrDist, diffErrAlphaDist);
@@ -53,29 +54,29 @@ MotionController::MotionController(ros::NodeHandle nh) : nh_{nh} {
   float kpAng = nh_.param("/mission/ang_pid_values/kp", 1.0f);
   float kiAng = nh_.param("/mission/ang_pid_values/ki", 0.0f);
   float kdAng = nh_.param("/mission/ang_pid_values/kd", 0.0f);
-  float diffErrAlphaAng = nh_.param("/mission/ang_pid_values/diff_err_alpha", 5.0f);
+  float diffErrAlphaAng =
+      nh_.param("/mission/ang_pid_values/diff_err_alpha", 5.0f);
   float maxErrAng = nh_.param("/mission/ang_pid_values/max_err", 0.8f);
   controlCalculator_.trajectoryPidAng_ =
       PID<float>(kpAng, kiAng, kdAng, maxErrAng, diffErrAlphaAng);
 
-  odometrySub_ = nh_.subscribe("/odom", 1,
-                               &MotionController::odometryCallback, this);
-  waypointsSub_ = nh_.subscribe("/waypoints", 1,
-                               &MotionController::waypointsCallback, this);
+  odometrySub_ =
+      nh_.subscribe("/ekf_odom", 1, &MotionController::odometryCallback, this);
+  waypointsSub_ =
+      nh_.subscribe("/path", 1, &MotionController::waypointsCallback, this);
 
   waypointsPub_ = nh_.advertise<visualization_msgs::MarkerArray>(
       "/mission_control/waypoints", 10);
   pathPub_ = nh_.advertise<visualization_msgs::MarkerArray>(
       "/debug/path", 10);
   errorPub_ = nh_.advertise<scitos_common::Polar2>("/debug/PID_error", 10);
-  controlPub_ =
-      nh_.advertise<geometry_msgs::Twist>("/cmd_vel", 3);
-
-  // mainTimer_ = nh_.createTimer(rate_, &MotionController::step, this);
+  controlPub_ = nh_.advertise<geometry_msgs::Twist>("/cmd_vel", 3);
 }
 
 void MotionController::step(const ros::TimerEvent &event) {
   if (odometry_ == nullptr) {
+    geometry_msgs::Twist control;
+    controlPub_.publish(control);
     return;
   }
 
@@ -99,10 +100,12 @@ void MotionController::step(const ros::TimerEvent &event) {
   errorMsg.header.stamp = event.current_real;
   errorPub_.publish(errorMsg);
 
-  geometry_msgs::Twist controlMsg;
-  controlMsg.linear.x = control.r;
-  controlMsg.angular.z = control.theta;
-  controlPub_.publish(controlMsg);
+  geometry_msgs::Twist control;
+  if (pidOutAngular < 0.1f) {
+    control.linear.x = std::clamp(pidOutLinear, -0.5f, 0.5f);
+  }
+  control.angular.z = std::clamp(pidOutAngular, -0.4f, 0.4f);
+  controlPub_.publish(control);
   publishWaypoints();
 }
 

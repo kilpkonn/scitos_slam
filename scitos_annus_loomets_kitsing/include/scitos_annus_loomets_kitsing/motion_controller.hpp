@@ -2,12 +2,13 @@
 #include <chrono>
 #include <vector>
 
-#include <ros/ros.h>
 #include <nav_msgs/Odometry.h>
+#include <ros/ros.h>
 
+#include "scitos_common/Vec2Array.h"
 #include "scitos_common/pid.hpp"
-#include "scitos_common/vec2.hpp"
 #include "scitos_common/polar2.hpp"
+#include "scitos_common/vec2.hpp"
 
 #include "geometry_msgs/PoseArray.h"
 
@@ -16,8 +17,7 @@ public:
   enum PathEndReason {UNKNOWN, SUCCESS, FINISH, WALL};
 
   explicit MotionController(ros::NodeHandle nh);
-  void step(const ros::TimerEvent& event);
-
+  void step(const ros::TimerEvent &event);
 
 private:
   class ControlCalculator {

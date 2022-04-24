@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "scitos_common/LineArray.h"
+#include "scitos_common/Vec2Array.h"
 #include "scitos_common/map/line.hpp"
 #include "scitos_common/vec2.hpp"
 #include "scitos_planner/scitos_planner.hpp"
@@ -20,10 +21,7 @@ Planner::Planner(ros::NodeHandle nh) : nh_{nh} {
   goalSub_ =
       nh_.subscribe("/move_base_simple/goal", 1, &Planner::goalCallback, this);
   rrtPub_ = nh_.advertise<visualization_msgs::MarkerArray>("/debug/rrt", 3);
-  waypointsPub_ = nh_.advertise<visualization_msgs::MarkerArray>(
-      "/mission_control/waypoints", 10);
-  drivingWaypointsPub_ = nh_.advertise<geometry_msgs::PoseArray>(
-      "/waypoints", 10);
+  waypointsPub_ = nh_.advertise<scitos_common::Vec2Array>("/path", 10);
 
   n_ = nh_.param("/planner/n", 1000);
   d_ = nh_.param("/planner/d", 0.1);
@@ -32,6 +30,7 @@ Planner::Planner(ros::NodeHandle nh) : nh_{nh} {
 }
 
 void Planner::step(const ros::TimerEvent &event) {
+  refreshWaypoints();
   if (!needsUpdate_) {
     publishRRT();
     refreshWaypoints();
@@ -41,6 +40,7 @@ void Planner::step(const ros::TimerEvent &event) {
   ROS_INFO("Step");
   ROS_INFO("Goal: (%f, %f)", goal_.x, goal_.y);
   nodes_.clear();
+  waypoints_.clear();
   nodes_.reserve(n_);
   lastNode_ = nullptr;
   nodes_.push_back({{static_cast<float>(odometry_.pose.pose.position.x),
@@ -94,6 +94,8 @@ void Planner::refreshWaypoints() {
   Vec2<float> loc{static_cast<float>(odometry_.pose.pose.position.x),
                   static_cast<float>(odometry_.pose.pose.position.y)};
 
+  const auto lastIdx = waypoints_.size();
+
   waypoints_.clear();
   Node *node = lastNode_;
   while (node->from != nullptr) {
@@ -102,6 +104,12 @@ void Planner::refreshWaypoints() {
       break;
     }
     node = node->from;
+  }
+
+  // Too dangerous to continue, replan
+  if (lastIdx > 0 && waypoints_.size() > lastIdx + 1) {
+    ROS_INFO("Replannig path..");
+    needsUpdate_ = true;
   }
   std::reverse(waypoints_.begin(), waypoints_.end());
 }
@@ -159,36 +167,13 @@ void Planner::publishRRT() const {
 }
 
 void Planner::publishWaypoints() const {
-  visualization_msgs::MarkerArray markers;
-  geometry_msgs::PoseArray waypoints;
+  scitos_common::Vec2Array msg;
+  msg.header.stamp = ros::Time::now();
 
-  for (size_t i = 0; i < waypoints_.size(); i++) {
-    auto p = waypoints_.at(i);
-    visualization_msgs::Marker marker;
-    marker.header.frame_id = "odom";
-    marker.type = visualization_msgs::Marker::SPHERE;
-    marker.action = visualization_msgs::Marker::ADD;
-    marker.scale.x = 0.3;
-    marker.scale.y = 0.3;
-    marker.scale.z = 0.3;
-    marker.color.a = 1.0;
-    marker.color.r = 1.0;
-    marker.color.g = i == 0 ? 1.0 : 0.0;
-    marker.color.b = 0.0;
-
-    geometry_msgs::Pose pose;
-    pose.orientation.w = 1.0;
-    pose.position.x = p.x;
-    pose.position.y = p.y;
-    pose.position.z = 0.05;
-
-    marker.pose = pose;
-    marker.id = i;
-    markers.markers.push_back(marker);
-
-    waypoints.poses.push_back(pose);
+  for (const auto &wp : waypoints_) {
+    msg.x.push_back(wp.x);
+    msg.y.push_back(wp.y);
   }
 
-  //waypointsPub_.publish(markers);
-  drivingWaypointsPub_.publish(waypoints);
+  waypointsPub_.publish(msg);
 }
