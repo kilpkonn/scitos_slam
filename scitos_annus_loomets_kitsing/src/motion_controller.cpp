@@ -102,12 +102,13 @@ void MotionController::step(const ros::TimerEvent &event) {
 
   std::chrono::nanoseconds dt(event.profile.last_duration.toNSec());
   auto pidOutAngular = trajectoryPidAng_.accumulate(
-      error.theta, std::chrono::duration_cast<std::chrono::milliseconds>(dt));
+      util::normalize_angle(error.theta),
+      std::chrono::duration_cast<std::chrono::milliseconds>(dt));
   auto pidOutLinear = trajectoryPidDist_.accumulate(
       error.r, std::chrono::duration_cast<std::chrono::milliseconds>(dt));
 
   geometry_msgs::Twist control;
-  if (pidOutAngular < 0.1f) {
+  if (std::abs(pidOutAngular) < 0.15f) {
     control.linear.x = std::clamp(pidOutLinear, -0.5f, 0.5f);
   }
   control.angular.z = std::clamp(pidOutAngular, -0.4f, 0.4f);
