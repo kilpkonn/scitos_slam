@@ -130,6 +130,10 @@ void Planner::goalCallback(geometry_msgs::PoseStamped msg) {
 
 void Planner::publishRRT() const {
   visualization_msgs::MarkerArray markers;
+  visualization_msgs::Marker m;
+  m.action = visualization_msgs::Marker::DELETEALL;
+  markers.markers.push_back(m);
+
   int i = 0;
   for (auto node : nodes_) {
     if (node.from == nullptr) {

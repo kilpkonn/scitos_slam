@@ -132,6 +132,10 @@ void MotionController::waypointsCallback(scitos_common::Vec2Array msg) {
 void MotionController::publishWaypoints() const {
   visualization_msgs::MarkerArray markers;
 
+  visualization_msgs::Marker m;
+  m.action = visualization_msgs::Marker::DELETEALL;
+  markers.markers.push_back(m);
+
   for (size_t i = 0; i < waypoints_.size(); i++) {
     auto p = waypoints_.at(i);
     visualization_msgs::Marker marker;
