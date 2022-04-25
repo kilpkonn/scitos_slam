@@ -26,7 +26,7 @@ map:
     s2: 0.15  # Sensor angle noise
     s3: 0.15 # 
 planner:
-  n: 2000  # Amount of particles
+  n: 4000  # Amount of particles
   d: 0.4   # Single step length in m
   end_threshold: 0.5  # Radious allowed around end
   padding: 0.6        # Padding to path (at least robot radius)

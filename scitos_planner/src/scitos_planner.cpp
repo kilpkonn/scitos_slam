@@ -40,15 +40,15 @@ void Planner::step(const ros::TimerEvent &event) {
   waypoints_.clear();
   nodes_.reserve(n_);
   lastNode_ = nullptr;
+  goalAchieved_ = false;
   nodes_.push_back({{static_cast<float>(odometry_.pose.pose.position.x),
                      static_cast<float>(odometry_.pose.pose.position.y)},
                     nullptr});
-  uint32_t m = 0;
   const auto [min, max] = map_.findBounds();
   static std::default_random_engine e;
   std::uniform_real_distribution<float> disX(min.x, max.x);
   std::uniform_real_distribution<float> disY(min.y, max.y);
-  while (m < n_) {
+  for (uint32_t m = 0; m < n_; m++) {
     Vec2<float> qRand{disX(e), disY(e)};
     float dist = std::numeric_limits<float>::max();
 
@@ -63,6 +63,7 @@ void Planner::step(const ros::TimerEvent &event) {
 
     if (qNear != nullptr) {
       Vec2<float> qNew = qNear->loc + (qRand - qNear->loc).normalize() * d_;
+      // TODO: Handle case wehere robot already is too close to wall
       if (!map_.isClearPath({qNear->loc, qNew}, padding_)) {
         continue;
       }
@@ -73,7 +74,6 @@ void Planner::step(const ros::TimerEvent &event) {
         needsUpdate_ = false;
         break;
       }
-      m++;
     }
   }
   refreshWaypoints();
@@ -85,15 +85,21 @@ void Planner::step(const ros::TimerEvent &event) {
 }
 
 void Planner::refreshWaypoints() {
-  if (lastNode_ == nullptr)
+  if (lastNode_ == nullptr || goalAchieved_)
     return;
 
   Vec2<float> loc{static_cast<float>(odometry_.pose.pose.position.x),
                   static_cast<float>(odometry_.pose.pose.position.y)};
 
   const auto lastIdx = waypoints_.size();
-
   waypoints_.clear();
+
+  if ((loc - lastNode_->loc).length() < endThreshold_) {
+    ROS_INFO("Path completed!");
+    goalAchieved_ = true;
+    return;
+  }
+
   Node *node = lastNode_;
   while (node->from != nullptr) {
     waypoints_.push_back(node->loc);
@@ -105,8 +111,9 @@ void Planner::refreshWaypoints() {
 
   // Too dangerous to continue, replan
   if (lastIdx > 0 && waypoints_.size() > lastIdx + 1) {
-    ROS_INFO("Replannig path..");
+    ROS_INFO("Replannig path...");
     needsUpdate_ = true;
+    goalAchieved_ = false;
   }
   std::reverse(waypoints_.begin(), waypoints_.end());
 }
@@ -125,7 +132,9 @@ void Planner::odomCallback(nav_msgs::Odometry msg) { odometry_ = msg; }
 void Planner::goalCallback(geometry_msgs::PoseStamped msg) {
   goal_ = {static_cast<float>(msg.pose.position.x),
            static_cast<float>(msg.pose.position.y)};
+  ROS_INFO("New goal!");
   needsUpdate_ = true;
+  goalAchieved_ = false;
 }
 
 void Planner::publishRRT() const {

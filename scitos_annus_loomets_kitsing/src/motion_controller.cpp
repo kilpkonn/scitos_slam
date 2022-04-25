@@ -58,6 +58,10 @@ MotionController::MotionController(ros::NodeHandle nh) : nh_{nh} {
   trajectoryPidAng_ =
       PID<float>(kpAng, kiAng, kdAng, maxErrAng, diffErrAlphaAng);
 
+  maxAngleToDrive_ = nh_.param("/mission/max_angle_to_drive", 0.2f);
+  maxSpeed_ = nh_.param("/mission/max_speed", 0.5f);
+  maxAngle_ = nh_.param("/mission/max_angle", 0.7f);
+
   odometrySub_ =
       nh_.subscribe("/ekf_odom", 1, &MotionController::odometryCallback, this);
   waypointsSub_ =
@@ -70,11 +74,7 @@ MotionController::MotionController(ros::NodeHandle nh) : nh_{nh} {
 }
 
 void MotionController::step(const ros::TimerEvent &event) {
-  if (waypointIndex_ >= waypoints_.size()) {
-    return;
-  }
-
-  if (odometry_ == nullptr) {
+  if (odometry_ == nullptr || waypointIndex_ >= waypoints_.size()) {
     geometry_msgs::Twist control;
     controlPub_.publish(control);
     return;
@@ -90,6 +90,7 @@ void MotionController::step(const ros::TimerEvent &event) {
   Vec2<float> target = waypoints_.at(waypointIndex_);
   Polar2<float> error = target - current;
   error.theta -= yaw;
+  error.theta = util::normalize_angle(error.theta);
 
   scitos_common::Polar2 errorMsg = error.toMsg();
   errorMsg.header.stamp = event.current_real;
@@ -102,16 +103,15 @@ void MotionController::step(const ros::TimerEvent &event) {
 
   std::chrono::nanoseconds dt(event.profile.last_duration.toNSec());
   auto pidOutAngular = trajectoryPidAng_.accumulate(
-      util::normalize_angle(error.theta),
-      std::chrono::duration_cast<std::chrono::milliseconds>(dt));
+      error.theta, std::chrono::duration_cast<std::chrono::milliseconds>(dt));
   auto pidOutLinear = trajectoryPidDist_.accumulate(
       error.r, std::chrono::duration_cast<std::chrono::milliseconds>(dt));
 
   geometry_msgs::Twist control;
-  if (std::abs(pidOutAngular) < 0.15f) {
-    control.linear.x = std::clamp(pidOutLinear, -0.5f, 0.5f);
+  if (std::abs(pidOutAngular) < maxAngleToDrive_) {
+    control.linear.x = std::clamp(pidOutLinear, -maxSpeed_, maxSpeed_);
   }
-  control.angular.z = std::clamp(pidOutAngular, -0.4f, 0.4f);
+  control.angular.z = std::clamp(pidOutAngular, -maxAngle_, maxAngle_);
   controlPub_.publish(control);
   publishWaypoints();
 }

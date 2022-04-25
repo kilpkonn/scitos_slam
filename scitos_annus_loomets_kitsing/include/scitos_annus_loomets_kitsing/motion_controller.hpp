@@ -31,6 +31,9 @@ private:
 
   std::vector<Vec2<float>> waypoints_;
   float pointMargin_ = 0.1;
+  float maxAngleToDrive_ = 0.2;
+  float maxSpeed_ = 0.5;
+  float maxAngle_ = 0.5;
   uint32_t waypointIndex_ = 0;
 
   PID<float> trajectoryPidDist_;
