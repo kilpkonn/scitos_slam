@@ -63,8 +63,10 @@ void Planner::step(const ros::TimerEvent &event) {
 
     if (qNear != nullptr) {
       Vec2<float> qNew = qNear->loc + (qRand - qNear->loc).normalize() * d_;
-      // TODO: Handle case wehere robot already is too close to wall
-      if (!map_.isClearPath({qNear->loc, qNew}, padding_)) {
+      // BUG: Still fails in some cases
+      if (!(map_.isClearPath({qNear->loc, qNew}, padding_) ||
+            (nodes_.size() == 1 &&
+             !map_.isClearPath({qNear->loc, qNew}, 0.f)))) {
         continue;
       }
       nodes_.push_back({qNew, qNear});
