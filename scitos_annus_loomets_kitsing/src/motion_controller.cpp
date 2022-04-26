@@ -64,6 +64,8 @@ MotionController::MotionController(ros::NodeHandle nh) : nh_{nh} {
       nh_.subscribe("/ekf_odom", 1, &MotionController::odometryCallback, this);
   waypointsSub_ =
       nh_.subscribe("/path", 1, &MotionController::waypointsCallback, this);
+  obstaclesSub_ =
+      nh_.subscribe("/obstacles_to_avoid", 1, &MotionController::obstaclesCallback, this);
 
   waypointsPub_ = nh_.advertise<visualization_msgs::MarkerArray>(
       "/mission_control/waypoints", 10);
@@ -96,15 +98,13 @@ void MotionController::step(const ros::TimerEvent &event) {
   scitos_common::Polar2 errorMsg;
 
   std::chrono::milliseconds dt(static_cast<long int>((event.current_real - event.last_real).toNSec() * 1e-6f));
-  Polar2<float> control = controlCalculator_.calculateControl(current, yaw, dt, &errorMsg);
+  Polar2<float> calculatedControl = controlCalculator_.calculateControl(current, yaw, dt, &errorMsg);
   errorMsg.header.stamp = event.current_real;
   errorPub_.publish(errorMsg);
 
   geometry_msgs::Twist control;
-  if (pidOutAngular < 0.1f) {
-    control.linear.x = std::clamp(pidOutLinear, -0.5f, 0.5f);
-  }
-  control.angular.z = std::clamp(pidOutAngular, -0.4f, 0.4f);
+  control.linear.x = calculatedControl.r;
+  control.angular.z = calculatedControl.theta;
   controlPub_.publish(control);
   publishWaypoints();
 }
@@ -154,13 +154,22 @@ void MotionController::odometryCallback(nav_msgs::OdometryPtr msg) {
   odometry_ = msg;
 }
 
-void MotionController::waypointsCallback(geometry_msgs::PoseArray msg) {
+void MotionController::waypointsCallback(scitos_common::Vec2Array msg) {
   controlCalculator_.waypoints_.clear();
   controlCalculator_.waypointIndex_ = 0;
 
-  controlCalculator_.waypoints_.reserve(msg.poses.size());
-  for (auto pose : msg.poses) {
-    controlCalculator_.waypoints_.push_back({pose.position.x, pose.position.y});
+  controlCalculator_.waypoints_.reserve(std::min(msg.x.size(), msg.y.size()));
+  for (size_t i = 0; i < std::min(msg.x.size(), msg.y.size()); i++) {
+    controlCalculator_.waypoints_.emplace_back(msg.x[i], msg.y[i]);
+  }
+}
+
+void MotionController::obstaclesCallback(scitos_common::Vec2Array msg) {
+  controlCalculator_.obstacles_.clear();
+
+  controlCalculator_.obstacles_.reserve(std::min(msg.x.size(), msg.y.size()));
+  for (size_t i = 0; i < std::min(msg.x.size(), msg.y.size()); i++) {
+    controlCalculator_.obstacles_.emplace_back(msg.x[i], msg.y[i]);
   }
 }
 

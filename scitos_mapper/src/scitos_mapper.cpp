@@ -63,6 +63,7 @@ Mapper::Mapper(ros::NodeHandle nh) : nh_{nh} {
   ekfPub_ = nh_.advertise<geometry_msgs::PoseWithCovarianceStamped>(
       "/debug/ekf_estimate", 3);
   odomPub_ = nh_.advertise<nav_msgs::Odometry>("/ekf_odom", 3);
+  obstaclesToAvoidPub_ = nh_.advertise<scitos_common::Vec2Array>("/obstacles_to_avoid", 3);
 
   dbscan_.r = nh_.param("/dbscan/r", 0.1f);
   dbscan_.n = nh_.param("/dbscan/n", 10);
@@ -383,9 +384,12 @@ void Mapper::publishDbscan(const std::vector<Vec2<float>> &points,
 }
 
 void Mapper::publishErosion(const std::vector<Vec2<float>> &points) const {
+  scitos_common::Vec2Array obstaclesToAvoid;
   visualization_msgs::MarkerArray markers;
   for (size_t i = 0; i < points.size(); i++) {
-    auto p = points.at(i);
+    const auto p = points.at(i);
+    obstaclesToAvoid.x.push_back(p.x);
+    obstaclesToAvoid.y.push_back(p.y);
     visualization_msgs::Marker marker;
     marker.header.frame_id = "odom";
     marker.type = visualization_msgs::Marker::SPHERE;
@@ -406,6 +410,7 @@ void Mapper::publishErosion(const std::vector<Vec2<float>> &points) const {
   }
 
   erosionPub_.publish(markers);
+  obstaclesToAvoidPub_.publish(obstaclesToAvoid);
 }
 
 void Mapper::publishLines() const {

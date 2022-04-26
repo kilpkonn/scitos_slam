@@ -23,8 +23,10 @@ private:
   class ControlCalculator {
     public:
     std::vector<Vec2<float>> waypoints_;
+    std::vector<Vec2<float>> obstacles_;
     uint32_t waypointIndex_ = 0;
     float pointMargin_ = 0.1f;
+    const float minObstacleDistance_ = 0.75f;
 
     PID<float> trajectoryPidDist_;
     PID<float> trajectoryPidAng_;
@@ -54,7 +56,24 @@ private:
 
       float pidOutAngular = trajectoryPidAng_.accumulate(error.theta, timeStep);
       float pidOutLinear = std::max(std::min(trajectoryPidDist_.accumulate(error.r, timeStep), 0.7f), -0.7f);
+
+      if(isObstacleNearby(robotLocation)) {
+        pidOutLinear = 0.0f;
+      }
+      if (abs(error.theta) > M_PI / 16) {
+        pidOutLinear = std::clamp(pidOutLinear, -0.5f, 0.5f);
+      }
+      pidOutAngular = std::clamp(pidOutAngular, -0.4f, 0.4f);
       return {pidOutLinear, pidOutAngular};
+    }
+
+    private:
+    bool isObstacleNearby(const Vec2<float> robotLocation) const {
+      for (Vec2<float> obstacle: obstacles_) {
+        if (robotLocation - obstacle < minObstacleDistance_)
+          return true;
+      }
+      return false;
     }
   };
 
@@ -64,6 +83,7 @@ private:
 
   ros::Subscriber odometrySub_;
   ros::Subscriber waypointsSub_;
+  ros::Subscriber obstaclesSub_;
 
   ros::Publisher waypointsPub_;
   ros::Publisher controlPub_;
@@ -75,7 +95,8 @@ private:
   nav_msgs::OdometryPtr odometry_;
 
   void odometryCallback(nav_msgs::OdometryPtr msg);
-  void waypointsCallback(geometry_msgs::PoseArray msg);
+  void waypointsCallback(scitos_common::Vec2Array msg);
+  void obstaclesCallback(scitos_common::Vec2Array msg);
   void publishWaypoints() const;
   void publishPath(const std::vector<Vec2<float>>& path, const std::vector<float>& headings) const;
   PathEndReason simulateFuturePath(const int steps, std::vector<Vec2<float>>* path=nullptr, std::vector<float>* headings=nullptr) const;
