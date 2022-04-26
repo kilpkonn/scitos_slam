@@ -14,23 +14,25 @@ template <typename T> struct Polar2 {
   T r, theta;
 
   Polar2() : r{T()}, theta{T()} {}
-  Polar2(T r, T theta) : r{r}, theta{util::normalize_angle(theta)} {}
+  Polar2(T r, T theta) : r{r}, theta{theta} {}
   Polar2(Vec2<T> v) : r{v.length()}, theta{atan2(v.y, v.x)} {}
 
   Polar2<T> operator+(const Polar2<T> &o) const { return {sqrt(r * r + o.r * o.r + 2 * r * o.r * cos(theta - o.theta))
-                                                          , theta + atan2(o.r * sin(o.theta - theta), r + o.r * cos(o.theta - theta))}; }
+                                                          , util::normalize_angle(theta + atan2(o.r * sin(o.theta - theta), r + o.r * cos(o.theta - theta)))}; }
   Polar2<T> operator-(const Polar2<T> &o) const { return *this + o.opposite(); }
   Polar2<T> operator*(float s) const { return {r * s, theta}; }
   Polar2<T> operator/(float s) const { return {r / s, theta}; }
   Polar2<T> operator+=(const Polar2<T> &o) {
     T new_r = sqrt(r * r + o.r * o.r + 2 * r * o.r * cos(theta - o.theta));
     theta += atan2(o.r * sin(o.theta - theta), r + o.r * cos(o.theta - theta));
+    theta = util::normalize_angle(theta);
     r = new_r;
     return *this;
   }
   Polar2<T> operator-=(const Polar2<T> &o) {
     T new_r = sqrt(r * r + o.r * o.r + 2 * r * o.r * cos(theta - o.theta - M_PI));
     theta += atan2(o.r * sin(M_PI + o.theta - theta), r + o.r * cos(M_PI + o.theta - theta));
+    theta = util::normalize_angle(theta);
     r = new_r;
     return *this;
   }

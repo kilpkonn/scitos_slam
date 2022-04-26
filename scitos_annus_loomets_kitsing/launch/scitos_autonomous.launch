@@ -1,12 +1,16 @@
 <?xml version="1.0"?>
 <launch>
+    <remap from="/odom" to="/controller_diffdrive/odom"/>
+    <remap from="/controller_diffdrive/cmd_vel" to="/cmd_vel"/>
+
     <include file="$(find scitos_annus_loomets_kitsing)/launch/scitos.launch">
-        <arg name="gui" value="false" />
+        <arg name="gui" value="true" />paused
+        <arg name="paused" value="true" />
     </include>
 
     <rosparam command="load" file="$(find scitos_annus_loomets_kitsing)/data/config/mission.yaml" />
     <node name="rviz" pkg="rviz" type="rviz"  args="-d $(find scitos_annus_loomets_kitsing)/data/config/rviz/manual.rviz" />
-    <node name="scitos_annus_loomets_kitsing" pkg="scitos_annus_loomets_kitsing" type="scitos_annus_loomets_kitsing_node" output="screen" />
+    <node name="scitos_annus_loomets_kitsing" pkg="scitos_annus_loomets_kitsing" type="scitos_annus_loomets_kitsing_node" output="screen"/>
     <node name="plotjuggler_with_layout"
           pkg="plotjuggler"
           type="plotjuggler"

@@ -12,6 +12,8 @@
 #include "scitos_common/vec2.hpp"
 #include "scitos_planner/scitos_planner.hpp"
 #include "visualization_msgs/MarkerArray.h"
+#include "geometry_msgs/PoseArray.h"
+#include "geometry_msgs/Pose.h"
 
 Planner::Planner(ros::NodeHandle nh) : nh_{nh} {
   mapSub_ = nh_.subscribe("/map", 1, &Planner::mapCallback, this);
@@ -31,7 +33,8 @@ void Planner::step(const ros::TimerEvent &event) {
   refreshWaypoints();
   if (!needsUpdate_) {
     publishRRT();
-    publishWaypoints();
+    refreshWaypoints();
+    //publishWaypoints();
     return;
   }
   ROS_INFO("Step");

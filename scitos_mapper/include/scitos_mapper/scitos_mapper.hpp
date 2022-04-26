@@ -52,6 +52,7 @@ private:
   ros::Publisher mapPub_;
   ros::Publisher ekfPub_;
   ros::Publisher odomPub_;
+  ros::Publisher obstaclesToAvoidPub_;
 
   tf::TransformListener tfListener_;
 
