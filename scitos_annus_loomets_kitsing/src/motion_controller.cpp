@@ -92,7 +92,8 @@ void MotionController::step(const ros::TimerEvent &event) {
 
   std::vector<Vec2<float>> simulatedPath;
   std::vector<float> simulatedHeadings;
-  simulateFuturePath(500, &simulatedPath, &simulatedHeadings);
+  float pathLength = 0.0f;
+  MotionController::PathEndReason pathEndReason = simulateFuturePath(500, pathLength, &simulatedPath, &simulatedHeadings);
   publishPath(simulatedPath, simulatedHeadings);
 
   scitos_common::Polar2 errorMsg;
@@ -103,13 +104,16 @@ void MotionController::step(const ros::TimerEvent &event) {
   errorPub_.publish(errorMsg);
 
   geometry_msgs::Twist control;
-  control.linear.x = calculatedControl.r;
+  if (pathEndReason == MotionController::PathEndReason::FINISH
+      || pathEndReason == MotionController::PathEndReason::OK
+      || pathLength > controlCalculator_.pointMargin_)
+    control.linear.x = calculatedControl.r;
   control.angular.z = calculatedControl.theta;
   controlPub_.publish(control);
   publishWaypoints();
 }
 
-MotionController::PathEndReason MotionController::simulateFuturePath(const int steps, std::vector<Vec2<float>>* path, std::vector<float>* headings) const {
+MotionController::PathEndReason MotionController::simulateFuturePath(const int steps, float& pathLength, std::vector<Vec2<float>>* path, std::vector<float>* headings) const {
   Vec2<float> robotLocation(odometry_->pose.pose.position.x,
                             odometry_->pose.pose.position.y);
   double roll, pitch, yaw;
@@ -128,6 +132,8 @@ MotionController::PathEndReason MotionController::simulateFuturePath(const int s
     headings->reserve(steps);
 
   for (int i=0; i<steps; i++) {
+    if(calculator.isObstacleNearby(robotLocation))
+      return MotionController::PathEndReason::OBSTACLES;
     const Polar2<float> control = calculator.calculateControl(robotLocation, robotHeading, timeStep);
     angularSpeed = std::min(std::max(angularSpeed * 0.5 + std::max(std::min(control.theta, 20.0f), -20.0f) * 0.5, -M_PI_2), M_PI_2);
     const float turn = angularSpeed * timeStep.count() / 1e3f;
@@ -136,6 +142,7 @@ MotionController::PathEndReason MotionController::simulateFuturePath(const int s
     robotLocation.x += cos(robotHeading) * distance;
     robotLocation.y += sin(robotHeading) * distance;
     robotHeading += turn / 2;
+    pathLength += distance;
 
     if (path)
       path->push_back(robotLocation);
@@ -147,7 +154,7 @@ MotionController::PathEndReason MotionController::simulateFuturePath(const int s
       return MotionController::PathEndReason::FINISH;
   }
 
-  return MotionController::PathEndReason::SUCCESS;
+  return MotionController::PathEndReason::OK;
 }
 
 void MotionController::odometryCallback(nav_msgs::OdometryPtr msg) {

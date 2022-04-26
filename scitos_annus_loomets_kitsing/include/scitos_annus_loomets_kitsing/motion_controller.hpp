@@ -14,7 +14,7 @@
 
 class MotionController {
 public:
-  enum PathEndReason {UNKNOWN, SUCCESS, FINISH, WALL};
+  enum PathEndReason {UNKNOWN, OK, FINISH, OBSTACLES};
 
   explicit MotionController(ros::NodeHandle nh);
   void step(const ros::TimerEvent &event);
@@ -57,9 +57,6 @@ private:
       float pidOutAngular = trajectoryPidAng_.accumulate(error.theta, timeStep);
       float pidOutLinear = std::max(std::min(trajectoryPidDist_.accumulate(error.r, timeStep), 0.7f), -0.7f);
 
-      if(isObstacleNearby(robotLocation)) {
-        pidOutLinear = 0.0f;
-      }
       if (abs(error.theta) > M_PI / 16) {
         pidOutLinear = std::clamp(pidOutLinear, -0.5f, 0.5f);
       }
@@ -67,7 +64,6 @@ private:
       return {pidOutLinear, pidOutAngular};
     }
 
-    private:
     bool isObstacleNearby(const Vec2<float> robotLocation) const {
       for (Vec2<float> obstacle: obstacles_) {
         if (robotLocation - obstacle < minObstacleDistance_)
@@ -99,5 +95,5 @@ private:
   void obstaclesCallback(scitos_common::Vec2Array msg);
   void publishWaypoints() const;
   void publishPath(const std::vector<Vec2<float>>& path, const std::vector<float>& headings) const;
-  PathEndReason simulateFuturePath(const int steps, std::vector<Vec2<float>>* path=nullptr, std::vector<float>* headings=nullptr) const;
+  PathEndReason simulateFuturePath(const int steps, float& pathLength, std::vector<Vec2<float>>* path=nullptr, std::vector<float>* headings=nullptr) const;
 };
