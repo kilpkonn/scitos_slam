@@ -64,6 +64,8 @@ MotionController::MotionController(ros::NodeHandle nh) : nh_{nh} {
   controlCalculator_.maxSpeed_ = nh_.param("/mission/max_speed", 0.5f);
   controlCalculator_.maxAngle_ = nh_.param("/mission/max_angle", 0.7f);
 
+  controlCalculator_.minObstacleDistance_ = nh_.param("/planner/padding", 0.5);
+
   odometrySub_ =
       nh_.subscribe("/ekf_odom", 1, &MotionController::odometryCallback, this);
   waypointsSub_ =

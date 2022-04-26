@@ -29,7 +29,7 @@ private:
     float maxAngleToDrive_ = 0.2f;
     float maxSpeed_ = 0.5f;
     float maxAngle_ = 0.7f;
-    const float minObstacleDistance_ = 0.75f;
+    float minObstacleDistance_ = 0.75f;
 
     PID<float> trajectoryPidDist_;
     PID<float> trajectoryPidAng_;
@@ -58,12 +58,12 @@ private:
       }
 
       float pidOutAngular = trajectoryPidAng_.accumulate(error.theta, timeStep);
-      float pidOutLinear = std::max(std::min(trajectoryPidDist_.accumulate(error.r, timeStep), 0.7f), -0.7f);
+      float pidOutLinear = std::max(std::min(trajectoryPidDist_.accumulate(error.r, timeStep), maxSpeed_), -maxSpeed_);
 
-      if (abs(error.theta) > M_PI / 16) {
-        pidOutLinear = std::clamp(pidOutLinear, -0.5f, 0.5f);
+      if (abs(error.theta) > maxAngleToDrive_) {
+        pidOutLinear = std::clamp(pidOutLinear, -maxSpeed_ / 4, maxSpeed_ / 4);
       }
-      pidOutAngular = std::clamp(pidOutAngular, -0.4f, 0.4f);
+      pidOutAngular = std::clamp(pidOutAngular, -maxAngle_, maxAngle_);
       return {pidOutLinear, pidOutAngular};
     }
 
