@@ -194,7 +194,7 @@ void Mapper::odometryCallback(nav_msgs::Odometry msg) {
   // auto [m, sigma] =
   //     ekf_.predictOdom(msg.pose.pose.position.x, msg.pose.pose.position.y,
   //     yaw);
-  
+
   // HACK: Should use function above instead
   auto dt =
       std::chrono::nanoseconds((ros::Time::now() - cmdVelStamp_).toNSec());
@@ -316,6 +316,10 @@ void Mapper::publishCornerCombining(
     std::vector<std::pair<Vec2<float>, std::set<Vec2<float> *>>>
         &cornerVisualization) const {
   visualization_msgs::MarkerArray markers;
+  visualization_msgs::Marker m;
+  m.action = visualization_msgs::Marker::DELETEALL;
+  markers.markers.push_back(m);
+
   for (size_t i = 0; i < cornerVisualization.size(); i++) {
     std::pair<Vec2<float>, std::set<Vec2<float> *>> corner =
         cornerVisualization.at(i);
@@ -358,6 +362,10 @@ void Mapper::publishCornerCombining(
 void Mapper::publishDbscan(const std::vector<Vec2<float>> &points,
                            const std::vector<int> &labels) const {
   visualization_msgs::MarkerArray markers;
+  visualization_msgs::Marker m;
+  m.action = visualization_msgs::Marker::DELETEALL;
+  markers.markers.push_back(m);
+
   for (size_t i = 0; i < points.size(); i++) {
     auto p = points.at(i);
     auto lbl = labels.at(i);
@@ -386,6 +394,10 @@ void Mapper::publishDbscan(const std::vector<Vec2<float>> &points,
 void Mapper::publishErosion(const std::vector<Vec2<float>> &points) const {
   scitos_common::Vec2Array obstaclesToAvoid;
   visualization_msgs::MarkerArray markers;
+  visualization_msgs::Marker m;
+  m.action = visualization_msgs::Marker::DELETEALL;
+  markers.markers.push_back(m);
+
   for (size_t i = 0; i < points.size(); i++) {
     const auto p = points.at(i);
     obstaclesToAvoid.x.push_back(p.x);
@@ -415,6 +427,10 @@ void Mapper::publishErosion(const std::vector<Vec2<float>> &points) const {
 
 void Mapper::publishLines() const {
   visualization_msgs::MarkerArray markers;
+  visualization_msgs::Marker m;
+  m.action = visualization_msgs::Marker::DELETEALL;
+  markers.markers.push_back(m);
+
   for (size_t i = 0; i < iepf_.lines.size(); i++) {
     auto line = iepf_.lines.at(i);
     visualization_msgs::Marker marker;
@@ -450,6 +466,10 @@ void Mapper::publishLines() const {
 void Mapper::publishMatchedLines(
     std::vector<std::pair<Vec2<float>, Vec2<float>>> matchedLines) const {
   visualization_msgs::MarkerArray markers;
+  visualization_msgs::Marker m;
+  m.action = visualization_msgs::Marker::DELETEALL;
+  markers.markers.push_back(m);
+
   int i = 0;
   for (auto match : matchedLines) {
     visualization_msgs::Marker marker;
@@ -483,6 +503,10 @@ void Mapper::publishMatchedLines(
 
 void Mapper::publishMap() const {
   visualization_msgs::MarkerArray markers;
+  visualization_msgs::Marker m;
+  m.action = visualization_msgs::Marker::DELETEALL;
+  markers.markers.push_back(m);
+
   int i = 0;
   for (auto line : map_.getLines()) {
     visualization_msgs::Marker marker;

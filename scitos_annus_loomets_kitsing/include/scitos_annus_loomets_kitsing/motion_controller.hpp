@@ -26,6 +26,9 @@ private:
     std::vector<Vec2<float>> obstacles_;
     uint32_t waypointIndex_ = 0;
     float pointMargin_ = 0.1f;
+    float maxAngleToDrive_ = 0.2f;
+    float maxSpeed_ = 0.5f;
+    float maxAngle_ = 0.7f;
     const float minObstacleDistance_ = 0.75f;
 
     PID<float> trajectoryPidDist_;
@@ -48,7 +51,7 @@ private:
 
       const Vec2<float> target = waypoints_.at(waypointIndex_);
       Polar2<float> error = target - robotLocation;
-      error.theta = Util::normalize_angle(error.theta - heading);
+      error.theta = util::normalize_angle(error.theta - heading);
 
       if (errorMsg) {
         *errorMsg = error.toMsg();

@@ -45,6 +45,7 @@ private:
   std::vector<Vec2<float>> waypoints_;
   Node* lastNode_;
   bool needsUpdate_ = true;
+  bool goalAchieved_ = true;
 
   void mapCallback(scitos_common::LineArray msg);
   void odomCallback(nav_msgs::Odometry msg);

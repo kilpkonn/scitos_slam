@@ -2,7 +2,7 @@
 
 #include <cmath>
 
-namespace Util
+namespace util
 {
   template<typename T>
   inline T normalize_angle(T angle)

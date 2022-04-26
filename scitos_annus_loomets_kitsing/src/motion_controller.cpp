@@ -60,6 +60,10 @@ MotionController::MotionController(ros::NodeHandle nh) : nh_{nh} {
   controlCalculator_.trajectoryPidAng_ =
       PID<float>(kpAng, kiAng, kdAng, maxErrAng, diffErrAlphaAng);
 
+  controlCalculator_.maxAngleToDrive_ = nh_.param("/mission/max_angle_to_drive", 0.2f);
+  controlCalculator_.maxSpeed_ = nh_.param("/mission/max_speed", 0.5f);
+  controlCalculator_.maxAngle_ = nh_.param("/mission/max_angle", 0.7f);
+
   odometrySub_ =
       nh_.subscribe("/ekf_odom", 1, &MotionController::odometryCallback, this);
   waypointsSub_ =
@@ -182,6 +186,10 @@ void MotionController::obstaclesCallback(scitos_common::Vec2Array msg) {
 
 void MotionController::publishWaypoints() const {
   visualization_msgs::MarkerArray markers;
+
+  visualization_msgs::Marker m;
+  m.action = visualization_msgs::Marker::DELETEALL;
+  markers.markers.push_back(m);
 
   for (size_t i = 0; i < controlCalculator_.waypoints_.size(); i++) {
     auto p = controlCalculator_.waypoints_.at(i);
