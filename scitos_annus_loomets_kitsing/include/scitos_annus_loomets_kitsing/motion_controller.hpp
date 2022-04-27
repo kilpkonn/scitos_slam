@@ -29,7 +29,7 @@ private:
     float maxAngleToDrive_ = 0.2f;
     float maxSpeed_ = 0.5f;
     float maxAngle_ = 0.7f;
-    float minObstacleDistance_ = 0.75f;
+    float minObstacleDistance_ = 0.5f;
 
     PID<float> trajectoryPidDist_;
     PID<float> trajectoryPidAng_;
@@ -72,7 +72,7 @@ private:
 
     bool isObstacleNearby(const Vec2<float> robotLocation) const {
       for (Vec2<float> obstacle : obstacles_) {
-        if (robotLocation - obstacle < minObstacleDistance_)
+        if ((robotLocation - obstacle).length() < minObstacleDistance_)
           return true;
       }
       return false;

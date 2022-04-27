@@ -37,7 +37,7 @@ void Planner::step(const ros::TimerEvent &event) {
     publishWaypoints();
     return;
   }
-  ROS_INFO("Step");
+  ROS_INFO("Planner Step");
   ROS_INFO("Goal: (%f, %f)", goal_.x, goal_.y);
   nodes_.clear();
   waypoints_.clear();
@@ -85,7 +85,7 @@ void Planner::step(const ros::TimerEvent &event) {
   }
   refreshWaypoints();
 
-  ROS_INFO("Step Done");
+  ROS_INFO("Planner step Done");
 
   publishRRT();
   publishWaypoints();
