@@ -1,0 +1,8 @@
+[ver:1,total:780,branch:master]
+scitos_annus_loomets_kitsing/src/motion_controller.cpp:431,1651078800:431,m
+scitos_planner/src/scitos_planner.cpp:120,1651078800:120,m
+scitos_annus_loomets_kitsing/include/scitos_annus_loomets_kitsing/motion_controller.hpp:74,1651078800:74,m
+.git/COMMIT_EDITMSG:60,1651078800:60,r
+scitos_annus_loomets_kitsing/data/config/mission.yaml:45,1651078800:45,m
+scitos_annus_loomets_kitsing/data/config/mapper.yaml:35,1651078800:35,m
+scitos_annus_loomets_kitsing/data/config/mapper_mission.yaml:15,1651078800:15,r
