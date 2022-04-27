@@ -61,6 +61,11 @@ template <typename T> struct Line {
     return std::sqrt(std::min(min1, min2));
   }
 
+  float minDistance(const Vec2<T> &p) const {
+    const float m = std::min((p - project(p)).dot(), (p - project(p)).dot());
+    return std::sqrt(m);
+  }
+
   float mahalanobisDistance(const Line<T> &l) const {
     float d1 = perpendicularDistance(l.center());
     float d2 = l.perpendicularDistance(center());

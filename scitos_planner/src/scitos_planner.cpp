@@ -6,14 +6,14 @@
 #include <utility>
 #include <vector>
 
+#include "geometry_msgs/Pose.h"
+#include "geometry_msgs/PoseArray.h"
 #include "scitos_common/LineArray.h"
 #include "scitos_common/Vec2Array.h"
 #include "scitos_common/map/line.hpp"
 #include "scitos_common/vec2.hpp"
 #include "scitos_planner/scitos_planner.hpp"
 #include "visualization_msgs/MarkerArray.h"
-#include "geometry_msgs/PoseArray.h"
-#include "geometry_msgs/Pose.h"
 
 Planner::Planner(ros::NodeHandle nh) : nh_{nh} {
   mapSub_ = nh_.subscribe("/map", 1, &Planner::mapCallback, this);
@@ -44,13 +44,15 @@ void Planner::step(const ros::TimerEvent &event) {
   nodes_.reserve(n_);
   lastNode_ = nullptr;
   goalAchieved_ = false;
-  nodes_.push_back({{static_cast<float>(odometry_.pose.pose.position.x),
-                     static_cast<float>(odometry_.pose.pose.position.y)},
-                    nullptr});
+  Vec2<float> loc{static_cast<float>(odometry_.pose.pose.position.x),
+                  static_cast<float>(odometry_.pose.pose.position.y)};
+  nodes_.push_back({loc, nullptr});
   const auto [min, max] = map_.findBounds();
   static std::default_random_engine e;
   std::uniform_real_distribution<float> disX(min.x, max.x);
   std::uniform_real_distribution<float> disY(min.y, max.y);
+  float curr_clear_r = map_.minClearRadius(loc);
+  float padding = std::min(curr_clear_r, padding_);
   for (uint32_t m = 0; m < n_; m++) {
     Vec2<float> qRand{disX(e), disY(e)};
     float dist = std::numeric_limits<float>::max();
@@ -66,11 +68,11 @@ void Planner::step(const ros::TimerEvent &event) {
 
     if (qNear != nullptr) {
       Vec2<float> qNew = qNear->loc + (qRand - qNear->loc).normalize() * d_;
-      // BUG: Still fails in some cases
-      if (!(map_.isClearPath({qNear->loc, qNew}, padding_) ||
-            (nodes_.size() == 1 &&
-             !map_.isClearPath({qNear->loc, qNew}, 0.f)))) {
+      if (!map_.isClearPath({qNear->loc, qNew}, padding)) {
         continue;
+      }
+      if (padding + std::numeric_limits<float>::epsilon() < padding_) {
+        padding = std::min(map_.minClearRadius(qNew), padding_);
       }
       nodes_.push_back({qNew, qNear});
       if ((qNew - goal_).length() < endThreshold_) {

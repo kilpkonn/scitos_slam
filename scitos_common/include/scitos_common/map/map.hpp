@@ -4,6 +4,7 @@
 #include <cmath>
 #include <cstddef>
 #include <iterator>
+#include <limits>
 #include <optional>
 #include <tuple>
 #include <utility>
@@ -274,7 +275,9 @@ public:
 
   bool isVisible(const Vec2<T> &p, const Vec2<T> &loc) const {
     for (const auto &ln : lines_) {
-      if (ln.padded(0.05f).intersect({loc, p - (p - loc).normalize() * 0.05f}).has_value()) {
+      if (ln.padded(0.05f)
+              .intersect({loc, p - (p - loc).normalize() * 0.05f})
+              .has_value()) {
         return false;
       }
     }
@@ -283,7 +286,7 @@ public:
   scitos_common::LineArray toMsg() const {
     scitos_common::LineArray msg;
     msg.lines.reserve(lines_.size());
-    for (const auto l: lines_) {
+    for (const auto l : lines_) {
       msg.lines.push_back(l.toMsg());
     }
     return msg;
@@ -305,16 +308,23 @@ public:
     return std::make_pair(min, max);
   }
 
-  
   std::vector<Line<T>> getLines() const { return lines_; }
   void loadFromLines(std::vector<Line<T>> lines) { lines_ = lines; }
 
+  float minClearRadius(const Vec2<T> &p) const {
+    float dist = std::numeric_limits<float>::max();
+    for (const auto &line : lines_) {
+      float c = line.minDistance(p);
+      if (c < dist) {
+        dist = c;
+      }
+    }
+    return dist;
+  }
+
   bool isClearPath(const Line<T> &l, float padding) const {
-      // ROS_INFO("(%.2f, %.2f) -> (%.2f, %.2f)", l.p1.x, l.p1.y, l.p2.x, l.p2.y);
     for (const auto &line : lines_) {
       if (l.minDistance(line) < padding || l.intersect(line)) {
-      // ROS_INFO("(%.2f, %.2f) -> (%.2f, %.2f)", line.p1.x, line.p1.y, line.p2.x, line.p2.y);
-      // ROS_INFO("Dist %f", l.minDistance(line));
         return false;
       }
     }
