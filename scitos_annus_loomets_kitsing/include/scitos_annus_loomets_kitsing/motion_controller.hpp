@@ -14,14 +14,14 @@
 
 class MotionController {
 public:
-  enum PathEndReason {UNKNOWN, OK, FINISH, OBSTACLES};
+  enum PathEndReason { UNKNOWN, OK, FINISH, OBSTACLES };
 
   explicit MotionController(ros::NodeHandle nh);
   void step(const ros::TimerEvent &event);
 
 private:
   class ControlCalculator {
-    public:
+  public:
     std::vector<Vec2<float>> waypoints_;
     std::vector<Vec2<float>> obstacles_;
     uint32_t waypointIndex_ = 0;
@@ -34,11 +34,12 @@ private:
     PID<float> trajectoryPidDist_;
     PID<float> trajectoryPidAng_;
 
-    bool isFinished() const {
-      return waypointIndex_ >= waypoints_.size();
-    }
+    bool isFinished() const { return waypointIndex_ >= waypoints_.size(); }
 
-    Polar2<float> calculateControl(Vec2<float> robotLocation, float heading, std::chrono::milliseconds timeStep, ::scitos_common::Polar2* errorMsg = nullptr){
+    Polar2<float>
+    calculateControl(Vec2<float> robotLocation, float heading,
+                     std::chrono::milliseconds timeStep,
+                     ::scitos_common::Polar2 *errorMsg = nullptr) {
       for (size_t i = waypointIndex_; i < waypoints_.size(); i++) {
         if (waypoints_.at(i) - robotLocation < pointMargin_) {
           waypointIndex_ = i + 1;
@@ -58,7 +59,9 @@ private:
       }
 
       float pidOutAngular = trajectoryPidAng_.accumulate(error.theta, timeStep);
-      float pidOutLinear = std::max(std::min(trajectoryPidDist_.accumulate(error.r, timeStep), maxSpeed_), -maxSpeed_);
+      float pidOutLinear = std::max(
+          std::min(trajectoryPidDist_.accumulate(error.r, timeStep), maxSpeed_),
+          -maxSpeed_);
 
       if (abs(error.theta) > maxAngleToDrive_) {
         pidOutLinear = std::clamp(pidOutLinear, -maxSpeed_ / 4, maxSpeed_ / 4);
@@ -68,7 +71,7 @@ private:
     }
 
     bool isObstacleNearby(const Vec2<float> robotLocation) const {
-      for (Vec2<float> obstacle: obstacles_) {
+      for (Vec2<float> obstacle : obstacles_) {
         if (robotLocation - obstacle < minObstacleDistance_)
           return true;
       }
@@ -97,6 +100,10 @@ private:
   void waypointsCallback(scitos_common::Vec2Array msg);
   void obstaclesCallback(scitos_common::Vec2Array msg);
   void publishWaypoints() const;
-  void publishPath(const std::vector<Vec2<float>>& path, const std::vector<float>& headings) const;
-  PathEndReason simulateFuturePath(const int steps, float& pathLength, std::vector<Vec2<float>>* path=nullptr, std::vector<float>* headings=nullptr) const;
+  void publishPath(const std::vector<Vec2<float>> &path,
+                   const std::vector<float> &headings) const;
+  PathEndReason
+  simulateFuturePath(const int steps, float &pathLength,
+                     std::vector<Vec2<float>> *path = nullptr,
+                     std::vector<float> *headings = nullptr) const;
 };

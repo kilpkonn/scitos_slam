@@ -18,4 +18,4 @@ mission:
     max_err: 1.0
   max_angle_to_drive: 0.4
   max_speed: 0.7
-  max_angle: 0.2
+  max_angle: 0.5

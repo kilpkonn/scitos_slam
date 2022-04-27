@@ -2,12 +2,12 @@
 #include <cstddef>
 #include <vector>
 
-#include <tf2/LinearMath/Quaternion.h>
-#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 #include <XmlRpcValue.h>
 #include <geometry_msgs/Twist.h>
 #include <tf/LinearMath/Matrix3x3.h>
 #include <tf/transform_datatypes.h>
+#include <tf2/LinearMath/Quaternion.h>
+#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 #include <visualization_msgs/Marker.h>
 #include <visualization_msgs/MarkerArray.h>
 
@@ -33,7 +33,8 @@ MotionController::MotionController(ros::NodeHandle nh) : nh_{nh} {
             trajectoryObject[1].getType() == XmlRpc::XmlRpcValue::TypeDouble) {
           double x = trajectoryObject[0];
           double y = trajectoryObject[1];
-          controlCalculator_.waypoints_.push_back({static_cast<float>(x), static_cast<float>(y)});
+          controlCalculator_.waypoints_.push_back(
+              {static_cast<float>(x), static_cast<float>(y)});
         }
       }
     }
@@ -60,23 +61,22 @@ MotionController::MotionController(ros::NodeHandle nh) : nh_{nh} {
   controlCalculator_.trajectoryPidAng_ =
       PID<float>(kpAng, kiAng, kdAng, maxErrAng, diffErrAlphaAng);
 
-  controlCalculator_.maxAngleToDrive_ = nh_.param("/mission/max_angle_to_drive", 0.2f);
+  controlCalculator_.maxAngleToDrive_ =
+      nh_.param("/mission/max_angle_to_drive", 0.2f);
   controlCalculator_.maxSpeed_ = nh_.param("/mission/max_speed", 0.5f);
   controlCalculator_.maxAngle_ = nh_.param("/mission/max_angle", 0.7f);
-
   controlCalculator_.minObstacleDistance_ = nh_.param("/planner/padding", 0.5);
 
   odometrySub_ =
       nh_.subscribe("/ekf_odom", 1, &MotionController::odometryCallback, this);
   waypointsSub_ =
       nh_.subscribe("/path", 1, &MotionController::waypointsCallback, this);
-  obstaclesSub_ =
-      nh_.subscribe("/obstacles_to_avoid", 1, &MotionController::obstaclesCallback, this);
+  obstaclesSub_ = nh_.subscribe("/obstacles_to_avoid", 1,
+                                &MotionController::obstaclesCallback, this);
 
   waypointsPub_ = nh_.advertise<visualization_msgs::MarkerArray>(
       "/mission_control/waypoints", 10);
-  pathPub_ = nh_.advertise<visualization_msgs::MarkerArray>(
-      "/debug/path", 10);
+  pathPub_ = nh_.advertise<visualization_msgs::MarkerArray>("/debug/path", 10);
   errorPub_ = nh_.advertise<scitos_common::Polar2>("/debug/PID_error", 10);
   controlPub_ = nh_.advertise<geometry_msgs::Twist>("/cmd_vel", 3);
 }
@@ -99,27 +99,34 @@ void MotionController::step(const ros::TimerEvent &event) {
   std::vector<Vec2<float>> simulatedPath;
   std::vector<float> simulatedHeadings;
   float pathLength = 0.0f;
-  MotionController::PathEndReason pathEndReason = simulateFuturePath(500, pathLength, &simulatedPath, &simulatedHeadings);
+  MotionController::PathEndReason pathEndReason =
+      simulateFuturePath(500, pathLength, &simulatedPath, &simulatedHeadings);
   publishPath(simulatedPath, simulatedHeadings);
 
   scitos_common::Polar2 errorMsg;
 
-  std::chrono::milliseconds dt(static_cast<long int>((event.current_real - event.last_real).toNSec() * 1e-6f));
-  Polar2<float> calculatedControl = controlCalculator_.calculateControl(current, yaw, dt, &errorMsg);
+  std::chrono::milliseconds dt(static_cast<long int>(
+      (event.current_real - event.last_real).toNSec() * 1e-6f));
+  Polar2<float> calculatedControl =
+      controlCalculator_.calculateControl(current, yaw, dt, &errorMsg);
   errorMsg.header.stamp = event.current_real;
   errorPub_.publish(errorMsg);
 
   geometry_msgs::Twist control;
-  if (pathEndReason == MotionController::PathEndReason::FINISH
-      || pathEndReason == MotionController::PathEndReason::OK
-      || pathLength > controlCalculator_.pointMargin_)
+  if (pathEndReason == MotionController::PathEndReason::FINISH ||
+      pathEndReason == MotionController::PathEndReason::OK ||
+      pathLength > controlCalculator_.pointMargin_) {
     control.linear.x = calculatedControl.r;
+  }
   control.angular.z = calculatedControl.theta;
   controlPub_.publish(control);
   publishWaypoints();
 }
 
-MotionController::PathEndReason MotionController::simulateFuturePath(const int steps, float& pathLength, std::vector<Vec2<float>>* path, std::vector<float>* headings) const {
+MotionController::PathEndReason
+MotionController::simulateFuturePath(const int steps, float &pathLength,
+                                     std::vector<Vec2<float>> *path,
+                                     std::vector<float> *headings) const {
   Vec2<float> robotLocation(odometry_->pose.pose.position.x,
                             odometry_->pose.pose.position.y);
   double roll, pitch, yaw;
@@ -137,11 +144,16 @@ MotionController::PathEndReason MotionController::simulateFuturePath(const int s
   if (headings)
     headings->reserve(steps);
 
-  for (int i=0; i<steps; i++) {
-    if(calculator.isObstacleNearby(robotLocation))
+  for (int i = 0; i < steps; i++) {
+    if (calculator.isObstacleNearby(robotLocation))
       return MotionController::PathEndReason::OBSTACLES;
-    const Polar2<float> control = calculator.calculateControl(robotLocation, robotHeading, timeStep);
-    angularSpeed = std::min(std::max(angularSpeed * 0.5 + std::max(std::min(control.theta, 20.0f), -20.0f) * 0.5, -M_PI_2), M_PI_2);
+    const Polar2<float> control =
+        calculator.calculateControl(robotLocation, robotHeading, timeStep);
+    angularSpeed = std::min(
+        std::max(angularSpeed * 0.5 +
+                     std::max(std::min(control.theta, 20.0f), -20.0f) * 0.5,
+                 -M_PI_2),
+        M_PI_2);
     const float turn = angularSpeed * timeStep.count() / 1e3f;
     robotHeading += turn / 2;
     const float distance = control.r * timeStep.count() / 1e3f;
@@ -217,7 +229,8 @@ void MotionController::publishWaypoints() const {
   waypointsPub_.publish(markers);
 }
 
-void MotionController::publishPath(const std::vector<Vec2<float>>& path, const std::vector<float>& headings) const {
+void MotionController::publishPath(const std::vector<Vec2<float>> &path,
+                                   const std::vector<float> &headings) const {
   visualization_msgs::MarkerArray markers;
 
   for (size_t i = 0; i < path.size(); i++) {

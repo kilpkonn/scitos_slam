@@ -29,4 +29,4 @@ planner:
   n: 4000  # Amount of particles
   d: 0.4   # Single step length in m
   end_threshold: 0.5  # Radious allowed around end
-  padding: 0.6        # Padding to path (at least robot radius)
+  padding: 0.5        # Padding to path (at least robot radius)
