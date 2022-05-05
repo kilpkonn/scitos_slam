@@ -40,9 +40,9 @@ Mattias Kitsing
 ---
 
 # Global path planning (RRT)
-![bg right 70%](./fig/final_rrt.png)
+![bg right 60%](./fig/final_rrt.png)
 *RRT graph on map*
-![bg right 70%](./fig/wall_padding.png)
+![bg right 80%](./fig/wall_padding.png)
 *Padding around walls*
 
 ---
