@@ -1,0 +1,8 @@
+[ver:1,total:2520,branch:mapper]
+docs/12-final-presentation.md:1642,1651816800:156,1651820400:1366,1651824000:120,m
+scitos_mapper/src/scitos_mapper.cpp:365,1651820400:45,1651824000:320,m
+scitos_common/include/scitos_common/map/map.hpp:265,1651820400:55,1651824000:210,m
+docs/03-mapping-part-1.md:158,1651816800:24,1651820400:134,r
+scitos_common/include/scitos_common/map/line.hpp:40,1651824000:40,r
+.git/COMMIT_EDITMSG:30,1651824000:30,r
+docs/04-mapping-part-2.md:20,1651820400:20,r
