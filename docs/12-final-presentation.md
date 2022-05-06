@@ -2,9 +2,8 @@
 marp: true
 theme: default
 math: katex
-class:
-  - lead
-  <!-- - invert -->
+paginate: true
+class: lead
 ---
 
 # SCITOS: team 2
