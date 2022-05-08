@@ -85,16 +85,57 @@ For indoor differential drive robot:
 
 ---
 
-# Localization 1
+# Localization overview
+
+- EKF algorithm
+  - Maximal likelyhood
+  - Some sanity checks
+  - No update if sanity checks fails
+- We used the features from mapping
+- Interpolation / Extrapolation
+
+</div>
+<div>
+
+<!-- ![bg right 80%](./fig/ekf_good.png) -->
+<figure>
+  <img src="./fig/ekf_good.png" alt="Map" style="width:100%">
+  <figcaption>Fig.3 - EKF at work.</figcaption>
+</figure>
+</div>
+</div>
 
 ---
 
-# Localization 2
+# Localization - EKF results 1
+
+ - Much better resuls than odometry
+ - Could recover from uncertanty and errors
+ - 
+
+<!-- ![bg right 80%](./fig/ekf_recovery.png) -->
+<figure>
+  <img src="./fig/ekf_recovery.png" alt="Map" style="width:100%">
+  <figcaption>Fig.4 - EKF recovering.</figcaption>
+</figure>
+</div>
+</div>
 
 ---
 
-# Localization 3
+# Localization - EKF results 2
 
+Had problems with 
+- incorrectly mapped features
+- long corridors 
+
+<!-- ![bg right 80%](./fig/ekf_ugly.png) -->
+<figure>
+  <img src="./fig/ekf_ugly.png" alt="Map" style="width:100%">
+  <figcaption>Fig.5 - EKF drift.</figcaption>
+</figure>
+</div>
+</div>
 ---
 
 # Global path planning (RRT)
@@ -118,7 +159,7 @@ For indoor differential drive robot:
 
 <figure>
   <img src="./fig/point_drive_PID.png" alt="Map" style="width:100%">
-  <figcaption>Fig.3 - PID errors.</figcaption>
+  <figcaption>Fig.6 - PID errors.</figcaption>
 </figure>
 </div>
 </div>
@@ -143,7 +184,7 @@ For indoor differential drive robot:
 
 <figure>
   <img src="./fig/path_prediction_corridor.png" alt="Map" style="width:100%">
-  <figcaption>Fig.4 - Path prediction.</figcaption>
+  <figcaption>Fig.7 - Path prediction.</figcaption>
 </figure>
 </div>
 </div>
