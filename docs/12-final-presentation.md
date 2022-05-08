@@ -136,13 +136,27 @@ Had problems with
 </figure>
 </div>
 </div>
+
 ---
 
 # Global path planning (RRT)
-![bg right 80%](./fig/final_rrt.png)
+<figure>
+  <img src="./fig/final_rrt.png" alt="final_rrt" style="width:100%">
+  <figcaption>Fig.6 - RRT graph on map.</figcaption>
+</figure>
+</div>
+</div>
+<figure>
+  <img src="./fig/wall_padding.png" alt="wall_padding" style="width:100%">
+  <figcaption>Fig.7 - Padding around walls.</figcaption>
+</figure>
+</div>
+</div>
+
+<!--![bg right 80%](./fig/final_rrt.png)
 *RRT graph on map*
 ![bg right 80%](./fig/wall_padding.png)
-*Padding around walls*
+*Padding around walls*-->
 
 ---
 
@@ -159,7 +173,7 @@ Had problems with
 
 <figure>
   <img src="./fig/point_drive_PID.png" alt="Map" style="width:100%">
-  <figcaption>Fig.6 - PID errors.</figcaption>
+  <figcaption>Fig.7 - PID errors.</figcaption>
 </figure>
 </div>
 </div>
@@ -184,7 +198,7 @@ Had problems with
 
 <figure>
   <img src="./fig/path_prediction_corridor.png" alt="Map" style="width:100%">
-  <figcaption>Fig.7 - Path prediction.</figcaption>
+  <figcaption>Fig.8 - Path prediction.</figcaption>
 </figure>
 </div>
 </div>
