@@ -4,6 +4,13 @@ theme: default
 math: katex
 paginate: true
 class: lead
+html: true
+style: |
+  .columns {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+  }
 ---
 
 # SCITOS: team 2
@@ -31,25 +38,50 @@ For indoor differential drive robot:
 
 ---
 
-# Mapping flow 1: Extracting lines
+<div class="columns">
+<div>
 
-![bg right 60%](./fig/iepf.png)
+# Mapping flow 1: Extracting lines
 1. Read the laser points
 2. Perform noise filtering by eroding and dilating
 3. Cluster into objects with DBSCAN
 4. Fit lines with IEPF
 
+</div>
+<div>
+
+<!-- ![bg right 80%](./fig/iepf.png) -->
+<figure>
+  <img src="./fig/iepf.png" alt="Map" style="width:100%">
+  <figcaption>Fig.1 - Extracted lines.</figcaption>
+</figure>
+</div>
+</div>
+
 ---
+
+<div class="columns">
+<div>
 
 # Mapping flow 2: Accumulating map
 
-![bg right 60%](./fig/mapv2.png)
 1. Find the best match for every line
     - Needs to "overlap"
     - Uses Mahalanobis distance
 2. Merge lines that are closer than threshold
 3. Add lines that do not have good match
 4. Remove lines that have low confidence
+
+</div>
+<div>
+
+<!-- ![bg right 60%](./fig/mapv2.png) -->
+<figure>
+  <img src="./fig/mapv2.png" alt="Map" style="width:100%">
+  <figcaption>Fig.2 - Feature map.</figcaption>
+</figure>
+</div>
+</div>
 
 ---
 
@@ -73,11 +105,28 @@ For indoor differential drive robot:
 
 ---
 
+<div class="columns">
+<div>
+
 # Local planning (PID)
-![bg right 70%](./fig/point_drive_PID.png)
 *PID errors while driving through waypoints*
 
+</div>
+<div>
+
+<!-- ![bg right 70%](./fig/point_drive_PID.png) -->
+
+<figure>
+  <img src="./fig/point_drive_PID.png" alt="Map" style="width:100%">
+  <figcaption>Fig.3 - PID errors.</figcaption>
+</figure>
+</div>
+</div>
+
 ---
+
+<div class="columns">
+<div>
 
 # Safety (Path simulation)
 
@@ -85,9 +134,19 @@ For indoor differential drive robot:
 - Stricter conditional clamp
 - Simulate up to 5s of future
 - Stop before potential collision
-![bg right 70%](./fig/path_prediction_corridor.png)
 *Path prediction near walls*
 
+</div>
+<div>
+
+<!-- ![bg right 70%](./fig/path_prediction_corridor.png) -->
+
+<figure>
+  <img src="./fig/path_prediction_corridor.png" alt="Map" style="width:100%">
+  <figcaption>Fig.4 - Path prediction.</figcaption>
+</figure>
+</div>
+</div>
 
 ---
 
