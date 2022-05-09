@@ -85,6 +85,9 @@ For indoor differential drive robot:
 
 ---
 
+<div class="columns">
+<div>
+
 # Localization overview
 
 - EKF algorithm
@@ -107,11 +110,16 @@ For indoor differential drive robot:
 
 ---
 
+<div class="columns">
+<div>
+
 # Localization - EKF results 1
 
  - Much better resuls than odometry
  - Could recover from uncertanty and errors
- - 
+
+</div>
+<div>
 
 <!-- ![bg right 80%](./fig/ekf_recovery.png) -->
 <figure>
@@ -123,11 +131,17 @@ For indoor differential drive robot:
 
 ---
 
+<div class="columns">
+<div>
+
 # Localization - EKF results 2
 
 Had problems with 
 - incorrectly mapped features
 - long corridors 
+
+</div>
+<div>
 
 <!-- ![bg right 80%](./fig/ekf_ugly.png) -->
 <figure>
@@ -140,12 +154,14 @@ Had problems with
 ---
 
 # Global path planning (RRT)
+<div class="columns">
+<div>
 <figure>
   <img src="./fig/final_rrt.png" alt="final_rrt" style="width:100%">
   <figcaption>Fig.6 - RRT graph on map.</figcaption>
 </figure>
 </div>
-</div>
+<div>
 <figure>
   <img src="./fig/wall_padding.png" alt="wall_padding" style="width:100%">
   <figcaption>Fig.7 - Padding around walls.</figcaption>
