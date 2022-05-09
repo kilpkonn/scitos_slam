@@ -137,8 +137,11 @@ For indoor differential drive robot:
 # Localization - EKF results 2
 
 Had problems with 
-- incorrectly mapped features
-- long corridors 
+- Incorrectly mapped features
+- Long corridors
+
+Workaround
+- Lowe's ratio
 
 </div>
 <div>
@@ -205,7 +208,7 @@ Had problems with
 - Stricter conditional clamp
 - Simulate up to 5s of future
 - Stop before potential collision
-*Path prediction near walls*
+<!-- *Path prediction near walls* -->
 
 </div>
 <div>
@@ -222,12 +225,12 @@ Had problems with
 ---
 
 # Project conclusion
-**The good**
+**The Good**
 - Good teamwork and impressive result
 - Learned interesting new technologies
 - Decent project structure
 
-**The bad**
+**The Bad**
 - Solution lacks robustness
 - Only unit tests
 
