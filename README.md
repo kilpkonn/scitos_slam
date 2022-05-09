@@ -1,4 +1,3 @@
-
 # SCITOS
 
 <div class="columns">
@@ -20,6 +19,13 @@ Here we can see the EKF algorithm (yellow) localizating the robot (green) in a f
 </div>
 </div>
 
+## Content
+
+- [SCITOS](#scitos)
+  * [Building](#building)
+  * [Running](#running)
+  * [Save map](#save-map)
+  * [Progress documentation](#progress-documentation)
 
 
 ## Building
