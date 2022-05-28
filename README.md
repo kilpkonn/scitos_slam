@@ -1,4 +1,7 @@
 # SCITOS
+_Tavo Annus_  
+_Timo Loomets_  
+_Mattias Kitsing_  
 
 <div class="columns">
 <div>
@@ -39,10 +42,10 @@ To export compile_commands.json use:
 ```bash
 catkin build -DCMAKE_EXPORT_COMPILE_COMMANDS=1
 ```
-_Make sure to copy `compile_commands.json` from under build to project root!_
+_Make sure to copy `compile_commands.json` from under build to project root to get LSP support!_
 ```bash
 # Execute at catkin_ws
-jq -s 'map(.[])' build/**/compile_commands.json > ./src/scitos_slam_group_2/compile_commands.json
+jq -s 'map(.[])' ~/catkin_ws/build/**/compile_commands.json > ./compile_commands.json
 ```
 
 ## Running

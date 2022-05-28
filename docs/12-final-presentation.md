@@ -192,7 +192,7 @@ Workaround
 
 <figure>
   <img src="./fig/point_drive_PID.png" alt="Map" style="width:100%">
-  <figcaption>Fig.7 - PID errors.</figcaption>
+  <figcaption>Fig.8 - PID errors.</figcaption>
 </figure>
 </div>
 </div>
@@ -217,7 +217,7 @@ Workaround
 
 <figure>
   <img src="./fig/path_prediction_corridor.png" alt="Map" style="width:100%">
-  <figcaption>Fig.8 - Path prediction.</figcaption>
+  <figcaption>Fig.9 - Path prediction.</figcaption>
 </figure>
 </div>
 </div>
